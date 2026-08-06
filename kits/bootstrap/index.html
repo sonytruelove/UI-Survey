@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="ru" data-bs-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Заявки — ЭнергоСетьСтрой (Bootstrap 5)</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+
+<style>
+:root{
+  --bg-app:#F4F5F7; --bg-surface:#FFFFFF; --bg-dark:#101010; --bg-dark-2:#1A1A1A;
+  --border:#E4E5E9; --border-dark:rgba(255,255,255,.09);
+  --accent:#E07B3E; --accent-hover:#C2632D; --accent-tint:#FDEEE3;
+  --text-primary:#15161A; --text-secondary:#6B6E76;
+  --text-onDark:#FFFFFF; --text-onDark-muted:#9A9CA5;
+  --success:#2FA968; --info:#3B82C4; --purple:#8B6CC1; --danger:#E4483D; --warning:#F2B33D;
+  --low:#8A8D96;
+
+  --bs-primary:#E07B3E;
+  --bs-primary-rgb:224,123,62;
+  --bs-primary-text-emphasis:#C2632D;
+  --bs-primary-bg-subtle:#FDEEE3;
+  --bs-primary-border-subtle:#F3C8A9;
+  --bs-link-color:#E07B3E;
+  --bs-link-color-rgb:224,123,62;
+  --bs-link-hover-color:#C2632D;
+  --bs-link-hover-color-rgb:194,99,45;
+  --bs-body-font-family:'Inter',sans-serif;
+  --bs-border-radius:8px;
+  --bs-border-radius-lg:12px;
+  --bs-border-radius-sm:6px;
+}
+
+body{ background:var(--bg-app); color:var(--text-primary); font-family:'Inter',sans-serif; font-size:14px; }
+h1,h2,h3,h4,h5,h6,.display-num,.kpi-value,.logo-word{ font-family:'Rajdhani',sans-serif; font-weight:700; text-transform:uppercase; letter-spacing:.02em; }
+
+/* ---- primary re-theme ---- */
+.btn-primary{
+  --bs-btn-color:#fff; --bs-btn-bg:var(--accent); --bs-btn-border-color:var(--accent);
+  --bs-btn-hover-color:#fff; --bs-btn-hover-bg:var(--accent-hover); --bs-btn-hover-border-color:var(--accent-hover);
+  --bs-btn-active-color:#fff; --bs-btn-active-bg:var(--accent-hover); --bs-btn-active-border-color:var(--accent-hover);
+  --bs-btn-disabled-bg:var(--accent); --bs-btn-disabled-border-color:var(--accent);
+  --bs-btn-focus-shadow-rgb:224,123,62;
+}
+.btn-outline-primary{
+  --bs-btn-color:var(--accent); --bs-btn-border-color:var(--accent);
+  --bs-btn-hover-bg:var(--accent); --bs-btn-hover-border-color:var(--accent);
+  --bs-btn-active-bg:var(--accent); --bs-btn-active-border-color:var(--accent);
+  --bs-btn-focus-shadow-rgb:224,123,62;
+}
+.bg-primary{ background-color:var(--accent) !important; }
+.text-primary{ color:var(--accent) !important; }
+.text-bg-primary{ background-color:var(--accent) !important; color:#fff !important; }
+.border-primary{ border-color:var(--accent) !important; }
+.form-check-input:checked{ background-color:var(--accent); border-color:var(--accent); }
+.form-control:focus,.form-select:focus{ border-color:var(--accent); box-shadow:0 0 0 .25rem rgba(224,123,62,.2); }
+.page-link{ color:var(--accent); }
+.page-item.active .page-link{ background-color:var(--accent); border-color:var(--accent); }
+.form-check-input:focus{ box-shadow:0 0 0 .25rem rgba(224,123,62,.2); }
+.dropdown-item.active,.dropdown-item:active{ background-color:var(--accent-tint); color:var(--accent-hover); }
+a{ color:var(--accent); }
+
+/* ---- layout ---- */
+.app-header{
+  position:fixed; top:0; left:0; right:0; height:64px; z-index:1030;
+  background:var(--bg-dark); border-bottom:1px solid var(--border-dark);
+  display:flex; align-items:center; padding:0 20px; gap:20px;
+}
+.logo-block{ display:flex; align-items:center; gap:10px; width:220px; flex-shrink:0; color:#fff; }
+.logo-block svg{ width:34px; height:34px; color:var(--accent); flex-shrink:0; }
+.logo-word{ font-size:14px; line-height:.95; letter-spacing:.03em; }
+.header-search{ flex:1; max-width:420px; }
+.header-search .form-control{
+  background:var(--bg-dark-2); border-color:var(--border-dark); color:#fff; font-size:13px;
+}
+.header-search .form-control::placeholder{ color:var(--text-onDark-muted); }
+.header-search .input-group-text{ background:var(--bg-dark-2); border-color:var(--border-dark); color:var(--text-onDark-muted); }
+.header-spacer{ flex:1; }
+.header-icon-btn{
+  width:38px; height:38px; border-radius:8px; display:flex; align-items:center; justify-content:center;
+  color:var(--text-onDark-muted); background:transparent; border:1px solid var(--border-dark); position:relative;
+}
+.header-icon-btn:hover{ background:var(--bg-dark-2); color:#fff; }
+.header-icon-btn .dot{ position:absolute; top:6px; right:7px; width:7px; height:7px; border-radius:50%; background:var(--danger); }
+.user-block{ display:flex; align-items:center; gap:10px; color:#fff; padding-left:14px; border-left:1px solid var(--border-dark); }
+.user-avatar{
+  width:36px; height:36px; border-radius:50%; background:var(--accent); color:#fff;
+  display:flex; align-items:center; justify-content:center; font-family:'Rajdhani',sans-serif; font-weight:700; font-size:14px;
+}
+.user-name{ font-size:13px; font-weight:600; line-height:1.2; }
+.user-role{ font-size:11.5px; color:var(--text-onDark-muted); line-height:1.2; }
+
+.app-sidebar{
+  position:fixed; top:64px; bottom:0; left:0; width:250px; background:var(--bg-dark);
+  padding:18px 12px; z-index:1020; overflow-y:auto;
+}
+.sidebar-nav .nav-link{
+  color:var(--text-onDark-muted); font-size:14px; font-weight:500; border-radius:8px;
+  padding:10px 12px; margin-bottom:2px; display:flex; align-items:center; gap:12px; transition:.15s;
+}
+.sidebar-nav .nav-link i{ font-size:16px; width:18px; text-align:center; }
+.sidebar-nav .nav-link:hover{ background:var(--bg-dark-2); color:#fff; }
+.sidebar-nav .nav-link.active{ background:var(--accent); color:#fff; }
+
+.app-content{ margin-left:250px; padding:28px 32px 60px; margin-top:64px; }
+
+.breadcrumb{ font-size:13px; }
+.page-title{ font-size:28px; margin-bottom:2px; }
+
+.kpi-card{
+  background:var(--bg-surface); border:1px solid var(--border); border-radius:12px;
+  box-shadow:0 1px 2px rgba(16,16,16,.06),0 8px 24px rgba(16,16,16,.04);
+  padding:18px 20px;
+}
+.kpi-label{ font-size:12.5px; color:var(--text-secondary); font-weight:600; text-transform:uppercase; letter-spacing:.03em; }
+.kpi-value{ font-size:34px; line-height:1.1; margin-top:4px; }
+.kpi-icon{ width:42px; height:42px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:18px; }
+
+.toolbar-card, .table-card{
+  background:var(--bg-surface); border:1px solid var(--border); border-radius:12px;
+  box-shadow:0 1px 2px rgba(16,16,16,.06),0 8px 24px rgba(16,16,16,.04);
+}
+
+.badge-pill{ border-radius:999px; font-weight:600; font-size:11.5px; padding:5px 11px; display:inline-block; }
+.badge-priority-low{ background:#EEEFF1; color:var(--low); }
+.badge-priority-medium{ background:#FDF3DE; color:#9A7415; }
+.badge-priority-high{ background:var(--accent-tint); color:var(--accent-hover); }
+.badge-priority-critical{ background:#FCE4E2; color:#B23428; }
+.badge-status-new{ background:#E4EFF8; color:var(--info); }
+.badge-status-progress{ background:var(--accent-tint); color:var(--accent-hover); }
+.badge-status-review{ background:#EEE8F8; color:var(--purple); }
+.badge-status-done{ background:#E1F4EA; color:var(--success); }
+.badge-status-overdue{ background:#FCE4E2; color:var(--danger); }
+
+.req-table thead th{
+  font-size:11.5px; text-transform:uppercase; letter-spacing:.03em; color:var(--text-secondary);
+  border-bottom:1px solid var(--border); font-weight:700; background:#FAFAFB;
+}
+.req-table td{ font-size:13.5px; vertical-align:middle; border-color:var(--border); }
+.req-table tbody tr:hover{ background:#FBFAF9; }
+.req-num{ font-family:'Rajdhani',sans-serif; font-weight:700; color:var(--text-primary); }
+
+.avatar-sm{
+  width:28px; height:28px; border-radius:50%; background:var(--accent-tint); color:var(--accent-hover);
+  display:inline-flex; align-items:center; justify-content:center; font-family:'Rajdhani',sans-serif; font-weight:700; font-size:11.5px;
+}
+
+.action-icon-btn{
+  width:30px; height:30px; border-radius:7px; border:1px solid var(--border); background:#fff;
+  display:inline-flex; align-items:center; justify-content:center; color:var(--text-secondary);
+}
+.action-icon-btn:hover{ background:var(--accent-tint); color:var(--accent-hover); border-color:var(--accent); }
+
+.modal-content{ border-radius:12px; border:none; }
+.modal-header{ border-bottom:1px solid var(--border); }
+.modal-title{ font-family:'Rajdhani',sans-serif; font-weight:700; text-transform:uppercase; letter-spacing:.02em; }
+.form-label{ font-weight:600; font-size:13px; }
+
+.priority-chip{ }
+.priority-chip .btn{ font-size:13px; font-weight:600; }
+
+.exec-dropdown .dropdown-item{ display:flex; align-items:center; gap:8px; font-size:13.5px; }
+
+.footer-bar{
+  margin-left:250px; padding:14px 32px 26px; font-size:11.5px; color:var(--text-secondary);
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="app-header">
+  <div class="logo-block">
+    <svg viewBox="0 0 100 100" aria-hidden="true">
+      <circle cx="50" cy="50" r="42" fill="none" stroke="currentColor" stroke-width="7" stroke-dasharray="240 24" stroke-linecap="round"/>
+      <circle cx="50" cy="50" r="27" fill="none" stroke="currentColor" stroke-width="7" stroke-dasharray="148 22" stroke-linecap="round" transform="rotate(35 50 50)"/>
+    </svg>
+    <div class="logo-word">ЭНЕРГО<br>СЕТЬСТРОЙ</div>
+  </div>
+  <div class="header-search">
+    <div class="input-group">
+      <span class="input-group-text"><i class="bi bi-search"></i></span>
+      <input type="search" class="form-control" placeholder="Поиск по номеру, теме, объекту…">
+    </div>
+  </div>
+  <div class="header-spacer"></div>
+  <button class="btn btn-primary d-flex align-items-center gap-2" data-bs-toggle="modal" data-bs-target="#newRequestModal">
+    <i class="bi bi-plus-lg"></i> Новая заявка
+  </button>
+  <button class="header-icon-btn"><i class="bi bi-bell"></i><span class="dot"></span></button>
+  <div class="user-block">
+    <div class="user-avatar">ИП</div>
+    <div>
+      <div class="user-name">Ирина Плотникова</div>
+      <div class="user-role">Диспетчер</div>
+    </div>
+  </div>
+</header>
+
+<!-- SIDEBAR -->
+<aside class="app-sidebar">
+  <nav class="nav flex-column sidebar-nav">
+    <a class="nav-link" href="#"><i class="bi bi-speedometer2"></i> Дашборд</a>
+    <a class="nav-link active" href="#"><i class="bi bi-list-check"></i> Заявки</a>
+    <a class="nav-link" href="#"><i class="bi bi-building"></i> Объекты</a>
+    <a class="nav-link" href="#"><i class="bi bi-people"></i> Исполнители</a>
+    <a class="nav-link" href="#"><i class="bi bi-bar-chart"></i> Отчёты</a>
+    <a class="nav-link" href="#"><i class="bi bi-gear"></i> Настройки</a>
+  </nav>
+</aside>
+
+<!-- CONTENT -->
+<main class="app-content">
+  <nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a href="#" class="text-decoration-none text-secondary">Главная</a></li>
+      <li class="breadcrumb-item active" aria-current="page">Заявки</li>
+    </ol>
+  </nav>
+  <h1 class="page-title">Заявки</h1>
+  <p class="text-secondary mb-4">Управление заявками на электромонтажные и сетевые работы</p>
+
+  <!-- KPI cards -->
+  <div class="row g-3 mb-4">
+    <div class="col-3">
+      <div class="kpi-card d-flex justify-content-between align-items-start">
+        <div>
+          <div class="kpi-label">Всего заявок</div>
+          <div class="kpi-value">128</div>
+        </div>
+        <div class="kpi-icon" style="background:var(--accent-tint); color:var(--accent-hover);"><i class="bi bi-clipboard-data"></i></div>
+      </div>
+    </div>
+    <div class="col-3">
+      <div class="kpi-card d-flex justify-content-between align-items-start">
+        <div>
+          <div class="kpi-label">В работе</div>
+          <div class="kpi-value" style="color:var(--accent);">34</div>
+        </div>
+        <div class="kpi-icon" style="background:var(--accent-tint); color:var(--accent-hover);"><i class="bi bi-gear-wide-connected"></i></div>
+      </div>
+    </div>
+    <div class="col-3">
+      <div class="kpi-card d-flex justify-content-between align-items-start">
+        <div>
+          <div class="kpi-label">Выполнено</div>
+          <div class="kpi-value" style="color:var(--success);">81</div>
+        </div>
+        <div class="kpi-icon" style="background:#E1F4EA; color:var(--success);"><i class="bi bi-check2-circle"></i></div>
+      </div>
+    </div>
+    <div class="col-3">
+      <div class="kpi-card d-flex justify-content-between align-items-start">
+        <div>
+          <div class="kpi-label">Просрочено</div>
+          <div class="kpi-value" style="color:var(--danger);">7</div>
+        </div>
+        <div class="kpi-icon" style="background:#FCE4E2; color:var(--danger);"><i class="bi bi-exclamation-triangle"></i></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toolbar -->
+  <div class="toolbar-card p-3 mb-3">
+    <div class="row g-2 align-items-center">
+      <div class="col-4">
+        <div class="input-group">
+          <span class="input-group-text bg-white"><i class="bi bi-search text-secondary"></i></span>
+          <input type="search" class="form-control" placeholder="Поиск по номеру, теме, объекту…">
+        </div>
+      </div>
+      <div class="col-2">
+        <select class="form-select">
+          <option>Статус: Все</option>
+          <option>Новая</option>
+          <option>В работе</option>
+          <option>На проверке</option>
+          <option>Выполнена</option>
+          <option>Просрочена</option>
+        </select>
+      </div>
+      <div class="col-2">
+        <select class="form-select">
+          <option>Приоритет: Все</option>
+          <option>Низкий</option>
+          <option>Средний</option>
+          <option>Высокий</option>
+          <option>Критический</option>
+        </select>
+      </div>
+      <div class="col-2">
+        <select class="form-select">
+          <option>Объект: Все</option>
+          <option>Братск</option>
+          <option>Усть-Илимск</option>
+          <option>Иркутск</option>
+          <option>Ангарск</option>
+          <option>Усть-Кут</option>
+        </select>
+      </div>
+      <div class="col-2 text-end">
+        <button class="btn btn-primary w-100" data-bs-toggle="modal" data-bs-target="#newRequestModal">
+          <i class="bi bi-plus-lg"></i> Новая заявка
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Table -->
+  <div class="table-card p-0">
+    <div class="table-responsive">
+      <table class="table req-table mb-0">
+        <thead>
+          <tr>
+            <th class="ps-3">№</th>
+            <th>Тема заявки</th>
+            <th>Категория</th>
+            <th>Объект</th>
+            <th>Приоритет</th>
+            <th>Статус</th>
+            <th>Исполнитель</th>
+            <th>Срок</th>
+            <th class="text-end pe-3">Действия</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="ps-3 req-num">ЗЯ-2481</td>
+            <td>Замена автоматического выключателя на ТП-14</td>
+            <td>Электромонтажные работы</td>
+            <td>Братск</td>
+            <td><span class="badge-pill badge-priority-high">Высокий</span></td>
+            <td><span class="badge-pill badge-status-progress">В работе</span></td>
+            <td><span class="avatar-sm me-1">СА</span> Соколов А.П.</td>
+            <td>12.08.2026</td>
+            <td class="text-end pe-3">
+              <button class="action-icon-btn"><i class="bi bi-eye"></i></button>
+              <button class="action-icon-btn"><i class="bi bi-pencil"></i></button>
+            </td>
+          </tr>
+          <tr>
+            <td class="ps-3 req-num">ЗЯ-2480</td>
+            <td>Плановое ТО ВЛ-10кВ, участок Братск—Усть-Илимск</td>
+            <td>Обслуживание сетей</td>
+            <td>Усть-Илимск</td>
+            <td><span class="badge-pill badge-priority-medium">Средний</span></td>
+            <td><span class="badge-pill badge-status-new">Новая</span></td>
+            <td><span class="avatar-sm me-1">ГД</span> Гришин Д.О.</td>
+            <td>18.08.2026</td>
+            <td class="text-end pe-3">
+              <button class="action-icon-btn"><i class="bi bi-eye"></i></button>
+              <button class="action-icon-btn"><i class="bi bi-pencil"></i></button>
+            </td>
+          </tr>
+          <tr>
+            <td class="ps-3 req-num">ЗЯ-2479</td>
+            <td>Аварийное отключение на подстанции №3</td>
+            <td>Аварийная заявка</td>
+            <td>Иркутск</td>
+            <td><span class="badge-pill badge-priority-critical">Критический</span></td>
+            <td><span class="badge-pill badge-status-progress">В работе</span></td>
+            <td><span class="avatar-sm me-1">МС</span> Марков С.И.</td>
+            <td>07.08.2026</td>
+            <td class="text-end pe-3">
+              <button class="action-icon-btn"><i class="bi bi-eye"></i></button>
+              <button class="action-icon-btn"><i class="bi bi-pencil"></i></button>
+            </td>
+          </tr>
+          <tr>
+            <td class="ps-3 req-num">ЗЯ-2478</td>
+            <td>Монтаж кабельной линии 0.4кВ</td>
+            <td>Электромонтажные работы</td>
+            <td>Ангарск</td>
+            <td><span class="badge-pill badge-priority-medium">Средний</span></td>
+            <td><span class="badge-pill badge-status-review">На проверке</span></td>
+            <td><span class="avatar-sm me-1">ТЕ</span> Титова Е.В.</td>
+            <td>15.08.2026</td>
+            <td class="text-end pe-3">
+              <button class="action-icon-btn"><i class="bi bi-eye"></i></button>
+              <button class="action-icon-btn"><i class="bi bi-pencil"></i></button>
+            </td>
+          </tr>
+          <tr>
+            <td class="ps-3 req-num">ЗЯ-2477</td>
+            <td>Проверка изоляции трансформатора Т-2</td>
+            <td>Диагностика оборудования</td>
+            <td>Тимлюй</td>
+            <td><span class="badge-pill badge-priority-low">Низкий</span></td>
+            <td><span class="badge-pill badge-status-done">Выполнена</span></td>
+            <td><span class="avatar-sm me-1">СА</span> Соколов А.П.</td>
+            <td>02.08.2026</td>
+            <td class="text-end pe-3">
+              <button class="action-icon-btn"><i class="bi bi-eye"></i></button>
+              <button class="action-icon-btn"><i class="bi bi-pencil"></i></button>
+            </td>
+          </tr>
+          <tr>
+            <td class="ps-3 req-num">ЗЯ-2476</td>
+            <td>Ремонт опоры ЛЭП после грозового повреждения</td>
+            <td>Аварийная заявка</td>
+            <td>Усть-Кут</td>
+            <td><span class="badge-pill badge-priority-critical">Критический</span></td>
+            <td><span class="badge-pill badge-status-overdue">Просрочена</span></td>
+            <td><span class="avatar-sm me-1">ГД</span> Гришин Д.О.</td>
+            <td>04.08.2026</td>
+            <td class="text-end pe-3">
+              <button class="action-icon-btn"><i class="bi bi-eye"></i></button>
+              <button class="action-icon-btn"><i class="bi bi-pencil"></i></button>
+            </td>
+          </tr>
+          <tr>
+            <td class="ps-3 req-num">ЗЯ-2475</td>
+            <td>Технологическое присоединение нового объекта</td>
+            <td>Технологическое присоединение</td>
+            <td>Яракта</td>
+            <td><span class="badge-pill badge-priority-high">Высокий</span></td>
+            <td><span class="badge-pill badge-status-new">Новая</span></td>
+            <td><span class="avatar-sm me-1">КО</span> Кузнецова О.Р.</td>
+            <td>22.08.2026</td>
+            <td class="text-end pe-3">
+              <button class="action-icon-btn"><i class="bi bi-eye"></i></button>
+              <button class="action-icon-btn"><i class="bi bi-pencil"></i></button>
+            </td>
+          </tr>
+          <tr>
+            <td class="ps-3 req-num">ЗЯ-2474</td>
+            <td>Замена счётчика электроэнергии</td>
+            <td>Обслуживание сетей</td>
+            <td>Бохан</td>
+            <td><span class="badge-pill badge-priority-low">Низкий</span></td>
+            <td><span class="badge-pill badge-status-done">Выполнена</span></td>
+            <td><span class="avatar-sm me-1">МС</span> Марков С.И.</td>
+            <td>30.07.2026</td>
+            <td class="text-end pe-3">
+              <button class="action-icon-btn"><i class="bi bi-eye"></i></button>
+              <button class="action-icon-btn"><i class="bi bi-pencil"></i></button>
+            </td>
+          </tr>
+          <tr>
+            <td class="ps-3 req-num">ЗЯ-2473</td>
+            <td>Диагностика РЗА на подстанции</td>
+            <td>Диагностика оборудования</td>
+            <td>Краснокаменск</td>
+            <td><span class="badge-pill badge-priority-medium">Средний</span></td>
+            <td><span class="badge-pill badge-status-progress">В работе</span></td>
+            <td><span class="avatar-sm me-1">ТЕ</span> Титова Е.В.</td>
+            <td>19.08.2026</td>
+            <td class="text-end pe-3">
+              <button class="action-icon-btn"><i class="bi bi-eye"></i></button>
+              <button class="action-icon-btn"><i class="bi bi-pencil"></i></button>
+            </td>
+          </tr>
+          <tr>
+            <td class="ps-3 req-num">ЗЯ-2472</td>
+            <td>Плановый осмотр опор ВЛ-35кВ</td>
+            <td>Обслуживание сетей</td>
+            <td>Торей</td>
+            <td><span class="badge-pill badge-priority-low">Низкий</span></td>
+            <td><span class="badge-pill badge-status-done">Выполнена</span></td>
+            <td><span class="avatar-sm me-1">КО</span> Кузнецова О.Р.</td>
+            <td>28.07.2026</td>
+            <td class="text-end pe-3">
+              <button class="action-icon-btn"><i class="bi bi-eye"></i></button>
+              <button class="action-icon-btn"><i class="bi bi-pencil"></i></button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="d-flex justify-content-between align-items-center p-3 border-top">
+      <div class="text-secondary" style="font-size:13px;">Показано 1–10 из 128</div>
+      <nav>
+        <ul class="pagination pagination-sm mb-0">
+          <li class="page-item disabled"><a class="page-link" href="#">Назад</a></li>
+          <li class="page-item active"><a class="page-link" href="#">1</a></li>
+          <li class="page-item"><a class="page-link" href="#">2</a></li>
+          <li class="page-item"><a class="page-link" href="#">3</a></li>
+          <li class="page-item"><a class="page-link" href="#">…</a></li>
+          <li class="page-item"><a class="page-link" href="#">13</a></li>
+          <li class="page-item"><a class="page-link" href="#">Вперёд</a></li>
+        </ul>
+      </nav>
+    </div>
+  </div>
+</main>
+
+<div class="footer-bar">
+  Kit: Bootstrap v5.3.3 · CDN: cdn.jsdelivr.net/npm/bootstrap@5.3.3 · Icons: Bootstrap Icons v1.11.3
+</div>
+
+<!-- MODAL: New request -->
+<div class="modal fade" id="newRequestModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Новая заявка</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form>
+          <div class="mb-3">
+            <label class="form-label">Тема заявки <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" placeholder="Например: Замена автоматического выключателя на ТП-14" required>
+          </div>
+          <div class="row g-3 mb-3">
+            <div class="col-6">
+              <label class="form-label">Категория</label>
+              <select class="form-select">
+                <option>Электромонтажные работы</option>
+                <option>Обслуживание сетей</option>
+                <option>Аварийная заявка</option>
+                <option>Технологическое присоединение</option>
+                <option>Диагностика оборудования</option>
+              </select>
+            </div>
+            <div class="col-6">
+              <label class="form-label">Объект</label>
+              <select class="form-select">
+                <option>Братск</option>
+                <option>Усть-Илимск</option>
+                <option>Иркутск</option>
+                <option>Ангарск</option>
+                <option>Усть-Кут</option>
+                <option>Яракта</option>
+                <option>Бохан</option>
+                <option>Тимлюй</option>
+                <option>Краснокаменск</option>
+                <option>Торей</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label d-block">Приоритет</label>
+            <div class="btn-group priority-chip" role="group">
+              <input type="radio" class="btn-check" name="priority" id="p-low" autocomplete="off">
+              <label class="btn btn-outline-secondary" for="p-low">Низкий</label>
+              <input type="radio" class="btn-check" name="priority" id="p-medium" autocomplete="off">
+              <label class="btn btn-outline-secondary" for="p-medium">Средний</label>
+              <input type="radio" class="btn-check" name="priority" id="p-high" autocomplete="off" checked>
+              <label class="btn btn-outline-primary" for="p-high">Высокий</label>
+              <input type="radio" class="btn-check" name="priority" id="p-critical" autocomplete="off">
+              <label class="btn btn-outline-danger" for="p-critical">Критический</label>
+            </div>
+          </div>
+
+          <div class="row g-3 mb-3">
+            <div class="col-6">
+              <label class="form-label">Ответственный исполнитель</label>
+              <div class="dropdown exec-dropdown">
+                <button class="btn btn-outline-secondary w-100 d-flex align-items-center justify-content-between" type="button" data-bs-toggle="dropdown">
+                  <span class="d-flex align-items-center gap-2"><span class="avatar-sm">СА</span> Соколов А.П.</span>
+                  <i class="bi bi-chevron-down small"></i>
+                </button>
+                <ul class="dropdown-menu w-100">
+                  <li><a class="dropdown-item" href="#"><span class="avatar-sm">СА</span> Соколов А.П.</a></li>
+                  <li><a class="dropdown-item" href="#"><span class="avatar-sm">ГД</span> Гришин Д.О.</a></li>
+                  <li><a class="dropdown-item" href="#"><span class="avatar-sm">МС</span> Марков С.И.</a></li>
+                  <li><a class="dropdown-item" href="#"><span class="avatar-sm">ТЕ</span> Титова Е.В.</a></li>
+                  <li><a class="dropdown-item" href="#"><span class="avatar-sm">КО</span> Кузнецова О.Р.</a></li>
+                </ul>
+              </div>
+            </div>
+            <div class="col-6">
+              <label class="form-label">Срок выполнения</label>
+              <input type="date" class="form-control" value="2026-08-20">
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Описание заявки</label>
+            <textarea class="form-control" rows="3" placeholder="Опишите характер работ, адрес, особые условия…"></textarea>
+          </div>
+
+          <div class="mb-2">
+            <label class="form-label">Вложение</label>
+            <input type="file" class="form-control">
+            <div class="form-text">Прикрепить фото/схему</div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Отмена</button>
+        <button type="button" class="btn btn-primary">Создать заявку</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

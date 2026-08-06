@@ -1,0 +1,695 @@
+<meta charset="UTF-8">
+<title>Заявки — ЭнергоСетьСтрой (Fomantic-UI)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fomantic-ui@2.9.3/dist/semantic.min.css">
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/fomantic-ui@2.9.3/dist/semantic.min.js"></script>
+
+<style>
+  :root{
+    --bg-app:#F4F5F7;
+    --bg-surface:#FFFFFF;
+    --bg-dark:#101010;
+    --bg-dark-2:#1A1A1A;
+    --border:#E4E5E9;
+    --border-dark:rgba(255,255,255,.09);
+    --accent:#E07B3E;
+    --accent-hover:#C2632D;
+    --accent-tint:#FDEEE3;
+    --text-primary:#15161A;
+    --text-secondary:#6B6E76;
+    --text-onDark:#FFFFFF;
+    --text-onDark-muted:#9A9CA5;
+    --success:#2FA968;
+    --info:#3B82C4;
+    --purple:#8B6CC1;
+    --danger:#E4483D;
+    --warning:#F2B33D;
+    --low:#8A8D96;
+  }
+
+  *{box-sizing:border-box;}
+  html,body{
+    background:var(--bg-app);
+    font-family:'Inter',sans-serif;
+    color:var(--text-primary);
+    min-width:1280px;
+  }
+
+  h1,h2,h3,h4,h5,
+  .display,
+  .kpi-value,
+  .logo-word{
+    font-family:'Rajdhani',sans-serif;
+  }
+
+  .uppercase{text-transform:uppercase;letter-spacing:.02em;}
+
+  /* ============ LAYOUT ============ */
+  .app-shell{display:flex;flex-direction:column;min-height:100vh;}
+
+  .app-header{
+    height:64px;
+    background:var(--bg-dark);
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:0 24px;
+    position:sticky;
+    top:0;
+    z-index:200;
+    border-bottom:1px solid var(--border-dark);
+  }
+  .header-left{display:flex;align-items:center;gap:12px;}
+  .logo-mark{width:34px;height:34px;color:var(--accent);flex:none;}
+  .logo-word{
+    color:#fff;
+    font-weight:700;
+    font-size:15px;
+    line-height:.95;
+    text-transform:uppercase;
+    letter-spacing:.03em;
+  }
+  .header-center{flex:1;max-width:420px;margin:0 32px;}
+  .header-right{display:flex;align-items:center;gap:16px;}
+
+  .header-icon-btn{
+    background:transparent;
+    border:none;
+    color:var(--text-onDark-muted);
+    font-size:18px;
+    cursor:pointer;
+    position:relative;
+  }
+  .header-icon-btn:hover{color:#fff;}
+  .header-icon-btn .badge-dot{
+    position:absolute;top:-3px;right:-4px;
+    width:8px;height:8px;border-radius:50%;
+    background:var(--danger);
+    border:1.5px solid var(--bg-dark);
+  }
+
+  .user-chip{display:flex;align-items:center;gap:10px;}
+  .user-avatar{
+    width:34px;height:34px;border-radius:50%;
+    background:var(--accent-tint);color:var(--accent-hover);
+    display:flex;align-items:center;justify-content:center;
+    font-weight:700;font-family:'Rajdhani',sans-serif;font-size:14px;
+  }
+  .user-meta{line-height:1.2;}
+  .user-name{color:#fff;font-size:13px;font-weight:600;}
+  .user-role{color:var(--text-onDark-muted);font-size:11.5px;}
+
+  .body-row{display:flex;flex:1;}
+
+  .app-sidebar{
+    width:250px;
+    flex:none;
+    background:var(--bg-dark);
+    padding:18px 0;
+    border-right:1px solid var(--border-dark);
+  }
+  .sidebar-menu{
+    background:transparent !important;
+    border:none !important;
+    box-shadow:none !important;
+    border-radius:0 !important;
+  }
+  .sidebar-menu .item{
+    color:var(--text-onDark-muted) !important;
+    font-size:14px !important;
+    font-weight:500;
+    padding:11px 22px !important;
+    border-radius:0 !important;
+    display:flex !important;
+    align-items:center;
+    gap:12px;
+  }
+  .sidebar-menu .item i.icon{margin:0 !important;color:inherit;font-size:16px;}
+  .sidebar-menu .item:hover{
+    background:var(--bg-dark-2) !important;
+    color:#fff !important;
+  }
+  .sidebar-menu .item.active{
+    background:var(--accent-tint) !important;
+    color:var(--accent) !important;
+    font-weight:600;
+    border-right:3px solid var(--accent);
+  }
+  .sidebar-menu .item.active i.icon{color:var(--accent) !important;}
+
+  .app-content{
+    flex:1;
+    padding:28px 32px 60px;
+    background:var(--bg-app);
+    min-width:0;
+  }
+
+  .page-head{margin-bottom:22px;}
+  .page-head .crumb{color:var(--text-secondary);font-size:13px;margin-bottom:6px;}
+  .page-head .crumb .divider{margin:0 6px;}
+  .page-title{
+    font-size:26px;
+    font-weight:700;
+    text-transform:uppercase;
+    letter-spacing:.02em;
+    color:var(--text-primary);
+  }
+
+  /* ============ KPI CARDS ============ */
+  .kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px;}
+  .kpi-card{
+    background:var(--bg-surface);
+    border:1px solid var(--border);
+    border-radius:12px !important;
+    box-shadow:0 1px 2px rgba(16,16,16,.06), 0 8px 24px rgba(16,16,16,.06) !important;
+    padding:18px 20px !important;
+  }
+  .kpi-label{font-size:12.5px;color:var(--text-secondary);font-weight:600;text-transform:uppercase;letter-spacing:.03em;margin-bottom:8px;}
+  .kpi-value{font-size:34px;font-weight:700;line-height:1;}
+  .kpi-value.c-total{color:var(--text-primary);}
+  .kpi-value.c-progress{color:var(--accent);}
+  .kpi-value.c-done{color:var(--success);}
+  .kpi-value.c-overdue{color:var(--danger);}
+
+  /* ============ TOOLBAR ============ */
+  .toolbar{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin-bottom:16px;
+    flex-wrap:wrap;
+  }
+  .toolbar .ui.input{min-width:280px;}
+  .toolbar .ui.selection.dropdown{min-width:150px !important;}
+  .toolbar-spacer{flex:1;}
+
+  /* ============ TABLE CARD ============ */
+  .table-card{
+    background:var(--bg-surface);
+    border:1px solid var(--border);
+    border-radius:12px;
+    box-shadow:0 1px 2px rgba(16,16,16,.06), 0 8px 24px rgba(16,16,16,.06);
+    overflow:hidden;
+  }
+  table.requests-table{border:none !important; margin:0 !important;}
+  table.requests-table thead th{
+    background:var(--bg-surface) !important;
+    color:var(--text-secondary) !important;
+    font-size:11.5px !important;
+    text-transform:uppercase;
+    letter-spacing:.03em;
+    font-weight:700 !important;
+    border-bottom:1px solid var(--border) !important;
+  }
+  table.requests-table tbody td{
+    font-size:13.5px;
+    color:var(--text-primary);
+    border-top:1px solid var(--border) !important;
+    vertical-align:middle !important;
+  }
+  table.requests-table tbody tr:hover{background:var(--accent-tint) !important;}
+  .req-id{font-family:'Rajdhani',sans-serif;font-weight:700;color:var(--text-secondary);}
+  .req-topic{font-weight:600;}
+  .req-sub{color:var(--text-secondary);font-size:12px;}
+
+  .avatar-cell{display:flex;align-items:center;gap:8px;}
+  .mini-avatar{
+    width:26px;height:26px;border-radius:50%;
+    background:var(--accent-tint);color:var(--accent-hover);
+    display:flex;align-items:center;justify-content:center;
+    font-weight:700;font-family:'Rajdhani',sans-serif;font-size:11px;flex:none;
+  }
+
+  /* badges */
+  .ui.label.badge-pill{
+    border-radius:999px !important;
+    font-weight:600 !important;
+    font-size:11.5px !important;
+    padding:.45em .9em !important;
+    border:none !important;
+    box-shadow:none !important;
+  }
+  .badge-priority-critical{background:#FCE7E5 !important;color:var(--danger) !important;}
+  .badge-priority-high{background:var(--accent-tint) !important;color:var(--accent-hover) !important;}
+  .badge-priority-medium{background:#FDF3E0 !important;color:#B8801F !important;}
+  .badge-priority-low{background:#EEEEF0 !important;color:var(--low) !important;}
+
+  .ui.label.badge-status{
+    border-radius:8px !important;
+    font-weight:600 !important;
+    font-size:11.5px !important;
+    padding:.5em .8em !important;
+    border:none !important;
+    box-shadow:none !important;
+    display:inline-flex !important;align-items:center;gap:6px;
+  }
+  .badge-status:before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor;display:inline-block;}
+  .status-new{background:#E7F1FA !important;color:var(--info) !important;}
+  .status-progress{background:var(--accent-tint) !important;color:var(--accent-hover) !important;}
+  .status-review{background:#F1ECFA !important;color:var(--purple) !important;}
+  .status-done{background:#E6F6ED !important;color:var(--success) !important;}
+  .status-overdue{background:#FCE7E5 !important;color:var(--danger) !important;}
+
+  .action-icons{display:flex;gap:14px;}
+  .action-icons i.icon{cursor:pointer;color:var(--text-secondary);}
+  .action-icons i.icon:hover{color:var(--accent);}
+
+  .table-footer{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:14px 20px;border-top:1px solid var(--border);
+  }
+  .table-footer .result-count{color:var(--text-secondary);font-size:12.5px;}
+
+  /* ============ PRIMARY OVERRIDES (accent recolor) ============ */
+  .ui.primary.button{background:var(--accent) !important;color:#fff !important;}
+  .ui.primary.button:hover,.ui.primary.button:focus{background:var(--accent-hover) !important;}
+  .ui.button{border-radius:8px !important;font-family:'Inter',sans-serif;font-weight:600;}
+  .ui.basic.button{color:var(--text-secondary) !important;box-shadow:0 0 0 1px var(--border) inset !important;}
+
+  .ui.selection.dropdown,.ui.input>input,textarea{border-radius:8px !important;}
+  .ui.selection.active.dropdown,.ui.selection.dropdown:focus,
+  .ui.input.focus>input,.ui.input>input:focus,
+  textarea:focus{border-color:var(--accent) !important;}
+  .ui.selection.dropdown .menu .item.selected,
+  .ui.selection.dropdown .menu .item.active.selected{background:var(--accent-tint) !important;color:var(--accent-hover) !important;}
+  .ui.dropdown .menu>.item:hover{background:var(--accent-tint) !important;}
+
+  .ui.radio.checkbox input:checked~.box:before,
+  .ui.radio.checkbox input:checked~label:before{border-color:var(--accent) !important;}
+  .ui.radio.checkbox input:checked~.box:after,
+  .ui.radio.checkbox input:checked~label:after{background:var(--accent) !important;}
+  .ui.checkbox input:checked~.box:before,
+  .ui.checkbox input:checked~label:before{background:var(--accent) !important;border-color:var(--accent) !important;}
+
+  .ui.buttons .button.priority-active{background:var(--accent) !important;color:#fff !important;}
+
+  .ui.pagination.menu .item.active{background:var(--accent) !important;color:#fff !important;}
+  .ui.pagination.menu a.item:hover{color:var(--accent) !important;}
+
+  .ui.modal>.header{font-family:'Rajdhani',sans-serif;text-transform:uppercase;letter-spacing:.02em;font-weight:700 !important;}
+  .ui.modal{border-radius:12px !important;}
+  .ui.modal>.actions{background:var(--bg-surface) !important;}
+
+  .required-star{color:var(--danger);margin-left:2px;}
+
+  .footer-bar{
+    padding:14px 32px 20px;
+    color:#9A9CA5;
+    font-size:11.5px;
+    background:var(--bg-app);
+  }
+</style>
+
+<div class="app-shell">
+  <!-- ===================== HEADER ===================== -->
+  <header class="app-header">
+    <div class="header-left">
+      <svg class="logo-mark" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <circle cx="50" cy="50" r="42" fill="none" stroke="currentColor" stroke-width="7" stroke-dasharray="240 24" stroke-linecap="round"/>
+        <circle cx="50" cy="50" r="27" fill="none" stroke="currentColor" stroke-width="7" stroke-dasharray="148 22" stroke-linecap="round" transform="rotate(35 50 50)"/>
+      </svg>
+      <div class="logo-word">ЭНЕРГО<br>СЕТЬСТРОЙ</div>
+    </div>
+
+    <div class="header-center">
+      <div class="ui icon input fluid">
+        <input type="text" placeholder="Поиск по номеру, теме, объекту…">
+        <i class="search icon"></i>
+      </div>
+    </div>
+
+    <div class="header-right">
+      <button class="header-icon-btn" aria-label="Уведомления">
+        <i class="bell outline icon"></i>
+        <span class="badge-dot"></span>
+      </button>
+      <button class="ui primary button" id="btn-new-request-header">
+        <i class="plus icon"></i> Новая заявка
+      </button>
+      <div class="user-chip">
+        <div class="user-avatar">СА</div>
+        <div class="user-meta">
+          <div class="user-name">Соколов А.П.</div>
+          <div class="user-role">Диспетчер участка</div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="body-row">
+    <!-- ===================== SIDEBAR ===================== -->
+    <aside class="app-sidebar">
+      <div class="ui vertical inverted menu fluid sidebar-menu">
+        <a class="item"><i class="tachometer alternate icon"></i>Дашборд</a>
+        <a class="item active"><i class="clipboard list icon"></i>Заявки</a>
+        <a class="item"><i class="building outline icon"></i>Объекты</a>
+        <a class="item"><i class="users icon"></i>Исполнители</a>
+        <a class="item"><i class="chart bar outline icon"></i>Отчёты</a>
+        <a class="item"><i class="cog icon"></i>Настройки</a>
+      </div>
+    </aside>
+
+    <!-- ===================== CONTENT ===================== -->
+    <main class="app-content">
+      <div class="page-head">
+        <div class="crumb">Главная <span class="divider">/</span> <span style="color:var(--text-primary);font-weight:600;">Заявки</span></div>
+        <h1 class="page-title">Заявки</h1>
+      </div>
+
+      <!-- KPI cards -->
+      <div class="kpi-row">
+        <div class="ui card kpi-card">
+          <div class="kpi-label">Всего заявок</div>
+          <div class="kpi-value c-total">128</div>
+        </div>
+        <div class="ui card kpi-card">
+          <div class="kpi-label">В работе</div>
+          <div class="kpi-value c-progress">34</div>
+        </div>
+        <div class="ui card kpi-card">
+          <div class="kpi-label">Выполнено</div>
+          <div class="kpi-value c-done">81</div>
+        </div>
+        <div class="ui card kpi-card">
+          <div class="kpi-label">Просрочено</div>
+          <div class="kpi-value c-overdue">7</div>
+        </div>
+      </div>
+
+      <!-- Toolbar -->
+      <div class="toolbar">
+        <div class="ui icon input">
+          <input type="text" placeholder="Поиск по номеру, теме, объекту…">
+          <i class="search icon"></i>
+        </div>
+
+        <select class="ui selection dropdown" id="filter-status">
+          <option value="">Статус: Все</option>
+          <option value="new">Новая</option>
+          <option value="progress">В работе</option>
+          <option value="review">На проверке</option>
+          <option value="done">Выполнена</option>
+          <option value="overdue">Просрочена</option>
+        </select>
+
+        <select class="ui selection dropdown" id="filter-priority">
+          <option value="">Приоритет: Все</option>
+          <option value="low">Низкий</option>
+          <option value="medium">Средний</option>
+          <option value="high">Высокий</option>
+          <option value="critical">Критический</option>
+        </select>
+
+        <select class="ui selection dropdown" id="filter-object">
+          <option value="">Объект: Все</option>
+          <option>Братск</option>
+          <option>Усть-Илимск</option>
+          <option>Иркутск</option>
+          <option>Ангарск</option>
+          <option>Усть-Кут</option>
+          <option>Яракта</option>
+          <option>Бохан</option>
+          <option>Тимлюй</option>
+          <option>Краснокаменск</option>
+          <option>Торей</option>
+        </select>
+
+        <div class="toolbar-spacer"></div>
+
+        <button class="ui primary button" id="btn-new-request-toolbar">
+          <i class="plus icon"></i> Новая заявка
+        </button>
+      </div>
+
+      <!-- Table -->
+      <div class="table-card">
+        <table class="ui very basic table requests-table">
+          <thead>
+            <tr>
+              <th>№</th>
+              <th>Тема заявки</th>
+              <th>Категория</th>
+              <th>Объект</th>
+              <th>Приоритет</th>
+              <th>Статус</th>
+              <th>Исполнитель</th>
+              <th>Срок</th>
+              <th>Действия</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="req-id">ЗЯ-2481</td>
+              <td><div class="req-topic">Замена автоматического выключателя на ТП-14</div></td>
+              <td>Электромонтажные работы</td>
+              <td>Братск</td>
+              <td><span class="ui label badge-pill badge-priority-high">Высокий</span></td>
+              <td><span class="ui label badge-status status-progress">В работе</span></td>
+              <td><div class="avatar-cell"><span class="mini-avatar">СА</span>Соколов А.П.</div></td>
+              <td>12.08.2026</td>
+              <td><div class="action-icons"><i class="eye icon"></i><i class="edit outline icon"></i></div></td>
+            </tr>
+            <tr>
+              <td class="req-id">ЗЯ-2480</td>
+              <td><div class="req-topic">Плановое ТО ВЛ-10кВ, участок Братск—Усть-Илимск</div></td>
+              <td>Обслуживание сетей</td>
+              <td>Усть-Илимск</td>
+              <td><span class="ui label badge-pill badge-priority-medium">Средний</span></td>
+              <td><span class="ui label badge-status status-new">Новая</span></td>
+              <td><div class="avatar-cell"><span class="mini-avatar">ГД</span>Гришин Д.О.</div></td>
+              <td>18.08.2026</td>
+              <td><div class="action-icons"><i class="eye icon"></i><i class="edit outline icon"></i></div></td>
+            </tr>
+            <tr>
+              <td class="req-id">ЗЯ-2479</td>
+              <td><div class="req-topic">Аварийное отключение на подстанции №3</div></td>
+              <td>Аварийная заявка</td>
+              <td>Иркутск</td>
+              <td><span class="ui label badge-pill badge-priority-critical">Критический</span></td>
+              <td><span class="ui label badge-status status-progress">В работе</span></td>
+              <td><div class="avatar-cell"><span class="mini-avatar">МС</span>Марков С.И.</div></td>
+              <td>07.08.2026</td>
+              <td><div class="action-icons"><i class="eye icon"></i><i class="edit outline icon"></i></div></td>
+            </tr>
+            <tr>
+              <td class="req-id">ЗЯ-2478</td>
+              <td><div class="req-topic">Монтаж кабельной линии 0.4кВ</div></td>
+              <td>Электромонтажные работы</td>
+              <td>Ангарск</td>
+              <td><span class="ui label badge-pill badge-priority-medium">Средний</span></td>
+              <td><span class="ui label badge-status status-review">На проверке</span></td>
+              <td><div class="avatar-cell"><span class="mini-avatar">ТЕ</span>Титова Е.В.</div></td>
+              <td>15.08.2026</td>
+              <td><div class="action-icons"><i class="eye icon"></i><i class="edit outline icon"></i></div></td>
+            </tr>
+            <tr>
+              <td class="req-id">ЗЯ-2477</td>
+              <td><div class="req-topic">Проверка изоляции трансформатора Т-2</div></td>
+              <td>Диагностика оборудования</td>
+              <td>Тимлюй</td>
+              <td><span class="ui label badge-pill badge-priority-low">Низкий</span></td>
+              <td><span class="ui label badge-status status-done">Выполнена</span></td>
+              <td><div class="avatar-cell"><span class="mini-avatar">СА</span>Соколов А.П.</div></td>
+              <td>02.08.2026</td>
+              <td><div class="action-icons"><i class="eye icon"></i><i class="edit outline icon"></i></div></td>
+            </tr>
+            <tr>
+              <td class="req-id">ЗЯ-2476</td>
+              <td><div class="req-topic">Ремонт опоры ЛЭП после грозового повреждения</div></td>
+              <td>Аварийная заявка</td>
+              <td>Усть-Кут</td>
+              <td><span class="ui label badge-pill badge-priority-critical">Критический</span></td>
+              <td><span class="ui label badge-status status-overdue">Просрочена</span></td>
+              <td><div class="avatar-cell"><span class="mini-avatar">ГД</span>Гришин Д.О.</div></td>
+              <td>04.08.2026</td>
+              <td><div class="action-icons"><i class="eye icon"></i><i class="edit outline icon"></i></div></td>
+            </tr>
+            <tr>
+              <td class="req-id">ЗЯ-2475</td>
+              <td><div class="req-topic">Технологическое присоединение нового объекта</div></td>
+              <td>Технологическое присоединение</td>
+              <td>Яракта</td>
+              <td><span class="ui label badge-pill badge-priority-high">Высокий</span></td>
+              <td><span class="ui label badge-status status-new">Новая</span></td>
+              <td><div class="avatar-cell"><span class="mini-avatar">КО</span>Кузнецова О.Р.</div></td>
+              <td>22.08.2026</td>
+              <td><div class="action-icons"><i class="eye icon"></i><i class="edit outline icon"></i></div></td>
+            </tr>
+            <tr>
+              <td class="req-id">ЗЯ-2474</td>
+              <td><div class="req-topic">Замена счётчика электроэнергии</div></td>
+              <td>Обслуживание сетей</td>
+              <td>Бохан</td>
+              <td><span class="ui label badge-pill badge-priority-low">Низкий</span></td>
+              <td><span class="ui label badge-status status-done">Выполнена</span></td>
+              <td><div class="avatar-cell"><span class="mini-avatar">МС</span>Марков С.И.</div></td>
+              <td>30.07.2026</td>
+              <td><div class="action-icons"><i class="eye icon"></i><i class="edit outline icon"></i></div></td>
+            </tr>
+            <tr>
+              <td class="req-id">ЗЯ-2473</td>
+              <td><div class="req-topic">Диагностика РЗА на подстанции</div></td>
+              <td>Диагностика оборудования</td>
+              <td>Краснокаменск</td>
+              <td><span class="ui label badge-pill badge-priority-medium">Средний</span></td>
+              <td><span class="ui label badge-status status-progress">В работе</span></td>
+              <td><div class="avatar-cell"><span class="mini-avatar">ТЕ</span>Титова Е.В.</div></td>
+              <td>19.08.2026</td>
+              <td><div class="action-icons"><i class="eye icon"></i><i class="edit outline icon"></i></div></td>
+            </tr>
+            <tr>
+              <td class="req-id">ЗЯ-2472</td>
+              <td><div class="req-topic">Плановый осмотр опор ВЛ-35кВ</div></td>
+              <td>Обслуживание сетей</td>
+              <td>Торей</td>
+              <td><span class="ui label badge-pill badge-priority-low">Низкий</span></td>
+              <td><span class="ui label badge-status status-done">Выполнена</span></td>
+              <td><div class="avatar-cell"><span class="mini-avatar">КО</span>Кузнецова О.Р.</div></td>
+              <td>28.07.2026</td>
+              <td><div class="action-icons"><i class="eye icon"></i><i class="edit outline icon"></i></div></td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="table-footer">
+          <div class="result-count">Показано 10 из 128 заявок</div>
+          <div class="ui pagination menu" style="box-shadow:none;border:1px solid var(--border);">
+            <a class="icon item"><i class="left chevron icon"></i></a>
+            <a class="item active">1</a>
+            <a class="item">2</a>
+            <a class="item">3</a>
+            <a class="item">…</a>
+            <a class="item">13</a>
+            <a class="icon item"><i class="right chevron icon"></i></a>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <div class="footer-bar">
+    Kit: Fomantic-UI v2.9.3 · CDN: cdn.jsdelivr.net/npm/fomantic-ui@2.9.3, cdn.jsdelivr.net/npm/jquery@3.7.1 · Icons: Semantic UI Icons (встроенный иконочный шрифт Fomantic)
+  </div>
+</div>
+
+<!-- ===================== MODAL: NEW REQUEST ===================== -->
+<div class="ui modal" id="modal-new-request">
+  <div class="header">Новая заявка</div>
+  <div class="content">
+    <form class="ui form">
+      <div class="field">
+        <label>Тема заявки<span class="required-star">*</span></label>
+        <input type="text" placeholder="Например: Замена автоматического выключателя на ТП-14">
+      </div>
+
+      <div class="two fields">
+        <div class="field">
+          <label>Категория</label>
+          <select class="ui selection dropdown">
+            <option value="">Выберите категорию</option>
+            <option>Электромонтажные работы</option>
+            <option>Обслуживание сетей</option>
+            <option>Аварийная заявка</option>
+            <option>Технологическое присоединение</option>
+            <option>Диагностика оборудования</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Объект</label>
+          <select class="ui selection dropdown">
+            <option value="">Выберите объект</option>
+            <option>Братск</option>
+            <option>Усть-Илимск</option>
+            <option>Иркутск</option>
+            <option>Ангарск</option>
+            <option>Усть-Кут</option>
+            <option>Яракта</option>
+            <option>Бохан</option>
+            <option>Тимлюй</option>
+            <option>Краснокаменск</option>
+            <option>Торей</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Приоритет</label>
+        <div class="ui four buttons" id="priority-buttons">
+          <button type="button" class="ui button" data-priority="low">Низкий</button>
+          <button type="button" class="ui button" data-priority="medium">Средний</button>
+          <button type="button" class="ui button priority-active" data-priority="high">Высокий</button>
+          <button type="button" class="ui button" data-priority="critical">Критический</button>
+        </div>
+      </div>
+
+      <div class="two fields">
+        <div class="field">
+          <label>Ответственный исполнитель</label>
+          <select class="ui selection dropdown">
+            <option value="">Выберите исполнителя</option>
+            <option>Соколов А.П.</option>
+            <option>Гришин Д.О.</option>
+            <option>Марков С.И.</option>
+            <option>Титова Е.В.</option>
+            <option>Кузнецова О.Р.</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Срок выполнения</label>
+          <div class="ui icon input">
+            <input type="date" value="2026-08-20">
+            <i class="calendar alternate outline icon"></i>
+          </div>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Описание заявки</label>
+        <textarea rows="4" placeholder="Опишите характер работ, адрес, особые условия…"></textarea>
+      </div>
+
+      <div class="field">
+        <label>Вложение</label>
+        <div class="ui action input attachment-input" style="width:100%;">
+          <input type="text" id="attachment-filename" placeholder="Файл не выбран" readonly>
+          <button type="button" class="ui basic icon button" id="attachment-trigger">
+            <i class="paperclip icon"></i> Прикрепить фото/схему
+          </button>
+          <input type="file" id="attachment-file" accept="image/*,.pdf" style="display:none;">
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="actions">
+    <div class="ui basic button">Отмена</div>
+    <div class="ui primary button">Создать заявку</div>
+  </div>
+</div>
+
+<script>
+  $(function () {
+    $('.ui.selection.dropdown').dropdown();
+    $('.ui.checkbox').checkbox();
+
+    $('#btn-new-request-header, #btn-new-request-toolbar').on('click', function () {
+      $('#modal-new-request').modal('show');
+    });
+
+    $('#priority-buttons .button').on('click', function () {
+      $('#priority-buttons .button').removeClass('priority-active');
+      $(this).addClass('priority-active');
+    });
+
+    $('#attachment-trigger').on('click', function () {
+      $('#attachment-file').trigger('click');
+    });
+    $('#attachment-file').on('change', function () {
+      var name = this.files && this.files[0] ? this.files[0].name : '';
+      $('#attachment-filename').val(name);
+    });
+  });
+</script>
