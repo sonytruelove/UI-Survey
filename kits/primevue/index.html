@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Заявки — ЭнергоСетьСтрой (PrimeVue 4)</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/primeicons/primeicons.css" />
+
+<!--
+  PrimeVue 4 ships ESM-only (no UMD/global browser bundle), so a plain <script src="..."> tag
+  is not possible without a bundler. We use native browser ES module imports + an import map,
+  resolved through esm.sh (which pre-bundles each package's internal bare-specifier imports into
+  valid ESM for the browser). `?external=vue` tells esm.sh to keep "vue" as a bare import that we
+  then resolve ourselves via the import map below, so every package shares one single Vue runtime
+  instance instead of each pulling its own copy.
+-->
+<script type="importmap">
+{
+  "imports": {
+    "vue": "https://esm.sh/vue@3.4.31",
+    "primevue/config": "https://esm.sh/primevue@4/config?external=vue",
+    "primevue/button": "https://esm.sh/primevue@4/button?external=vue",
+    "primevue/card": "https://esm.sh/primevue@4/card?external=vue",
+    "primevue/datatable": "https://esm.sh/primevue@4/datatable?external=vue",
+    "primevue/column": "https://esm.sh/primevue@4/column?external=vue",
+    "primevue/tag": "https://esm.sh/primevue@4/tag?external=vue",
+    "primevue/avatar": "https://esm.sh/primevue@4/avatar?external=vue",
+    "primevue/badge": "https://esm.sh/primevue@4/badge?external=vue",
+    "primevue/dialog": "https://esm.sh/primevue@4/dialog?external=vue",
+    "primevue/select": "https://esm.sh/primevue@4/select?external=vue",
+    "primevue/datepicker": "https://esm.sh/primevue@4/datepicker?external=vue",
+    "primevue/inputtext": "https://esm.sh/primevue@4/inputtext?external=vue",
+    "primevue/textarea": "https://esm.sh/primevue@4/textarea?external=vue",
+    "primevue/fileupload": "https://esm.sh/primevue@4/fileupload?external=vue",
+    "primevue/toolbar": "https://esm.sh/primevue@4/toolbar?external=vue",
+    "primevue/selectbutton": "https://esm.sh/primevue@4/selectbutton?external=vue",
+    "primevue/inputicon": "https://esm.sh/primevue@4/inputicon?external=vue",
+    "primevue/iconfield": "https://esm.sh/primevue@4/iconfield?external=vue",
+    "@primevue/themes": "https://esm.sh/@primevue/themes@4?external=vue",
+    "@primevue/themes/aura": "https://esm.sh/@primevue/themes@4/aura?external=vue"
+  }
+}
+</script>
+
+<style>
+  :root{
+    --bg-app:#F4F5F7; --bg-surface:#FFFFFF; --bg-dark:#101010; --bg-dark-2:#1A1A1A;
+    --border:#E4E5E9; --border-dark:rgba(255,255,255,.09);
+    --accent:#E07B3E; --accent-hover:#C2632D; --accent-tint:#FDEEE3;
+    --text-primary:#15161A; --text-secondary:#6B6E76; --text-onDark:#FFFFFF; --text-onDark-muted:#9A9CA5;
+    --success:#2FA968; --info:#3B82C4; --purple:#8B6CC1; --danger:#E4483D; --warning:#F2B33D;
+  }
+  *{ box-sizing:border-box; }
+  html, body{ margin:0; padding:0; background:var(--bg-app); font-family:'Inter',sans-serif; color:var(--text-primary); }
+  #app{ display:flex; flex-direction:column; min-height:100vh; }
+  .display-font{ font-family:'Rajdhani',sans-serif; font-weight:700; text-transform:uppercase; letter-spacing:.02em; }
+
+  /* ---- Shell ---- */
+  .app-header{ height:64px; background:var(--bg-dark); display:flex; align-items:center; padding:0 20px; border-bottom:1px solid var(--border-dark); flex-shrink:0; }
+  .app-body{ display:flex; flex:1; }
+  .app-aside{ width:250px; flex-shrink:0; background:var(--bg-dark); border-right:1px solid var(--border-dark); padding-top:14px; }
+  .app-main{ flex:1; background:var(--bg-app); padding:28px 32px; }
+
+  .brand-logo-wrap{ display:flex; align-items:center; gap:12px; width:230px; flex-shrink:0; }
+  .brand-logo-icon{ width:34px; height:34px; color:var(--accent); flex-shrink:0; }
+  .brand-wordmark{ font-family:'Rajdhani',sans-serif; font-weight:700; color:#fff; line-height:.95; letter-spacing:.03em; font-size:15px; text-transform:uppercase; }
+  .brand-wordmark span{ display:block; }
+  .brand-wordmark .sub{ color:var(--text-onDark-muted); font-size:13px; }
+
+  .header-search .p-inputtext{ background:#1A1A1A; border-color:var(--border-dark); color:#fff; }
+  .header-search .p-inputtext::placeholder{ color:var(--text-onDark-muted); }
+
+  .nav-item{ display:flex; align-items:center; gap:10px; padding:10px 14px; margin:2px 10px; border-radius:8px; color:var(--text-onDark-muted); font-size:14px; cursor:pointer; text-decoration:none; }
+  .nav-item i{ font-size:16px; }
+  .nav-item:hover{ background:var(--bg-dark-2); }
+  .nav-item.active{ background:rgba(224,123,62,.14); color:var(--accent); font-weight:600; }
+
+  .bell-wrap{ position:relative; display:inline-flex; margin-right:16px; }
+  .bell-wrap .p-badge{ position:absolute; top:-4px; right:-4px; }
+
+  h1.page-title{ font-family:'Rajdhani',sans-serif; font-weight:700; text-transform:uppercase; letter-spacing:.02em; font-size:26px; margin:0 0 20px; }
+  .breadcrumb-note{ font-size:12px; color:var(--text-secondary); margin-bottom:4px; }
+
+  .kpi-grid{ display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:16px; }
+  .kpi-number{ font-family:'Rajdhani',sans-serif; font-weight:700; font-size:34px; line-height:1; }
+  .kpi-label{ font-family:'Inter',sans-serif; color:var(--text-secondary); font-size:13px; font-weight:500; margin-top:2px; }
+  .kpi-icon-box{ width:44px; height:44px; border-radius:10px; display:flex; align-items:center; justify-content:center; }
+
+  .p-card{ border-radius:12px !important; border:1px solid var(--border); box-shadow:0 1px 2px rgba(16,16,16,.06), 0 8px 24px rgba(16,16,16,.06) !important; }
+  .p-dialog{ border-radius:12px !important; }
+  .p-toolbar{ border-radius:0 !important; border:none !important; border-bottom:1px solid var(--border) !important; background:transparent !important; padding:16px !important; flex-wrap:wrap; gap:12px; }
+
+  .table-card{ padding:0; }
+  .table-card .p-card-body{ padding:0 !important; }
+  .table-card .p-card-content{ padding:0 !important; }
+
+  .executor-cell{ display:flex; align-items:center; gap:8px; }
+  .avatar-initials{ font-size:11px; font-weight:600; color:#fff; }
+
+  .footer-note{ font-size:11px; color:#9a9ca5; padding:12px 24px; text-align:center; border-top:1px solid var(--border); background:var(--bg-surface); }
+
+  .field-label{ font-size:12px; color:var(--text-secondary); margin-bottom:6px; font-weight:500; display:block; }
+  .form-field{ margin-bottom:16px; }
+  .form-actions{ display:flex; justify-content:flex-end; gap:8px; }
+  .p-select, .p-datepicker, .p-inputtext, .p-textarea{ width:100%; }
+
+  option-row{ display:flex; align-items:center; gap:8px; }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- HEADER -->
+  <header class="app-header">
+    <div class="brand-logo-wrap">
+      <svg class="brand-logo-icon" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <circle cx="50" cy="50" r="42" fill="none" stroke="currentColor" stroke-width="7" stroke-dasharray="240 24" stroke-linecap="round"/>
+        <circle cx="50" cy="50" r="27" fill="none" stroke="currentColor" stroke-width="7" stroke-dasharray="148 22" stroke-linecap="round" transform="rotate(35 50 50)"/>
+      </svg>
+      <div class="brand-wordmark"><span>Энерго</span><span class="sub">СетьСтрой</span></div>
+    </div>
+
+    <div class="header-search" style="margin-left:24px; width:340px;">
+      <IconField>
+        <InputIcon class="pi pi-search" />
+        <InputText v-model="search" placeholder="Поиск по номеру, теме, объекту…" style="width:100%;" />
+      </IconField>
+    </div>
+
+    <div style="flex:1;"></div>
+
+    <div class="bell-wrap">
+      <Button icon="pi pi-bell" text rounded style="color:#fff;" />
+      <Badge value="3" severity="danger"></Badge>
+    </div>
+
+    <Button label="Новая заявка" icon="pi pi-plus" style="margin-right:20px;" @click="dialogVisible=true"></Button>
+
+    <div style="display:flex; align-items:center; gap:10px; margin-right:8px;">
+      <Avatar label="ИП" shape="circle" style="background:#2A2A2A; color:#fff; font-size:12px; font-weight:600;"></Avatar>
+      <div style="line-height:1.2;">
+        <div style="font-size:13px; font-weight:600; color:#fff;">Ионов П. С.</div>
+        <div style="font-size:11px; color:var(--text-onDark-muted);">Диспетчер заявок</div>
+      </div>
+    </div>
+  </header>
+
+  <div class="app-body">
+    <!-- SIDEBAR -->
+    <aside class="app-aside">
+      <a class="nav-item" v-for="item in navItems" :key="item.label" :class="{active: item.active}">
+        <i :class="item.icon"></i><span>{{ item.label }}</span>
+      </a>
+    </aside>
+
+    <!-- CONTENT -->
+    <main class="app-main">
+      <div class="breadcrumb-note">Главная / Заявки</div>
+      <h1 class="page-title">Заявки</h1>
+
+      <div class="kpi-grid">
+        <Card v-for="kpi in kpis" :key="kpi.label">
+          <template #content>
+            <div style="display:flex; align-items:center; justify-content:space-between;">
+              <div>
+                <div class="kpi-number" :style="{color: kpi.color}">{{ kpi.value }}</div>
+                <div class="kpi-label">{{ kpi.label }}</div>
+              </div>
+              <div class="kpi-icon-box" :style="{background: kpi.tint}">
+                <i :class="kpi.icon" :style="{color: kpi.color, fontSize:'20px'}"></i>
+              </div>
+            </div>
+          </template>
+        </Card>
+      </div>
+
+      <Card class="table-card">
+        <template #content>
+          <Toolbar>
+            <template #start>
+              <IconField style="margin-right:12px;">
+                <InputIcon class="pi pi-search" />
+                <InputText v-model="search" placeholder="Поиск по номеру, теме, объекту…" style="width:240px;" />
+              </IconField>
+              <Select v-model="filterStatus" :options="statusOptions" placeholder="Статус" style="width:150px; margin-right:8px;" />
+              <Select v-model="filterPriority" :options="priorityFilterOptions" placeholder="Приоритет" style="width:150px; margin-right:8px;" />
+              <Select v-model="filterObject" :options="objectFilterOptions" placeholder="Объект" style="width:150px;" />
+            </template>
+            <template #end>
+              <Button label="Новая заявка" icon="pi pi-plus" @click="dialogVisible=true"></Button>
+            </template>
+          </Toolbar>
+
+          <DataTable :value="filteredRequests" paginator :rows="8" tableStyle="min-width:60rem" removableSort>
+            <Column field="id" header="№" style="width:100px;"></Column>
+            <Column field="topic" header="Тема заявки" style="min-width:260px;"></Column>
+            <Column field="category" header="Категория"></Column>
+            <Column field="object" header="Объект"></Column>
+            <Column header="Приоритет" style="width:130px;">
+              <template #body="{ data }">
+                <Tag :value="data.priority" :style="{background: priorityColor(data.priority), color:'#fff', border:'none'}" rounded></Tag>
+              </template>
+            </Column>
+            <Column header="Статус" style="width:140px;">
+              <template #body="{ data }">
+                <Tag :value="data.status" :style="statusTagStyle(data.status)"></Tag>
+              </template>
+            </Column>
+            <Column header="Исполнитель" style="width:180px;">
+              <template #body="{ data }">
+                <div class="executor-cell">
+                  <Avatar :label="initials(data.executor)" shape="circle" size="normal" :style="{background: avatarColor(data.executor), width:'26px', height:'26px', fontSize:'11px'}" class="avatar-initials"></Avatar>
+                  <span style="font-size:13px;">{{ data.executor }}</span>
+                </div>
+              </template>
+            </Column>
+            <Column field="due" header="Срок" style="width:110px;"></Column>
+            <Column header="Действия" style="width:100px;">
+              <template #body>
+                <Button icon="pi pi-eye" text rounded severity="secondary" size="small"></Button>
+                <Button icon="pi pi-pencil" text rounded severity="secondary" size="small"></Button>
+              </template>
+            </Column>
+          </DataTable>
+        </template>
+      </Card>
+
+      <div class="footer-note">
+        Kit: PrimeVue 4 (Aura preset) · CDN: esm.sh/primevue@4, esm.sh/@primevue/themes@4, esm.sh/vue@3, cdn.jsdelivr.net/npm/primeicons · Icons: PrimeIcons
+      </div>
+    </main>
+  </div>
+
+  <!-- NEW REQUEST DIALOG -->
+  <Dialog v-model:visible="dialogVisible" header="Новая заявка" modal style="width:640px;">
+    <div class="form-field">
+      <label class="field-label">Тема заявки *</label>
+      <InputText v-model="form.topic" placeholder="Кратко опишите суть заявки" />
+    </div>
+
+    <div class="form-field">
+      <label class="field-label">Категория</label>
+      <Select v-model="form.category" :options="categoryOptions" placeholder="Выберите категорию" />
+    </div>
+
+    <div class="form-field">
+      <label class="field-label">Приоритет</label>
+      <SelectButton v-model="form.priority" :options="priorityFilterOptions" :allowEmpty="false" />
+    </div>
+
+    <div class="form-field">
+      <label class="field-label">Объект</label>
+      <Select v-model="form.object" :options="objectFilterOptions" placeholder="Выберите объект" />
+    </div>
+
+    <div class="form-field">
+      <label class="field-label">Ответственный исполнитель</label>
+      <Select v-model="form.executor" :options="executorOptions" placeholder="Выберите исполнителя">
+        <template #option="{ option }">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <Avatar :label="initials(option)" shape="circle" :style="{background: avatarColor(option), width:'22px', height:'22px', fontSize:'9px', color:'#fff'}"></Avatar>
+            <span>{{ option }}</span>
+          </div>
+        </template>
+      </Select>
+    </div>
+
+    <div class="form-field">
+      <label class="field-label">Срок выполнения</label>
+      <DatePicker v-model="form.due" dateFormat="dd.mm.yy" showIcon iconDisplay="input" placeholder="Выберите дату" />
+    </div>
+
+    <div class="form-field">
+      <label class="field-label">Описание заявки</label>
+      <Textarea v-model="form.description" rows="3" placeholder="Опишите характер работ, адрес, особые условия…" />
+    </div>
+
+    <div class="form-field">
+      <label class="field-label">Вложение</label>
+      <FileUpload mode="basic" chooseLabel="Прикрепить фото/схему" :auto="false" customUpload @select="onFileSelect"></FileUpload>
+    </div>
+
+    <template #footer>
+      <div class="form-actions">
+        <Button label="Отмена" severity="secondary" outlined @click="dialogVisible=false"></Button>
+        <Button label="Создать заявку" @click="createRequest"></Button>
+      </div>
+    </template>
+  </Dialog>
+
+</div>
+
+<script type="module">
+import { createApp, ref, reactive, computed } from 'vue';
+import PrimeVue from 'primevue/config';
+import { definePreset } from '@primevue/themes';
+import Aura from '@primevue/themes/aura';
+
+import Button from 'primevue/button';
+import Card from 'primevue/card';
+import DataTable from 'primevue/datatable';
+import Column from 'primevue/column';
+import Tag from 'primevue/tag';
+import Avatar from 'primevue/avatar';
+import Badge from 'primevue/badge';
+import Dialog from 'primevue/dialog';
+import Select from 'primevue/select';
+import DatePicker from 'primevue/datepicker';
+import InputText from 'primevue/inputtext';
+import Textarea from 'primevue/textarea';
+import FileUpload from 'primevue/fileupload';
+import Toolbar from 'primevue/toolbar';
+import SelectButton from 'primevue/selectbutton';
+import InputIcon from 'primevue/inputicon';
+import IconField from 'primevue/iconfield';
+
+// Brand primary scale: 500/600 pinned to the exact --accent / --accent-hover tokens.
+const BrandPreset = definePreset(Aura, {
+  semantic: {
+    primary: {
+      50: '#FDF3EC',
+      100: '#FBE7D8',
+      200: '#F6CDAF',
+      300: '#F0AD7E',
+      400: '#E89459',
+      500: '#E07B3E',
+      600: '#C2632D',
+      700: '#A14F24',
+      800: '#7E3F1E',
+      900: '#5C2E16',
+      950: '#3A1E0F'
+    }
+  }
+});
+
+const REQUESTS = [
+  { id:'ЗЯ-2481', topic:'Замена автоматического выключателя на ТП-14', category:'Электромонтажные работы', object:'Братск', priority:'Высокий', status:'В работе', executor:'Соколов А.П.', due:'12.08.2026' },
+  { id:'ЗЯ-2480', topic:'Плановое ТО ВЛ-10кВ, участок Братск—Усть-Илимск', category:'Обслуживание сетей', object:'Усть-Илимск', priority:'Средний', status:'Новая', executor:'Гришин Д.О.', due:'18.08.2026' },
+  { id:'ЗЯ-2479', topic:'Аварийное отключение на подстанции №3', category:'Аварийная заявка', object:'Иркутск', priority:'Критический', status:'В работе', executor:'Марков С.И.', due:'07.08.2026' },
+  { id:'ЗЯ-2478', topic:'Монтаж кабельной линии 0.4кВ', category:'Электромонтажные работы', object:'Ангарск', priority:'Средний', status:'На проверке', executor:'Титова Е.В.', due:'15.08.2026' },
+  { id:'ЗЯ-2477', topic:'Проверка изоляции трансформатора Т-2', category:'Диагностика оборудования', object:'Тимлюй', priority:'Низкий', status:'Выполнена', executor:'Соколов А.П.', due:'02.08.2026' },
+  { id:'ЗЯ-2476', topic:'Ремонт опоры ЛЭП после грозового повреждения', category:'Аварийная заявка', object:'Усть-Кут', priority:'Критический', status:'Просрочена', executor:'Гришин Д.О.', due:'04.08.2026' },
+  { id:'ЗЯ-2475', topic:'Технологическое присоединение нового объекта', category:'Технологическое присоединение', object:'Яракта', priority:'Высокий', status:'Новая', executor:'Кузнецова О.Р.', due:'22.08.2026' },
+  { id:'ЗЯ-2474', topic:'Замена счётчика электроэнергии', category:'Обслуживание сетей', object:'Бохан', priority:'Низкий', status:'Выполнена', executor:'Марков С.И.', due:'30.07.2026' },
+  { id:'ЗЯ-2473', topic:'Диагностика РЗА на подстанции', category:'Диагностика оборудования', object:'Краснокаменск', priority:'Средний', status:'В работе', executor:'Титова Е.В.', due:'19.08.2026' },
+  { id:'ЗЯ-2472', topic:'Плановый осмотр опор ВЛ-35кВ', category:'Обслуживание сетей', object:'Торей', priority:'Низкий', status:'Выполнена', executor:'Кузнецова О.Р.', due:'28.07.2026' },
+];
+
+const PRIORITY_COLORS = { 'Низкий':'#8A8D96', 'Средний':'#F2B33D', 'Высокий':'#E07B3E', 'Критический':'#E4483D' };
+const STATUS_COLORS = { 'Новая':'#3B82C4', 'В работе':'#E07B3E', 'На проверке':'#8B6CC1', 'Выполнена':'#2FA968', 'Просрочена':'#E4483D' };
+const AVATAR_PALETTE = ['#E07B3E','#3B82C4','#8B6CC1','#2FA968','#C2632D'];
+
+function hexToRgba(hex, alpha){
+  const r = parseInt(hex.slice(1,3),16), g = parseInt(hex.slice(3,5),16), b = parseInt(hex.slice(5,7),16);
+  return `rgba(${r},${g},${b},${alpha})`;
+}
+
+const app = createApp({
+  setup(){
+    const search = ref('');
+    const filterStatus = ref('Все');
+    const filterPriority = ref('Все');
+    const filterObject = ref('Все');
+    const dialogVisible = ref(false);
+
+    const navItems = [
+      { label:'Дашборд', icon:'pi pi-th-large', active:false },
+      { label:'Заявки', icon:'pi pi-file', active:true },
+      { label:'Объекты', icon:'pi pi-building', active:false },
+      { label:'Исполнители', icon:'pi pi-users', active:false },
+      { label:'Отчёты', icon:'pi pi-chart-bar', active:false },
+      { label:'Настройки', icon:'pi pi-cog', active:false },
+    ];
+
+    const kpis = [
+      { label:'Всего заявок', value:128, icon:'pi pi-file', color:'#101010', tint:'#EEEEEF' },
+      { label:'В работе', value:34, icon:'pi pi-spinner', color:'#E07B3E', tint:'#FDEEE3' },
+      { label:'Выполнено', value:81, icon:'pi pi-check-circle', color:'#2FA968', tint:'#E6F5ED' },
+      { label:'Просрочено', value:7, icon:'pi pi-exclamation-circle', color:'#E4483D', tint:'#FBE7E5' },
+    ];
+
+    const statusOptions = ['Все','Новая','В работе','На проверке','Выполнена','Просрочена'];
+    const priorityFilterOptions = ['Низкий','Средний','Высокий','Критический'];
+    const objectFilterOptions = ['Братск','Усть-Илимск','Иркутск','Ангарск','Усть-Кут','Яракта','Бохан','Тимлюй','Краснокаменск','Торей'];
+    const categoryOptions = ['Электромонтажные работы','Обслуживание сетей','Аварийная заявка','Технологическое присоединение','Диагностика оборудования'];
+    const executorOptions = ['Соколов А.П.','Гришин Д.О.','Марков С.И.','Титова Е.В.','Кузнецова О.Р.'];
+
+    const form = reactive({ topic:'', category:null, priority:'Средний', object:null, executor:null, due:null, description:'', attachment:null });
+
+    const filteredRequests = computed(() => REQUESTS.filter(r => {
+      const okStatus = filterStatus.value==='Все' || filterStatus.value===r.status;
+      const okPriority = filterPriority.value==='Все' || filterPriority.value===r.priority;
+      const okObject = filterObject.value==='Все' || filterObject.value===r.object;
+      const okSearch = !search.value || (r.topic+r.id+r.object).toLowerCase().includes(search.value.toLowerCase());
+      return okStatus && okPriority && okObject && okSearch;
+    }));
+
+    function priorityColor(p){ return PRIORITY_COLORS[p] || '#8A8D96'; }
+    function statusTagStyle(s){
+      const c = STATUS_COLORS[s] || '#3B82C4';
+      return { color:c, background:hexToRgba(c,.12), border:'none', fontWeight:600 };
+    }
+    function initials(name){ const parts = name.split(' '); return (parts[0][0]+(parts[1]?parts[1][0]:'')).toUpperCase(); }
+    function avatarColor(name){ let h=0; for(let i=0;i<name.length;i++) h+=name.charCodeAt(i); return AVATAR_PALETTE[h % AVATAR_PALETTE.length]; }
+    function onFileSelect(){ /* демо: файл выбран локально, реальная загрузка не выполняется */ }
+    function createRequest(){ dialogVisible.value = false; }
+
+    return {
+      search, filterStatus, filterPriority, filterObject, dialogVisible,
+      navItems, kpis, statusOptions, priorityFilterOptions, objectFilterOptions, categoryOptions, executorOptions,
+      form, filteredRequests, priorityColor, statusTagStyle, initials, avatarColor, onFileSelect, createRequest,
+    };
+  }
+});
+
+app.use(PrimeVue, {
+  theme: {
+    preset: BrandPreset,
+    options: { darkModeSelector: '.never-dark' }
+  }
+});
+
+app.component('Button', Button);
+app.component('Card', Card);
+app.component('DataTable', DataTable);
+app.component('Column', Column);
+app.component('Tag', Tag);
+app.component('Avatar', Avatar);
+app.component('Badge', Badge);
+app.component('Dialog', Dialog);
+app.component('Select', Select);
+app.component('DatePicker', DatePicker);
+app.component('InputText', InputText);
+app.component('Textarea', Textarea);
+app.component('FileUpload', FileUpload);
+app.component('Toolbar', Toolbar);
+app.component('SelectButton', SelectButton);
+app.component('InputIcon', InputIcon);
+app.component('IconField', IconField);
+
+app.mount('#app');
+</script>
+</body>
+</html>

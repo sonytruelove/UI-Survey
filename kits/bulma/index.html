@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Заявки — ЭнергоСетьСтрой (Bulma)</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.2/css/bulma.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
+<style>
+:root{
+  /* Bulma 1.x runtime theming via CSS custom properties: overriding the base
+     HSL of "primary" re-derives every shade/hover/light/soft/bold variant
+     that Bulma's own stylesheet computes from it. #E07B3E ≈ hsl(23,72%,56%) */
+  --bulma-primary-h: 23deg;
+  --bulma-primary-s: 72%;
+  --bulma-primary-l: 56%;
+  --bulma-link-h: 23deg;
+  --bulma-link-s: 72%;
+  --bulma-link-l: 56%;
+  --bulma-focus-h: 23deg;
+  --bulma-focus-s: 72%;
+  --bulma-focus-l: 56%;
+
+  --bg-app:#F4F5F7; --bg-surface:#FFFFFF; --bg-dark:#101010; --bg-dark-2:#1A1A1A;
+  --border:#E4E5E9; --border-dark:rgba(255,255,255,.09);
+  --accent:#E07B3E; --accent-hover:#C2632D; --accent-tint:#FDEEE3;
+  --text-primary:#15161A; --text-secondary:#6B6E76;
+  --text-onDark:#FFFFFF; --text-onDark-muted:#9A9CA5;
+  --success:#2FA968; --info:#3B82C4; --purple:#8B6CC1; --danger:#E4483D; --warning:#F2B33D; --low:#8A8D96;
+}
+
+html, body{ background:var(--bg-app); color:var(--text-primary); font-family:'Inter',sans-serif; font-size:14px; }
+h1,h2,h3,h4,h5,h6,.kpi-value,.logo-word,.title{ font-family:'Rajdhani',sans-serif; font-weight:700 !important; text-transform:uppercase; letter-spacing:.02em; }
+
+/* belt-and-suspenders explicit overrides, in case a given element doesn't
+   consume the HSL custom properties in this Bulma build */
+.button.is-primary{ background-color:var(--accent); border-color:transparent; color:#fff; }
+.button.is-primary:hover, .button.is-primary:focus{ background-color:var(--accent-hover); color:#fff; }
+.button.is-primary.is-light{ background-color:var(--accent-tint); color:var(--accent-hover); }
+.button.is-outlined.is-primary{ background-color:transparent; border-color:var(--accent); color:var(--accent); }
+a, a.navbar-item:hover{ color:var(--accent); }
+.pagination-link.is-current{ background-color:var(--accent); border-color:var(--accent); color:#fff; }
+input:focus, select:focus, textarea:focus, .select select:focus, .input:focus, .textarea:focus{
+  border-color:var(--accent) !important; box-shadow:0 0 0 0.125em rgba(224,123,62,.25) !important;
+}
+
+/* ---- layout ---- */
+.app-header{
+  background:var(--bg-dark) !important; height:64px; min-height:64px; border-bottom:1px solid var(--border-dark);
+  padding:0 12px; box-shadow:none;
+}
+.app-header .navbar-item, .app-header .navbar-link{ color:var(--text-onDark-muted); }
+.logo-block{ display:flex; align-items:center; gap:10px; color:#fff !important; width:210px; }
+.logo-block svg{ width:32px; height:32px; color:var(--accent); flex-shrink:0; }
+.logo-word{ font-size:13.5px; line-height:.95; letter-spacing:.03em; }
+.header-search-wrap{ width:360px; }
+.header-search-wrap input{ background:var(--bg-dark-2); border-color:var(--border-dark); color:#fff; }
+.header-search-wrap input::placeholder{ color:var(--text-onDark-muted); }
+.header-search-wrap .icon{ color:var(--text-onDark-muted); }
+.header-icon-btn{ background:transparent; border:1px solid var(--border-dark); color:var(--text-onDark-muted); position:relative; }
+.header-icon-btn:hover{ background:var(--bg-dark-2); color:#fff; }
+.header-icon-btn .dot{ position:absolute; top:6px; right:7px; width:7px; height:7px; border-radius:50%; background:var(--danger); }
+.user-avatar{
+  width:34px; height:34px; border-radius:50%; background:var(--accent); color:#fff;
+  display:flex; align-items:center; justify-content:center; font-family:'Rajdhani',sans-serif; font-weight:700; font-size:13px;
+}
+.user-name{ font-size:13px; font-weight:600; color:#fff; line-height:1.2; }
+.user-role{ font-size:11px; color:var(--text-onDark-muted); line-height:1.2; }
+.app-header .navbar-dropdown{ border-top:none; margin-top:4px; }
+
+.app-sidebar{
+  position:fixed; top:64px; bottom:0; left:0; width:250px; background:var(--bg-dark) !important;
+  padding:18px 12px; overflow-y:auto; z-index:20;
+}
+.app-sidebar .menu-label{ color:var(--text-onDark-muted); font-size:11px; padding:0 10px 8px; }
+.app-sidebar .menu-list a{
+  color:var(--text-onDark-muted); font-size:14px; font-weight:500; border-radius:8px; padding:10px 12px;
+  display:flex; align-items:center; gap:12px;
+}
+.app-sidebar .menu-list a:hover{ background:var(--bg-dark-2); color:#fff; }
+.app-sidebar .menu-list a.is-active{ background:var(--accent) !important; color:#fff; }
+.app-sidebar .menu-list .icon{ width:18px; }
+
+.app-content{ margin-left:250px; padding:96px 32px 24px; }
+
+.page-title{ font-size:28px; margin-bottom:2px !important; }
+
+.kpi-card{ border-radius:12px !important; border:1px solid var(--border); box-shadow:0 1px 2px rgba(16,16,16,.06),0 8px 24px rgba(16,16,16,.04) !important; }
+.kpi-card .card-content{ padding:18px 20px; }
+.kpi-label{ font-size:12.5px; color:var(--text-secondary); font-weight:600; text-transform:uppercase; letter-spacing:.03em; }
+.kpi-value{ font-size:34px; line-height:1.1; margin-top:4px; }
+.kpi-icon{ width:42px; height:42px !important; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:17px; }
+
+.toolbar-card, .table-card{ border-radius:12px !important; border:1px solid var(--border); box-shadow:0 1px 2px rgba(16,16,16,.06),0 8px 24px rgba(16,16,16,.04) !important; background:#fff; }
+
+.tag-pill{ border-radius:999px !important; font-weight:600 !important; font-size:11.5px !important; height:auto !important; padding:6px 11px !important; }
+.tag-priority-low{ background:#EEEFF1; color:var(--low); }
+.tag-priority-medium{ background:#FDF3DE; color:#9A7415; }
+.tag-priority-high{ background:var(--accent-tint); color:var(--accent-hover); }
+.tag-priority-critical{ background:#FCE4E2; color:#B23428; }
+.tag-status-new{ background:#E4EFF8; color:var(--info); }
+.tag-status-progress{ background:var(--accent-tint); color:var(--accent-hover); }
+.tag-status-review{ background:#EEE8F8; color:var(--purple); }
+.tag-status-done{ background:#E1F4EA; color:var(--success); }
+.tag-status-overdue{ background:#FCE4E2; color:var(--danger); }
+
+.req-table thead th{ font-size:11px; text-transform:uppercase; letter-spacing:.03em; color:var(--text-secondary); border-color:var(--border) !important; background:#FAFAFB; }
+.req-table td{ font-size:13.5px; vertical-align:middle; border-color:var(--border) !important; }
+.req-num{ font-family:'Rajdhani',sans-serif; font-weight:700; }
+
+.avatar-sm{
+  width:26px; height:26px; border-radius:50%; background:var(--accent-tint); color:var(--accent-hover);
+  display:inline-flex; align-items:center; justify-content:center; font-family:'Rajdhani',sans-serif; font-weight:700; font-size:11px; margin-right:6px; vertical-align:middle;
+}
+
+.action-btn{ width:30px; height:30px; padding:0 !important; border-radius:7px !important; }
+
+.modal-card-head, .modal-card-foot{ background:#fff; }
+.modal-card-title{ font-family:'Rajdhani',sans-serif; font-weight:700; text-transform:uppercase; letter-spacing:.02em; font-size:19px; }
+.modal-card{ border-radius:12px; overflow:hidden; }
+
+.priority-chips .button.is-selected{ background:var(--accent); border-color:var(--accent); color:#fff; }
+.priority-chips .button.is-selected.crit-selected{ background:var(--danger); border-color:var(--danger); }
+
+.exec-dropdown .dropdown-item{ display:flex; align-items:center; font-size:13.5px; }
+.exec-dropdown .dropdown-trigger .button{ width:100%; justify-content:space-between; }
+
+.footer-bar{ margin-left:250px; padding:8px 32px 28px; font-size:11.5px; color:var(--text-secondary); }
+
+.field-label-strong{ font-weight:600; font-size:13px; }
+</style>
+</head>
+<body>
+
+<!-- HEADER (Bulma navbar) -->
+<nav class="navbar is-fixed-top app-header" role="navigation">
+  <div class="navbar-brand">
+    <a class="navbar-item logo-block" href="#">
+      <svg viewBox="0 0 100 100" aria-hidden="true">
+        <circle cx="50" cy="50" r="42" fill="none" stroke="currentColor" stroke-width="7" stroke-dasharray="240 24" stroke-linecap="round"/>
+        <circle cx="50" cy="50" r="27" fill="none" stroke="currentColor" stroke-width="7" stroke-dasharray="148 22" stroke-linecap="round" transform="rotate(35 50 50)"/>
+      </svg>
+      <span class="logo-word">ЭНЕРГО<br>СЕТЬСТРОЙ</span>
+    </a>
+  </div>
+  <div class="navbar-menu is-active" style="background:transparent;">
+    <div class="navbar-start" style="margin-left:1rem;">
+      <div class="navbar-item header-search-wrap">
+        <div class="control has-icons-left" style="width:100%;">
+          <input class="input" type="search" placeholder="Поиск по номеру, теме, объекту…">
+          <span class="icon is-small is-left"><i class="fas fa-magnifying-glass"></i></span>
+        </div>
+      </div>
+    </div>
+    <div class="navbar-end">
+      <div class="navbar-item">
+        <button class="button is-primary js-modal-trigger" data-target="newRequestModal">
+          <span class="icon"><i class="fas fa-plus"></i></span><span>Новая заявка</span>
+        </button>
+      </div>
+      <div class="navbar-item">
+        <button class="button header-icon-btn"><span class="icon"><i class="fas fa-bell"></i></span><span class="dot"></span></button>
+      </div>
+      <div class="navbar-item has-dropdown is-hoverable">
+        <a class="navbar-link" style="display:flex;align-items:center;gap:8px;">
+          <span class="user-avatar">ИП</span>
+          <span>
+            <div class="user-name">Ирина Плотникова</div>
+            <div class="user-role">Диспетчер</div>
+          </span>
+        </a>
+        <div class="navbar-dropdown is-right">
+          <a class="navbar-item">Профиль</a>
+          <a class="navbar-item">Настройки</a>
+          <hr class="navbar-divider">
+          <a class="navbar-item">Выйти</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- SIDEBAR (Bulma menu) -->
+<aside class="menu app-sidebar">
+  <p class="menu-label">Навигация</p>
+  <ul class="menu-list">
+    <li><a><span class="icon"><i class="fas fa-gauge"></i></span> Дашборд</a></li>
+    <li><a class="is-active"><span class="icon"><i class="fas fa-list-check"></i></span> Заявки</a></li>
+    <li><a><span class="icon"><i class="fas fa-building"></i></span> Объекты</a></li>
+    <li><a><span class="icon"><i class="fas fa-users"></i></span> Исполнители</a></li>
+    <li><a><span class="icon"><i class="fas fa-chart-column"></i></span> Отчёты</a></li>
+    <li><a><span class="icon"><i class="fas fa-gear"></i></span> Настройки</a></li>
+  </ul>
+</aside>
+
+<!-- CONTENT -->
+<main class="app-content">
+  <nav class="breadcrumb" aria-label="breadcrumbs" style="margin-bottom:6px;">
+    <ul>
+      <li><a>Главная</a></li>
+      <li class="is-active"><a href="#" aria-current="page">Заявки</a></li>
+    </ul>
+  </nav>
+  <h1 class="title page-title">Заявки</h1>
+  <p style="color:var(--text-secondary); margin-bottom:1.5rem;">Управление заявками на электромонтажные и сетевые работы</p>
+
+  <!-- KPI cards -->
+  <div class="columns is-multiline mb-4">
+    <div class="column is-3">
+      <div class="card kpi-card">
+        <div class="card-content is-flex is-justify-content-space-between is-align-items-flex-start">
+          <div>
+            <div class="kpi-label">Всего заявок</div>
+            <div class="kpi-value">128</div>
+          </div>
+          <div class="kpi-icon" style="background:var(--accent-tint); color:var(--accent-hover);"><i class="fas fa-clipboard-list"></i></div>
+        </div>
+      </div>
+    </div>
+    <div class="column is-3">
+      <div class="card kpi-card">
+        <div class="card-content is-flex is-justify-content-space-between is-align-items-flex-start">
+          <div>
+            <div class="kpi-label">В работе</div>
+            <div class="kpi-value" style="color:var(--accent);">34</div>
+          </div>
+          <div class="kpi-icon" style="background:var(--accent-tint); color:var(--accent-hover);"><i class="fas fa-bolt"></i></div>
+        </div>
+      </div>
+    </div>
+    <div class="column is-3">
+      <div class="card kpi-card">
+        <div class="card-content is-flex is-justify-content-space-between is-align-items-flex-start">
+          <div>
+            <div class="kpi-label">Выполнено</div>
+            <div class="kpi-value" style="color:var(--success);">81</div>
+          </div>
+          <div class="kpi-icon" style="background:#E1F4EA; color:var(--success);"><i class="fas fa-circle-check"></i></div>
+        </div>
+      </div>
+    </div>
+    <div class="column is-3">
+      <div class="card kpi-card">
+        <div class="card-content is-flex is-justify-content-space-between is-align-items-flex-start">
+          <div>
+            <div class="kpi-label">Просрочено</div>
+            <div class="kpi-value" style="color:var(--danger);">7</div>
+          </div>
+          <div class="kpi-icon" style="background:#FCE4E2; color:var(--danger);"><i class="fas fa-triangle-exclamation"></i></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toolbar -->
+  <div class="box toolbar-card mb-3">
+    <div class="columns is-vcentered is-mobile mb-0">
+      <div class="column is-4">
+        <div class="control has-icons-left">
+          <input class="input" type="search" placeholder="Поиск по номеру, теме, объекту…">
+          <span class="icon is-small is-left"><i class="fas fa-magnifying-glass"></i></span>
+        </div>
+      </div>
+      <div class="column is-2">
+        <div class="select is-fullwidth">
+          <select>
+            <option>Статус: Все</option>
+            <option>Новая</option>
+            <option>В работе</option>
+            <option>На проверке</option>
+            <option>Выполнена</option>
+            <option>Просрочена</option>
+          </select>
+        </div>
+      </div>
+      <div class="column is-2">
+        <div class="select is-fullwidth">
+          <select>
+            <option>Приоритет: Все</option>
+            <option>Низкий</option>
+            <option>Средний</option>
+            <option>Высокий</option>
+            <option>Критический</option>
+          </select>
+        </div>
+      </div>
+      <div class="column is-2">
+        <div class="select is-fullwidth">
+          <select>
+            <option>Объект: Все</option>
+            <option>Братск</option>
+            <option>Усть-Илимск</option>
+            <option>Иркутск</option>
+            <option>Ангарск</option>
+            <option>Усть-Кут</option>
+          </select>
+        </div>
+      </div>
+      <div class="column is-2">
+        <button class="button is-primary is-fullwidth js-modal-trigger" data-target="newRequestModal">
+          <span class="icon"><i class="fas fa-plus"></i></span><span>Новая заявка</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Table -->
+  <div class="box table-card p-0">
+    <div class="table-container">
+      <table class="table is-fullwidth is-hoverable req-table mb-0">
+        <thead>
+          <tr>
+            <th class="pl-4">№</th>
+            <th>Тема заявки</th>
+            <th>Категория</th>
+            <th>Объект</th>
+            <th>Приоритет</th>
+            <th>Статус</th>
+            <th>Исполнитель</th>
+            <th>Срок</th>
+            <th class="has-text-right pr-4">Действия</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="pl-4 req-num">ЗЯ-2481</td>
+            <td>Замена автоматического выключателя на ТП-14</td>
+            <td>Электромонтажные работы</td>
+            <td>Братск</td>
+            <td><span class="tag tag-pill tag-priority-high">Высокий</span></td>
+            <td><span class="tag tag-pill tag-status-progress">В работе</span></td>
+            <td><span class="avatar-sm">СА</span>Соколов А.П.</td>
+            <td>12.08.2026</td>
+            <td class="has-text-right pr-4">
+              <button class="button is-small action-btn"><i class="fas fa-eye"></i></button>
+              <button class="button is-small action-btn"><i class="fas fa-pen"></i></button>
+            </td>
+          </tr>
+          <tr>
+            <td class="pl-4 req-num">ЗЯ-2480</td>
+            <td>Плановое ТО ВЛ-10кВ, участок Братск—Усть-Илимск</td>
+            <td>Обслуживание сетей</td>
+            <td>Усть-Илимск</td>
+            <td><span class="tag tag-pill tag-priority-medium">Средний</span></td>
+            <td><span class="tag tag-pill tag-status-new">Новая</span></td>
+            <td><span class="avatar-sm">ГД</span>Гришин Д.О.</td>
+            <td>18.08.2026</td>
+            <td class="has-text-right pr-4">
+              <button class="button is-small action-btn"><i class="fas fa-eye"></i></button>
+              <button class="button is-small action-btn"><i class="fas fa-pen"></i></button>
+            </td>
+          </tr>
+          <tr>
+            <td class="pl-4 req-num">ЗЯ-2479</td>
+            <td>Аварийное отключение на подстанции №3</td>
+            <td>Аварийная заявка</td>
+            <td>Иркутск</td>
+            <td><span class="tag tag-pill tag-priority-critical">Критический</span></td>
+            <td><span class="tag tag-pill tag-status-progress">В работе</span></td>
+            <td><span class="avatar-sm">МС</span>Марков С.И.</td>
+            <td>07.08.2026</td>
+            <td class="has-text-right pr-4">
+              <button class="button is-small action-btn"><i class="fas fa-eye"></i></button>
+              <button class="button is-small action-btn"><i class="fas fa-pen"></i></button>
+            </td>
+          </tr>
+          <tr>
+            <td class="pl-4 req-num">ЗЯ-2478</td>
+            <td>Монтаж кабельной линии 0.4кВ</td>
+            <td>Электромонтажные работы</td>
+            <td>Ангарск</td>
+            <td><span class="tag tag-pill tag-priority-medium">Средний</span></td>
+            <td><span class="tag tag-pill tag-status-review">На проверке</span></td>
+            <td><span class="avatar-sm">ТЕ</span>Титова Е.В.</td>
+            <td>15.08.2026</td>
+            <td class="has-text-right pr-4">
+              <button class="button is-small action-btn"><i class="fas fa-eye"></i></button>
+              <button class="button is-small action-btn"><i class="fas fa-pen"></i></button>
+            </td>
+          </tr>
+          <tr>
+            <td class="pl-4 req-num">ЗЯ-2477</td>
+            <td>Проверка изоляции трансформатора Т-2</td>
+            <td>Диагностика оборудования</td>
+            <td>Тимлюй</td>
+            <td><span class="tag tag-pill tag-priority-low">Низкий</span></td>
+            <td><span class="tag tag-pill tag-status-done">Выполнена</span></td>
+            <td><span class="avatar-sm">СА</span>Соколов А.П.</td>
+            <td>02.08.2026</td>
+            <td class="has-text-right pr-4">
+              <button class="button is-small action-btn"><i class="fas fa-eye"></i></button>
+              <button class="button is-small action-btn"><i class="fas fa-pen"></i></button>
+            </td>
+          </tr>
+          <tr>
+            <td class="pl-4 req-num">ЗЯ-2476</td>
+            <td>Ремонт опоры ЛЭП после грозового повреждения</td>
+            <td>Аварийная заявка</td>
+            <td>Усть-Кут</td>
+            <td><span class="tag tag-pill tag-priority-critical">Критический</span></td>
+            <td><span class="tag tag-pill tag-status-overdue">Просрочена</span></td>
+            <td><span class="avatar-sm">ГД</span>Гришин Д.О.</td>
+            <td>04.08.2026</td>
+            <td class="has-text-right pr-4">
+              <button class="button is-small action-btn"><i class="fas fa-eye"></i></button>
+              <button class="button is-small action-btn"><i class="fas fa-pen"></i></button>
+            </td>
+          </tr>
+          <tr>
+            <td class="pl-4 req-num">ЗЯ-2475</td>
+            <td>Технологическое присоединение нового объекта</td>
+            <td>Технологическое присоединение</td>
+            <td>Яракта</td>
+            <td><span class="tag tag-pill tag-priority-high">Высокий</span></td>
+            <td><span class="tag tag-pill tag-status-new">Новая</span></td>
+            <td><span class="avatar-sm">КО</span>Кузнецова О.Р.</td>
+            <td>22.08.2026</td>
+            <td class="has-text-right pr-4">
+              <button class="button is-small action-btn"><i class="fas fa-eye"></i></button>
+              <button class="button is-small action-btn"><i class="fas fa-pen"></i></button>
+            </td>
+          </tr>
+          <tr>
+            <td class="pl-4 req-num">ЗЯ-2474</td>
+            <td>Замена счётчика электроэнергии</td>
+            <td>Обслуживание сетей</td>
+            <td>Бохан</td>
+            <td><span class="tag tag-pill tag-priority-low">Низкий</span></td>
+            <td><span class="tag tag-pill tag-status-done">Выполнена</span></td>
+            <td><span class="avatar-sm">МС</span>Марков С.И.</td>
+            <td>30.07.2026</td>
+            <td class="has-text-right pr-4">
+              <button class="button is-small action-btn"><i class="fas fa-eye"></i></button>
+              <button class="button is-small action-btn"><i class="fas fa-pen"></i></button>
+            </td>
+          </tr>
+          <tr>
+            <td class="pl-4 req-num">ЗЯ-2473</td>
+            <td>Диагностика РЗА на подстанции</td>
+            <td>Диагностика оборудования</td>
+            <td>Краснокаменск</td>
+            <td><span class="tag tag-pill tag-priority-medium">Средний</span></td>
+            <td><span class="tag tag-pill tag-status-progress">В работе</span></td>
+            <td><span class="avatar-sm">ТЕ</span>Титова Е.В.</td>
+            <td>19.08.2026</td>
+            <td class="has-text-right pr-4">
+              <button class="button is-small action-btn"><i class="fas fa-eye"></i></button>
+              <button class="button is-small action-btn"><i class="fas fa-pen"></i></button>
+            </td>
+          </tr>
+          <tr>
+            <td class="pl-4 req-num">ЗЯ-2472</td>
+            <td>Плановый осмотр опор ВЛ-35кВ</td>
+            <td>Обслуживание сетей</td>
+            <td>Торей</td>
+            <td><span class="tag tag-pill tag-priority-low">Низкий</span></td>
+            <td><span class="tag tag-pill tag-status-done">Выполнена</span></td>
+            <td><span class="avatar-sm">КО</span>Кузнецова О.Р.</td>
+            <td>28.07.2026</td>
+            <td class="has-text-right pr-4">
+              <button class="button is-small action-btn"><i class="fas fa-eye"></i></button>
+              <button class="button is-small action-btn"><i class="fas fa-pen"></i></button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="is-flex is-justify-content-space-between is-align-items-center p-4" style="border-top:1px solid var(--border);">
+      <div style="color:var(--text-secondary); font-size:13px;">Показано 1–10 из 128</div>
+      <nav class="pagination is-small" role="navigation" aria-label="pagination">
+        <ul class="pagination-list">
+          <li><a class="pagination-link" href="#">1</a></li>
+          <li><a class="pagination-link is-current" href="#" aria-current="page">1</a></li>
+          <li><a class="pagination-link" href="#">2</a></li>
+          <li><a class="pagination-link" href="#">3</a></li>
+          <li><span class="pagination-ellipsis">&hellip;</span></li>
+          <li><a class="pagination-link" href="#">13</a></li>
+        </ul>
+      </nav>
+    </div>
+  </div>
+</main>
+
+<div class="footer-bar">
+  Kit: Bulma v1.0.2 · CDN: cdn.jsdelivr.net/npm/bulma@1.0.2 · Icons: Font Awesome Free 6.5.2
+</div>
+
+<!-- MODAL: New request (Bulma modal-card) -->
+<div class="modal" id="newRequestModal">
+  <div class="modal-background"></div>
+  <div class="modal-card" style="width:640px;">
+    <header class="modal-card-head">
+      <p class="modal-card-title">Новая заявка</p>
+      <button class="delete js-modal-close" aria-label="close"></button>
+    </header>
+    <section class="modal-card-body">
+      <div class="field">
+        <label class="label field-label-strong">Тема заявки <span style="color:var(--danger);">*</span></label>
+        <div class="control">
+          <input class="input" type="text" placeholder="Например: Замена автоматического выключателя на ТП-14" required>
+        </div>
+      </div>
+
+      <div class="columns">
+        <div class="column is-6">
+          <div class="field">
+            <label class="label field-label-strong">Категория</label>
+            <div class="control">
+              <div class="select is-fullwidth">
+                <select>
+                  <option>Электромонтажные работы</option>
+                  <option>Обслуживание сетей</option>
+                  <option>Аварийная заявка</option>
+                  <option>Технологическое присоединение</option>
+                  <option>Диагностика оборудования</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="column is-6">
+          <div class="field">
+            <label class="label field-label-strong">Объект</label>
+            <div class="control">
+              <div class="select is-fullwidth">
+                <select>
+                  <option>Братск</option>
+                  <option>Усть-Илимск</option>
+                  <option>Иркутск</option>
+                  <option>Ангарск</option>
+                  <option>Усть-Кут</option>
+                  <option>Яракта</option>
+                  <option>Бохан</option>
+                  <option>Тимлюй</option>
+                  <option>Краснокаменск</option>
+                  <option>Торей</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="label field-label-strong">Приоритет</label>
+        <div class="control">
+          <div class="buttons has-addons priority-chips" id="priorityChips">
+            <button type="button" class="button" data-value="low">Низкий</button>
+            <button type="button" class="button" data-value="medium">Средний</button>
+            <button type="button" class="button is-selected" data-value="high">Высокий</button>
+            <button type="button" class="button" data-value="critical">Критический</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="columns">
+        <div class="column is-6">
+          <div class="field">
+            <label class="label field-label-strong">Ответственный исполнитель</label>
+            <div class="dropdown exec-dropdown" id="execDropdown">
+              <div class="dropdown-trigger">
+                <button class="button is-fullwidth" type="button" aria-haspopup="true" aria-controls="exec-menu" id="execTrigger">
+                  <span><span class="avatar-sm">СА</span>Соколов А.П.</span>
+                  <span class="icon is-small"><i class="fas fa-chevron-down"></i></span>
+                </button>
+              </div>
+              <div class="dropdown-menu" id="exec-menu" role="menu" style="width:100%;">
+                <div class="dropdown-content">
+                  <a href="#" class="dropdown-item"><span class="avatar-sm">СА</span>Соколов А.П.</a>
+                  <a href="#" class="dropdown-item"><span class="avatar-sm">ГД</span>Гришин Д.О.</a>
+                  <a href="#" class="dropdown-item"><span class="avatar-sm">МС</span>Марков С.И.</a>
+                  <a href="#" class="dropdown-item"><span class="avatar-sm">ТЕ</span>Титова Е.В.</a>
+                  <a href="#" class="dropdown-item"><span class="avatar-sm">КО</span>Кузнецова О.Р.</a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="column is-6">
+          <div class="field">
+            <label class="label field-label-strong">Срок выполнения</label>
+            <div class="control">
+              <input class="input" type="date" value="2026-08-20">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="label field-label-strong">Описание заявки</label>
+        <div class="control">
+          <textarea class="textarea" rows="3" placeholder="Опишите характер работ, адрес, особые условия…"></textarea>
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="label field-label-strong">Вложение</label>
+        <div class="file has-name is-fullwidth">
+          <label class="file-label">
+            <input class="file-input" type="file" name="attachment">
+            <span class="file-cta">
+              <span class="file-icon"><i class="fas fa-paperclip"></i></span>
+              <span class="file-label">Прикрепить фото/схему</span>
+            </span>
+            <span class="file-name">Файл не выбран</span>
+          </label>
+        </div>
+      </div>
+    </section>
+    <footer class="modal-card-foot" style="justify-content:flex-end;">
+      <button class="button js-modal-close">Отмена</button>
+      <button class="button is-primary">Создать заявку</button>
+    </footer>
+  </div>
+</div>
+
+<script>
+  // Bulma ships no JS — modal/dropdown open state is just a CSS class,
+  // toggled here per Bulma's own documented pattern.
+  document.querySelectorAll('.js-modal-trigger').forEach(function(el){
+    el.addEventListener('click', function(){
+      document.getElementById(el.dataset.target).classList.add('is-active');
+    });
+  });
+  document.querySelectorAll('.modal-background, .js-modal-close').forEach(function(el){
+    el.addEventListener('click', function(){
+      el.closest('.modal').classList.remove('is-active');
+    });
+  });
+  document.addEventListener('keydown', function(e){
+    if(e.key === 'Escape'){
+      document.querySelectorAll('.modal.is-active').forEach(function(m){ m.classList.remove('is-active'); });
+    }
+  });
+
+  // Priority segmented control (Bulma buttons "has-addons" used as a chip group)
+  document.querySelectorAll('#priorityChips .button').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      document.querySelectorAll('#priorityChips .button').forEach(function(b){ b.classList.remove('is-selected','crit-selected'); });
+      btn.classList.add('is-selected');
+      if(btn.dataset.value === 'critical') btn.classList.add('crit-selected');
+    });
+  });
+
+  // Executor dropdown (native Bulma dropdown, click-toggle)
+  var execDropdown = document.getElementById('execDropdown');
+  document.getElementById('execTrigger').addEventListener('click', function(e){
+    e.stopPropagation();
+    execDropdown.classList.toggle('is-active');
+  });
+  document.querySelectorAll('#exec-menu .dropdown-item').forEach(function(item){
+    item.addEventListener('click', function(e){
+      e.preventDefault();
+      document.getElementById('execTrigger').querySelector('span').innerHTML = item.innerHTML;
+      execDropdown.classList.remove('is-active');
+    });
+  });
+  document.addEventListener('click', function(){ execDropdown.classList.remove('is-active'); });
+</script>
+</body>
+</html>

@@ -1,0 +1,489 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Заявки — ЭнергоСетьСтрой (Ant Design Vue)</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="https://unpkg.com/ant-design-vue@4.2.6/dist/reset.css" />
+
+<script src="https://unpkg.com/vue@3.4.31/dist/vue.global.prod.js"></script>
+<script src="https://unpkg.com/dayjs@1.11.11/dayjs.min.js"></script>
+<script src="https://unpkg.com/ant-design-vue@4.2.6/dist/antd.min.js"></script>
+<script src="https://unpkg.com/@ant-design/icons-vue@7.0.1/dist/index.umd.min.js"></script>
+
+<style>
+  :root{
+    --bg-app:#F4F5F7;
+    --bg-surface:#FFFFFF;
+    --bg-dark:#101010;
+    --bg-dark-2:#1A1A1A;
+    --border:#E4E5E9;
+    --border-dark:rgba(255,255,255,.09);
+    --accent:#E07B3E;
+    --accent-hover:#C2632D;
+    --accent-tint:#FDEEE3;
+    --text-primary:#15161A;
+    --text-secondary:#6B6E76;
+    --text-onDark:#FFFFFF;
+    --text-onDark-muted:#9A9CA5;
+    --success:#2FA968;
+    --info:#3B82C4;
+    --purple:#8B6CC1;
+    --danger:#E4483D;
+    --warning:#F2B33D;
+    --low:#8A8D96;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    font-family:'Inter',sans-serif;
+    background:var(--bg-app);
+    color:var(--text-primary);
+    min-width:1280px;
+  }
+  h1,h2,h3,h4,.display,.rajdhani{
+    font-family:'Rajdhani',sans-serif;
+    text-transform:uppercase;
+    letter-spacing:.02em;
+  }
+
+  /* ===== Layout shell ===== */
+  #app{min-height:100vh;}
+  .app-header{
+    height:64px;
+    background:var(--bg-dark) !important;
+    border-bottom:1px solid var(--border-dark);
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:0 20px 0 16px;
+    position:sticky;
+    top:0;
+    z-index:100;
+    gap:20px;
+  }
+  .brand{display:flex; align-items:center; gap:10px; color:#fff; flex:0 0 auto;}
+  .brand svg{width:30px; height:30px; color:var(--accent); flex:none;}
+  .brand .wordmark{
+    font-family:'Rajdhani',sans-serif;
+    font-weight:700;
+    font-size:15px;
+    line-height:.95;
+    letter-spacing:.03em;
+    color:#fff;
+  }
+  .brand .wordmark div:last-child{color:var(--text-onDark-muted); font-weight:600;}
+  .header-search{flex:1 1 auto; max-width:420px;}
+  .header-actions{display:flex; align-items:center; gap:14px; flex:0 0 auto;}
+  .bell-btn{color:#fff !important;}
+  .user-box{display:flex; align-items:center; gap:10px; color:#fff;}
+  .user-box .u-name{font-size:13px; font-weight:600; line-height:1.2;}
+  .user-box .u-role{font-size:11.5px; color:var(--text-onDark-muted); line-height:1.2;}
+
+  .app-sider{
+    background:var(--bg-dark) !important;
+  }
+  .app-sider .ant-menu{
+    background:transparent !important;
+    border-inline-end:none !important;
+    padding:12px 8px;
+  }
+  .app-sider .ant-menu-item{
+    color:var(--text-onDark-muted) !important;
+    border-radius:8px !important;
+    margin-block:2px !important;
+    font-size:14px;
+  }
+  .app-sider .ant-menu-item .anticon{color:inherit;}
+  .app-sider .ant-menu-item:hover{
+    background:var(--bg-dark-2) !important;
+    color:#fff !important;
+  }
+  .app-sider .ant-menu-item-selected{
+    background:var(--accent) !important;
+    color:#fff !important;
+  }
+  .app-sider .ant-menu-item-selected .anticon{color:#fff !important;}
+
+  .content-wrap{padding:24px 28px 40px;}
+  .breadcrumbs{color:var(--text-secondary); font-size:13px; margin-bottom:6px;}
+  .page-title{font-size:26px; margin:0 0 20px; color:var(--text-primary);}
+
+  .kpi-row{margin-bottom:20px;}
+  .kpi-card .ant-card-body{padding:18px 20px;}
+  .kpi-label{font-size:12.5px; color:var(--text-secondary); font-weight:600; text-transform:uppercase; letter-spacing:.03em;}
+  .kpi-value{font-family:'Rajdhani',sans-serif; font-weight:700; font-size:34px; line-height:1.1; margin-top:6px;}
+
+  .toolbar-card .ant-card-body{padding:14px 16px;}
+  .toolbar{display:flex; flex-wrap:wrap; gap:10px; align-items:center;}
+  .toolbar .grow{flex:1 1 260px; min-width:220px;}
+  .toolbar .filter{width:170px;}
+
+  .table-card .ant-card-body{padding:0;}
+  .table-card{margin-top:16px;}
+  .status-tag, .priority-tag{
+    border-radius:999px;
+    padding:2px 12px;
+    font-weight:600;
+    font-size:12px;
+    border:none;
+  }
+  .executor-cell{display:flex; align-items:center; gap:8px;}
+  .foot-note{
+    padding:14px 28px 26px;
+    color:#9A9CA5;
+    font-size:11.5px;
+  }
+
+  .ant-card{
+    border-radius:12px !important;
+    border:1px solid var(--border) !important;
+    box-shadow:0 1px 2px rgba(16,16,16,.06), 0 8px 24px rgba(16,16,16,.06);
+  }
+  .ant-table-wrapper{border-radius:12px; overflow:hidden;}
+  .ant-modal-content{border-radius:12px !important;}
+  .ant-btn{border-radius:8px !important;}
+  .ant-input, .ant-select-selector, .ant-picker, .ant-input-affix-wrapper, .ant-input-number{
+    border-radius:8px !important;
+  }
+  .ant-radio-button-wrapper:first-child{border-start-start-radius:8px; border-end-start-radius:8px;}
+  .ant-radio-button-wrapper:last-child{border-start-end-radius:8px; border-end-end-radius:8px;}
+
+  .priority-radio .ant-radio-button-wrapper-checked{
+    background:var(--accent) !important;
+    border-color:var(--accent) !important;
+    color:#fff !important;
+  }
+  .priority-radio .ant-radio-button-wrapper-checked::before{background:var(--accent) !important;}
+
+  .form-avatar-opt{display:flex; align-items:center; gap:8px;}
+</style>
+</head>
+<body>
+<div id="app">
+  <a-config-provider :theme="theme" :locale="ruLocale">
+    <a-layout style="min-height:100vh; background:var(--bg-app);">
+
+      <div class="app-header">
+        <div class="brand">
+          <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <circle cx="50" cy="50" r="42" fill="none" stroke="currentColor" stroke-width="7" stroke-dasharray="240 24" stroke-linecap="round"/>
+            <circle cx="50" cy="50" r="27" fill="none" stroke="currentColor" stroke-width="7" stroke-dasharray="148 22" stroke-linecap="round" transform="rotate(35 50 50)"/>
+          </svg>
+          <div class="wordmark"><div>ЭНЕРГО</div><div>СЕТЬСТРОЙ</div></div>
+        </div>
+
+        <div class="header-search">
+          <a-input-search placeholder="Поиск по номеру, теме, объекту…" allow-clear>
+            <template #prefix><search-outlined style="color:#9A9CA5;" /></template>
+          </a-input-search>
+        </div>
+
+        <div class="header-actions">
+          <a-badge :count="3" size="small">
+            <a-button class="bell-btn" type="text" shape="circle">
+              <template #icon><bell-outlined /></template>
+            </a-button>
+          </a-badge>
+          <a-button type="primary" @click="modalOpen = true">
+            <template #icon><plus-outlined /></template>
+            Новая заявка
+          </a-button>
+          <div class="user-box">
+            <a-avatar style="background:var(--accent);">ИК</a-avatar>
+            <div>
+              <div class="u-name">Иванова К.С.</div>
+              <div class="u-role">Диспетчер</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <a-layout>
+        <a-layout-sider class="app-sider" width="250">
+          <a-menu mode="inline" :selected-keys="['requests']" :items="menuItems"></a-menu>
+        </a-layout-sider>
+
+        <a-layout-content>
+          <div class="content-wrap">
+            <div class="breadcrumbs">Главная / Заявки</div>
+            <h1 class="page-title">Заявки</h1>
+
+            <a-row :gutter="16" class="kpi-row">
+              <a-col :span="6">
+                <a-card class="kpi-card">
+                  <div class="kpi-label">Всего заявок</div>
+                  <div class="kpi-value" style="color:var(--text-primary);">128</div>
+                </a-card>
+              </a-col>
+              <a-col :span="6">
+                <a-card class="kpi-card">
+                  <div class="kpi-label">В работе</div>
+                  <div class="kpi-value" style="color:var(--accent);">34</div>
+                </a-card>
+              </a-col>
+              <a-col :span="6">
+                <a-card class="kpi-card">
+                  <div class="kpi-label">Выполнено</div>
+                  <div class="kpi-value" style="color:var(--success);">81</div>
+                </a-card>
+              </a-col>
+              <a-col :span="6">
+                <a-card class="kpi-card">
+                  <div class="kpi-label">Просрочено</div>
+                  <div class="kpi-value" style="color:var(--danger);">7</div>
+                </a-card>
+              </a-col>
+            </a-row>
+
+            <a-card class="toolbar-card">
+              <div class="toolbar">
+                <div class="grow">
+                  <a-input-search v-model:value="search" placeholder="Поиск по номеру, теме, объекту…" allow-clear />
+                </div>
+                <a-select v-model:value="filterStatus" class="filter" :options="statusFilterOptions" />
+                <a-select v-model:value="filterPriority" class="filter" :options="priorityFilterOptions" />
+                <a-select v-model:value="filterObject" class="filter" :options="objectFilterOptions" />
+                <a-button type="primary" @click="modalOpen = true">
+                  <template #icon><plus-outlined /></template>
+                  Новая заявка
+                </a-button>
+              </div>
+            </a-card>
+
+            <a-card class="table-card">
+              <a-table
+                :columns="columns"
+                :data-source="requests"
+                :pagination="{ pageSize: 10, showTotal: t => `Всего: ${t}` }"
+                row-key="id"
+              >
+                <template #bodyCell="{ column, record }">
+                  <template v-if="column.key === 'priority'">
+                    <a-tag class="priority-tag" :style="tagStyle(priorityColor(record.priority))">{{ record.priority }}</a-tag>
+                  </template>
+                  <template v-else-if="column.key === 'status'">
+                    <a-tag class="status-tag" :style="tagStyle(statusColor(record.status))">{{ record.status }}</a-tag>
+                  </template>
+                  <template v-else-if="column.key === 'executor'">
+                    <div class="executor-cell">
+                      <a-avatar size="small" :style="{background:'var(--accent-tint)', color:'var(--accent-hover)', fontWeight:600}">
+                        {{ initials(record.executor) }}
+                      </a-avatar>
+                      <span>{{ record.executor }}</span>
+                    </div>
+                  </template>
+                  <template v-else-if="column.key === 'actions'">
+                    <a-space>
+                      <a-button type="text" size="small"><template #icon><eye-outlined /></template></a-button>
+                      <a-button type="text" size="small"><template #icon><edit-outlined /></template></a-button>
+                    </a-space>
+                  </template>
+                </template>
+              </a-table>
+            </a-card>
+
+            <div class="foot-note">
+              Kit: Ant Design Vue v4.2.6 (+ Vue 3.4.31) · CDN: unpkg.com/ant-design-vue, unpkg.com/vue, unpkg.com/@ant-design/icons-vue · Icons: Ant Design Icons (@ant-design/icons-vue)
+            </div>
+          </div>
+        </a-layout-content>
+      </a-layout>
+    </a-layout>
+
+    <a-modal
+      v-model:open="modalOpen"
+      title="Новая заявка"
+      ok-text="Создать заявку"
+      cancel-text="Отмена"
+      width="640px"
+      @ok="submitForm"
+    >
+      <a-form layout="vertical" :model="form">
+        <a-form-item label="Тема заявки" required>
+          <a-input v-model:value="form.topic" placeholder="Например: Замена автоматического выключателя" />
+        </a-form-item>
+
+        <a-row :gutter="12">
+          <a-col :span="12">
+            <a-form-item label="Категория">
+              <a-select v-model:value="form.category" :options="categoryOptions" placeholder="Выберите категорию" />
+            </a-form-item>
+          </a-col>
+          <a-col :span="12">
+            <a-form-item label="Объект">
+              <a-select v-model:value="form.object" :options="objectOptions" placeholder="Выберите объект" />
+            </a-form-item>
+          </a-col>
+        </a-row>
+
+        <a-form-item label="Приоритет">
+          <a-radio-group v-model:value="form.priority" button-style="solid" class="priority-radio">
+            <a-radio-button value="Низкий">Низкий</a-radio-button>
+            <a-radio-button value="Средний">Средний</a-radio-button>
+            <a-radio-button value="Высокий">Высокий</a-radio-button>
+            <a-radio-button value="Критический">Критический</a-radio-button>
+          </a-radio-group>
+        </a-form-item>
+
+        <a-row :gutter="12">
+          <a-col :span="12">
+            <a-form-item label="Ответственный исполнитель">
+              <a-select v-model:value="form.executor" placeholder="Выберите исполнителя">
+                <a-select-option v-for="e in executors" :key="e" :value="e">
+                  <div class="form-avatar-opt">
+                    <a-avatar size="small" :style="{background:'var(--accent-tint)', color:'var(--accent-hover)'}">{{ initials(e) }}</a-avatar>
+                    <span>{{ e }}</span>
+                  </div>
+                </a-select-option>
+              </a-select>
+            </a-form-item>
+          </a-col>
+          <a-col :span="12">
+            <a-form-item label="Срок выполнения">
+              <a-date-picker v-model:value="form.due" style="width:100%;" format="DD.MM.YYYY" placeholder="Выберите дату" />
+            </a-form-item>
+          </a-col>
+        </a-row>
+
+        <a-form-item label="Описание заявки">
+          <a-textarea v-model:value="form.description" :rows="4" placeholder="Опишите характер работ, адрес, особые условия…" />
+        </a-form-item>
+
+        <a-form-item label="Вложение">
+          <a-upload :before-upload="() => false" :max-count="1">
+            <a-button>
+              <template #icon><paper-clip-outlined /></template>
+              Прикрепить фото/схему
+            </a-button>
+          </a-upload>
+        </a-form-item>
+      </a-form>
+    </a-modal>
+  </a-config-provider>
+</div>
+
+<script>
+const {
+  PlusOutlined, SearchOutlined, BellOutlined, EyeOutlined, EditOutlined,
+  PaperClipOutlined, DashboardOutlined, UnorderedListOutlined,
+  EnvironmentOutlined, TeamOutlined, BarChartOutlined, SettingOutlined
+} = icons;
+
+const REQUESTS = [
+  { id:'ЗЯ-2481', topic:'Замена автоматического выключателя на ТП-14', category:'Электромонтажные работы', object:'Братск', priority:'Высокий', status:'В работе', executor:'Соколов А.П.', due:'12.08.2026' },
+  { id:'ЗЯ-2480', topic:'Плановое ТО ВЛ-10кВ, участок Братск—Усть-Илимск', category:'Обслуживание сетей', object:'Усть-Илимск', priority:'Средний', status:'Новая', executor:'Гришин Д.О.', due:'18.08.2026' },
+  { id:'ЗЯ-2479', topic:'Аварийное отключение на подстанции №3', category:'Аварийная заявка', object:'Иркутск', priority:'Критический', status:'В работе', executor:'Марков С.И.', due:'07.08.2026' },
+  { id:'ЗЯ-2478', topic:'Монтаж кабельной линии 0.4кВ', category:'Электромонтажные работы', object:'Ангарск', priority:'Средний', status:'На проверке', executor:'Титова Е.В.', due:'15.08.2026' },
+  { id:'ЗЯ-2477', topic:'Проверка изоляции трансформатора Т-2', category:'Диагностика оборудования', object:'Тимлюй', priority:'Низкий', status:'Выполнена', executor:'Соколов А.П.', due:'02.08.2026' },
+  { id:'ЗЯ-2476', topic:'Ремонт опоры ЛЭП после грозового повреждения', category:'Аварийная заявка', object:'Усть-Кут', priority:'Критический', status:'Просрочена', executor:'Гришин Д.О.', due:'04.08.2026' },
+  { id:'ЗЯ-2475', topic:'Технологическое присоединение нового объекта', category:'Технологическое присоединение', object:'Яракта', priority:'Высокий', status:'Новая', executor:'Кузнецова О.Р.', due:'22.08.2026' },
+  { id:'ЗЯ-2474', topic:'Замена счётчика электроэнергии', category:'Обслуживание сетей', object:'Бохан', priority:'Низкий', status:'Выполнена', executor:'Марков С.И.', due:'30.07.2026' },
+  { id:'ЗЯ-2473', topic:'Диагностика РЗА на подстанции', category:'Диагностика оборудования', object:'Краснокаменск', priority:'Средний', status:'В работе', executor:'Титова Е.В.', due:'19.08.2026' },
+  { id:'ЗЯ-2472', topic:'Плановый осмотр опор ВЛ-35кВ', category:'Обслуживание сетей', object:'Торей', priority:'Низкий', status:'Выполнена', executor:'Кузнецова О.Р.', due:'28.07.2026' },
+];
+
+const OBJECTS = ['Братск','Усть-Илимск','Иркутск','Ангарск','Усть-Кут','Яракта','Бохан','Тимлюй','Краснокаменск','Торей'];
+const CATEGORIES = ['Электромонтажные работы','Обслуживание сетей','Аварийная заявка','Технологическое присоединение','Диагностика оборудования'];
+const EXECUTORS = ['Соколов А.П.','Гришин Д.О.','Марков С.И.','Титова Е.В.','Кузнецова О.Р.'];
+
+const App = {
+  components: {
+    PlusOutlined, SearchOutlined, BellOutlined, EyeOutlined, EditOutlined,
+    PaperClipOutlined, DashboardOutlined, UnorderedListOutlined,
+    EnvironmentOutlined, TeamOutlined, BarChartOutlined, SettingOutlined
+  },
+  setup() {
+    const { reactive, ref, h } = Vue;
+
+    const theme = {
+      token: {
+        colorPrimary: '#E07B3E',
+        colorInfo: '#E07B3E',
+        borderRadius: 8,
+        fontFamily: "'Inter', sans-serif",
+        colorLink: '#E07B3E',
+      }
+    };
+
+    const modalOpen = ref(false);
+    const search = ref('');
+    const filterStatus = ref('all');
+    const filterPriority = ref('all');
+    const filterObject = ref('all');
+
+    const form = reactive({
+      topic: '', category: undefined, priority: 'Средний', object: undefined,
+      executor: undefined, due: null, description: ''
+    });
+
+    const menuItems = [
+      { key:'dashboard', icon: () => h(DashboardOutlined), label:'Дашборд' },
+      { key:'requests', icon: () => h(UnorderedListOutlined), label:'Заявки' },
+      { key:'objects', icon: () => h(EnvironmentOutlined), label:'Объекты' },
+      { key:'executors', icon: () => h(TeamOutlined), label:'Исполнители' },
+      { key:'reports', icon: () => h(BarChartOutlined), label:'Отчёты' },
+      { key:'settings', icon: () => h(SettingOutlined), label:'Настройки' },
+    ];
+
+    const statusFilterOptions = [
+      {value:'all', label:'Статус: Все'},{value:'Новая', label:'Новая'},{value:'В работе', label:'В работе'},
+      {value:'На проверке', label:'На проверке'},{value:'Выполнена', label:'Выполнена'},{value:'Просрочена', label:'Просрочена'}
+    ];
+    const priorityFilterOptions = [
+      {value:'all', label:'Приоритет: Все'},{value:'Низкий', label:'Низкий'},{value:'Средний', label:'Средний'},
+      {value:'Высокий', label:'Высокий'},{value:'Критический', label:'Критический'}
+    ];
+    const objectFilterOptions = [{value:'all', label:'Объект: Все'}, ...OBJECTS.map(o=>({value:o, label:o}))];
+    const categoryOptions = CATEGORIES.map(c=>({value:c,label:c}));
+    const objectOptions = OBJECTS.map(o=>({value:o,label:o}));
+
+    const columns = [
+      { title:'№', dataIndex:'id', key:'id', width:100 },
+      { title:'Тема заявки', dataIndex:'topic', key:'topic' },
+      { title:'Категория', dataIndex:'category', key:'category', width:180 },
+      { title:'Объект', dataIndex:'object', key:'object', width:120 },
+      { title:'Приоритет', dataIndex:'priority', key:'priority', width:120 },
+      { title:'Статус', dataIndex:'status', key:'status', width:130 },
+      { title:'Исполнитель', dataIndex:'executor', key:'executor', width:170 },
+      { title:'Срок', dataIndex:'due', key:'due', width:110 },
+      { title:'Действия', key:'actions', width:90 },
+    ];
+
+    function statusColor(s){
+      return { 'Новая':'#3B82C4','В работе':'#E07B3E','На проверке':'#8B6CC1','Выполнена':'#2FA968','Просрочена':'#E4483D' }[s];
+    }
+    function priorityColor(p){
+      return { 'Низкий':'#8A8D96','Средний':'#F2B33D','Высокий':'#E07B3E','Критический':'#E4483D' }[p];
+    }
+    function tagStyle(hex){
+      return { color: hex, background: hex + '1A', borderColor: hex + '33' };
+    }
+    function initials(full){
+      const parts = full.split(' ');
+      return (parts[0]?.[0]||'') + (parts[1]?.[0]||'');
+    }
+    function submitForm(){
+      modalOpen.value = false;
+    }
+
+    return {
+      theme, ruLocale: undefined,
+      modalOpen, search, filterStatus, filterPriority, filterObject,
+      form, menuItems, statusFilterOptions, priorityFilterOptions, objectFilterOptions,
+      categoryOptions, objectOptions, columns, requests: REQUESTS, executors: EXECUTORS,
+      statusColor, priorityColor, tagStyle, initials, submitForm
+    };
+  }
+};
+
+const app = Vue.createApp(App);
+app.use(antd);
+app.mount('#app');
+</script>
+</body>
+</html>
