@@ -76,9 +76,25 @@
   sl-input::part(base){border-radius:8px;}
   sl-select::part(combobox){border-radius:8px;}
   sl-textarea::part(base){border-radius:8px;}
-  sl-badge::part(base){border-radius:8px;font-weight:600;}
-  sl-badge.pill::part(base){border-radius:999px;}
+  /* status badges get the brand's 8px radius; priority badges keep Shoelace's native `pill` attribute radius untouched */
+  sl-badge.status-badge::part(base){border-radius:8px;font-weight:600;}
+  sl-badge:not(.status-badge)::part(base){font-weight:600;}
   sl-avatar::part(base){border-radius:50%;}
+
+  /* Shoelace ships sl-badge as a solid filled chip (variant-600 bg + white text); the brand wants soft
+     tinted pills, so background/text are set explicitly per state through the exposed `base` shadow part
+     rather than relying on the `variant` prop. */
+  sl-badge.pr-low::part(base){background:#EEEEF0;color:var(--low);border:none;}
+  sl-badge.pr-medium::part(base){background:#FDF3E0;color:#B8801F;border:none;}
+  sl-badge.pr-high::part(base){background:var(--accent-tint);color:var(--accent-hover);border:none;}
+  sl-badge.pr-critical::part(base){background:#FCE7E5;color:var(--danger);border:none;}
+  sl-badge.st-new::part(base){background:#E7F1FA;color:var(--info);border:none;}
+  sl-badge.st-progress::part(base){background:var(--accent-tint);color:var(--accent-hover);border:none;}
+  sl-badge.st-review::part(base){background:#F1ECFA;color:var(--purple);border:none;}
+  sl-badge.st-done::part(base){background:#E6F6ED;color:var(--success);border:none;}
+  sl-badge.st-overdue::part(base){background:#FCE7E5;color:var(--danger);border:none;}
+  sl-badge.status-badge::part(base){display:inline-flex;align-items:center;gap:6px;}
+  sl-badge.status-badge::part(base)::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor;}
 
   /* ============ LAYOUT ============ */
   .app-shell{display:flex;flex-direction:column;min-height:100vh;}
@@ -373,8 +389,8 @@
               <td class="req-topic">Замена автоматического выключателя на ТП-14</td>
               <td>Электромонтажные работы</td>
               <td>Братск</td>
-              <td><sl-badge class="pill" style="--sl-color-primary-600:var(--accent-hover);--sl-color-primary-100:var(--accent-tint);" variant="primary" pill>Высокий</sl-badge></td>
-              <td><sl-badge style="background:var(--accent-tint);color:var(--accent-hover);border-color:transparent;">В работе</sl-badge></td>
+              <td><sl-badge class="pill pr-high" pill>Высокий</sl-badge></td>
+              <td><sl-badge class="status-badge st-progress">В работе</sl-badge></td>
               <td><div class="avatar-cell"><sl-avatar initials="СА"></sl-avatar>Соколов А.П.</div></td>
               <td>12.08.2026</td>
               <td><div class="action-icons"><sl-icon-button name="eye" label="Просмотреть"></sl-icon-button><sl-icon-button name="pencil-square" label="Редактировать"></sl-icon-button></div></td>
@@ -384,8 +400,8 @@
               <td class="req-topic">Плановое ТО ВЛ-10кВ, участок Братск—Усть-Илимск</td>
               <td>Обслуживание сетей</td>
               <td>Усть-Илимск</td>
-              <td><sl-badge class="pill" pill style="background:#FDF3E0;color:#B8801F;border-color:transparent;">Средний</sl-badge></td>
-              <td><sl-badge style="background:#E7F1FA;color:var(--info);border-color:transparent;">Новая</sl-badge></td>
+              <td><sl-badge class="pill pr-medium" pill>Средний</sl-badge></td>
+              <td><sl-badge class="status-badge st-new">Новая</sl-badge></td>
               <td><div class="avatar-cell"><sl-avatar initials="ГД"></sl-avatar>Гришин Д.О.</div></td>
               <td>18.08.2026</td>
               <td><div class="action-icons"><sl-icon-button name="eye" label="Просмотреть"></sl-icon-button><sl-icon-button name="pencil-square" label="Редактировать"></sl-icon-button></div></td>
@@ -395,8 +411,8 @@
               <td class="req-topic">Аварийное отключение на подстанции №3</td>
               <td>Аварийная заявка</td>
               <td>Иркутск</td>
-              <td><sl-badge class="pill" pill variant="danger">Критический</sl-badge></td>
-              <td><sl-badge style="background:var(--accent-tint);color:var(--accent-hover);border-color:transparent;">В работе</sl-badge></td>
+              <td><sl-badge class="pill pr-critical" pill>Критический</sl-badge></td>
+              <td><sl-badge class="status-badge st-progress">В работе</sl-badge></td>
               <td><div class="avatar-cell"><sl-avatar initials="МС"></sl-avatar>Марков С.И.</div></td>
               <td>07.08.2026</td>
               <td><div class="action-icons"><sl-icon-button name="eye" label="Просмотреть"></sl-icon-button><sl-icon-button name="pencil-square" label="Редактировать"></sl-icon-button></div></td>
@@ -406,8 +422,8 @@
               <td class="req-topic">Монтаж кабельной линии 0.4кВ</td>
               <td>Электромонтажные работы</td>
               <td>Ангарск</td>
-              <td><sl-badge class="pill" pill style="background:#FDF3E0;color:#B8801F;border-color:transparent;">Средний</sl-badge></td>
-              <td><sl-badge style="background:#F1ECFA;color:var(--purple);border-color:transparent;">На проверке</sl-badge></td>
+              <td><sl-badge class="pill pr-medium" pill>Средний</sl-badge></td>
+              <td><sl-badge class="status-badge st-review">На проверке</sl-badge></td>
               <td><div class="avatar-cell"><sl-avatar initials="ТЕ"></sl-avatar>Титова Е.В.</div></td>
               <td>15.08.2026</td>
               <td><div class="action-icons"><sl-icon-button name="eye" label="Просмотреть"></sl-icon-button><sl-icon-button name="pencil-square" label="Редактировать"></sl-icon-button></div></td>
@@ -417,8 +433,8 @@
               <td class="req-topic">Проверка изоляции трансформатора Т-2</td>
               <td>Диагностика оборудования</td>
               <td>Тимлюй</td>
-              <td><sl-badge class="pill" pill style="background:#EEEEF0;color:var(--low);border-color:transparent;">Низкий</sl-badge></td>
-              <td><sl-badge variant="success" style="background:#E6F6ED;color:var(--success);border-color:transparent;">Выполнена</sl-badge></td>
+              <td><sl-badge class="pill pr-low" pill>Низкий</sl-badge></td>
+              <td><sl-badge class="status-badge st-done">Выполнена</sl-badge></td>
               <td><div class="avatar-cell"><sl-avatar initials="СА"></sl-avatar>Соколов А.П.</div></td>
               <td>02.08.2026</td>
               <td><div class="action-icons"><sl-icon-button name="eye" label="Просмотреть"></sl-icon-button><sl-icon-button name="pencil-square" label="Редактировать"></sl-icon-button></div></td>
@@ -428,8 +444,8 @@
               <td class="req-topic">Ремонт опоры ЛЭП после грозового повреждения</td>
               <td>Аварийная заявка</td>
               <td>Усть-Кут</td>
-              <td><sl-badge class="pill" pill variant="danger">Критический</sl-badge></td>
-              <td><sl-badge variant="danger">Просрочена</sl-badge></td>
+              <td><sl-badge class="pill pr-critical" pill>Критический</sl-badge></td>
+              <td><sl-badge class="status-badge st-overdue">Просрочена</sl-badge></td>
               <td><div class="avatar-cell"><sl-avatar initials="ГД"></sl-avatar>Гришин Д.О.</div></td>
               <td>04.08.2026</td>
               <td><div class="action-icons"><sl-icon-button name="eye" label="Просмотреть"></sl-icon-button><sl-icon-button name="pencil-square" label="Редактировать"></sl-icon-button></div></td>
@@ -439,8 +455,8 @@
               <td class="req-topic">Технологическое присоединение нового объекта</td>
               <td>Технологическое присоединение</td>
               <td>Яракта</td>
-              <td><sl-badge class="pill" pill variant="primary" style="background:var(--accent-tint);color:var(--accent-hover);border-color:transparent;">Высокий</sl-badge></td>
-              <td><sl-badge style="background:#E7F1FA;color:var(--info);border-color:transparent;">Новая</sl-badge></td>
+              <td><sl-badge class="pill pr-high" pill>Высокий</sl-badge></td>
+              <td><sl-badge class="status-badge st-new">Новая</sl-badge></td>
               <td><div class="avatar-cell"><sl-avatar initials="КО"></sl-avatar>Кузнецова О.Р.</div></td>
               <td>22.08.2026</td>
               <td><div class="action-icons"><sl-icon-button name="eye" label="Просмотреть"></sl-icon-button><sl-icon-button name="pencil-square" label="Редактировать"></sl-icon-button></div></td>
@@ -450,8 +466,8 @@
               <td class="req-topic">Замена счётчика электроэнергии</td>
               <td>Обслуживание сетей</td>
               <td>Бохан</td>
-              <td><sl-badge class="pill" pill style="background:#EEEEF0;color:var(--low);border-color:transparent;">Низкий</sl-badge></td>
-              <td><sl-badge style="background:#E6F6ED;color:var(--success);border-color:transparent;">Выполнена</sl-badge></td>
+              <td><sl-badge class="pill pr-low" pill>Низкий</sl-badge></td>
+              <td><sl-badge class="status-badge st-done">Выполнена</sl-badge></td>
               <td><div class="avatar-cell"><sl-avatar initials="МС"></sl-avatar>Марков С.И.</div></td>
               <td>30.07.2026</td>
               <td><div class="action-icons"><sl-icon-button name="eye" label="Просмотреть"></sl-icon-button><sl-icon-button name="pencil-square" label="Редактировать"></sl-icon-button></div></td>
@@ -461,8 +477,8 @@
               <td class="req-topic">Диагностика РЗА на подстанции</td>
               <td>Диагностика оборудования</td>
               <td>Краснокаменск</td>
-              <td><sl-badge class="pill" pill style="background:#FDF3E0;color:#B8801F;border-color:transparent;">Средний</sl-badge></td>
-              <td><sl-badge style="background:var(--accent-tint);color:var(--accent-hover);border-color:transparent;">В работе</sl-badge></td>
+              <td><sl-badge class="pill pr-medium" pill>Средний</sl-badge></td>
+              <td><sl-badge class="status-badge st-progress">В работе</sl-badge></td>
               <td><div class="avatar-cell"><sl-avatar initials="ТЕ"></sl-avatar>Титова Е.В.</div></td>
               <td>19.08.2026</td>
               <td><div class="action-icons"><sl-icon-button name="eye" label="Просмотреть"></sl-icon-button><sl-icon-button name="pencil-square" label="Редактировать"></sl-icon-button></div></td>
@@ -472,8 +488,8 @@
               <td class="req-topic">Плановый осмотр опор ВЛ-35кВ</td>
               <td>Обслуживание сетей</td>
               <td>Торей</td>
-              <td><sl-badge class="pill" pill style="background:#EEEEF0;color:var(--low);border-color:transparent;">Низкий</sl-badge></td>
-              <td><sl-badge style="background:#E6F6ED;color:var(--success);border-color:transparent;">Выполнена</sl-badge></td>
+              <td><sl-badge class="pill pr-low" pill>Низкий</sl-badge></td>
+              <td><sl-badge class="status-badge st-done">Выполнена</sl-badge></td>
               <td><div class="avatar-cell"><sl-avatar initials="КО"></sl-avatar>Кузнецова О.Р.</div></td>
               <td>28.07.2026</td>
               <td><div class="action-icons"><sl-icon-button name="eye" label="Просмотреть"></sl-icon-button><sl-icon-button name="pencil-square" label="Редактировать"></sl-icon-button></div></td>
