@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ЭнергоСетьСтрой — UI-Kit Survey</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg-app:#F4F5F7; --bg-surface:#FFFFFF; --bg-dark:#101010; --bg-dark-2:#1A1A1A;
+    --border:#E4E5E9; --border-dark:rgba(255,255,255,.09);
+    --accent:#E07B3E; --accent-hover:#C2632D; --accent-tint:#FDEEE3;
+    --text-primary:#15161A; --text-secondary:#6B6E76;
+    --text-onDark:#FFFFFF; --text-onDark-muted:#9A9CA5;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg-app);color:var(--text-primary);font-family:'Inter',sans-serif;}
+  h1,h2,.display{font-family:'Rajdhani',sans-serif;font-weight:700;text-transform:uppercase;letter-spacing:.02em;}
+  header{background:var(--bg-dark);color:var(--text-onDark);padding:22px 40px;display:flex;align-items:center;gap:16px;border-bottom:1px solid var(--border-dark);}
+  header svg{width:38px;height:38px;color:var(--accent);flex-shrink:0;}
+  header .wordmark{line-height:.95;font-family:'Rajdhani',sans-serif;font-weight:700;font-size:19px;letter-spacing:.01em;}
+  header .sub{font-family:'Inter',sans-serif;text-transform:none;font-weight:400;font-size:13px;color:var(--text-onDark-muted);letter-spacing:0;margin-top:2px;}
+  main{max-width:1220px;margin:0 auto;padding:40px;}
+  .hero{margin-bottom:32px;}
+  .hero h1{font-size:32px;margin:0 0 10px;}
+  .hero p{color:var(--text-secondary);max-width:780px;line-height:1.55;font-size:15px;}
+  .hero .links{margin-top:16px;display:flex;gap:12px;flex-wrap:wrap;}
+  .hero .links a{font-family:'Inter';font-weight:600;font-size:13px;color:var(--accent-hover);text-decoration:none;border:1px solid var(--accent);border-radius:8px;padding:8px 14px;background:var(--accent-tint);}
+  .hero .links a:hover{background:var(--accent);color:#fff;}
+  .group{margin:36px 0 18px;}
+  .group h2{font-size:14px;color:var(--text-secondary);letter-spacing:.08em;border-bottom:1px solid var(--border);padding-bottom:8px;}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:16px;}
+  .card{background:var(--bg-surface);border:1px solid var(--border);border-radius:12px;padding:18px;text-decoration:none;color:inherit;display:flex;flex-direction:column;gap:8px;box-shadow:0 1px 2px rgba(16,16,16,.06);transition:transform .12s ease, box-shadow .12s ease;}
+  .card:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(16,16,16,.10);border-color:var(--accent);}
+  .card .name{font-family:'Rajdhani';font-weight:700;font-size:20px;letter-spacing:.01em;}
+  .card .stack{font-size:12px;color:var(--accent-hover);font-weight:600;}
+  .card .desc{font-size:13px;color:var(--text-secondary);line-height:1.45;flex-grow:1;}
+  .card .icons{font-size:11px;color:var(--text-secondary);border-top:1px dashed var(--border);padding-top:8px;margin-top:4px;}
+  footer{max-width:1220px;margin:0 auto;padding:20px 40px 60px;color:var(--text-secondary);font-size:12px;line-height:1.6;}
+</style>
+</head>
+<body>
+<header>
+  <svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="42" fill="none" stroke="currentColor" stroke-width="7" stroke-dasharray="240 24" stroke-linecap="round"/><circle cx="50" cy="50" r="27" fill="none" stroke="currentColor" stroke-width="7" stroke-dasharray="148 22" stroke-linecap="round" transform="rotate(35 50 50)"/></svg>
+  <div>
+    <div class="wordmark">ЭНЕРГО<br/>СЕТЬСТРОЙ</div>
+  </div>
+  <div class="sub" style="margin-left:auto;text-align:right;">Учебный проект · сравнение UI-китов<br/>не аффилировано с реальной компанией</div>
+</header>
+
+<main>
+  <div class="hero">
+    <h1>UI-Kit Survey — «Заявки»</h1>
+    <p>
+      Одна и та же корпоративная система создания заявок (энергетическая/электромонтажная
+      тематика), собранная 12 раз — под 12 разных UI-китов, по единому дизайн-брифу
+      (цвета, шрифты, макет, состав экранов). Цель — визуально сравнить, как одна и та же
+      задача выглядит и ощущается в разных библиотеках, чтобы быстрее выбирать подходящий
+      кит под конкретный проект.
+    </p>
+    <div class="links">
+      <a href="RESEARCH.md">📄 Сравнительное исследование (плюсы/минусы, icon-киты)</a>
+      <a href="shared/brand.md">🎨 Бренд-бриф / дизайн-токены</a>
+    </div>
+  </div>
+
+  <div class="group">
+    <h2>CSS-фреймворки и классические компонентные киты (vanilla)</h2>
+    <div class="grid">
+      <a class="card" href="kits/bootstrap/index.html">
+        <div class="name">Bootstrap 5</div>
+        <div class="stack">CSS + JS · Vanilla</div>
+        <div class="desc">Самый узнаваемый фреймворк в индустрии, огромное community, низкий порог входа.</div>
+        <div class="icons">Иконки: Bootstrap Icons</div>
+      </a>
+      <a class="card" href="kits/bulma/index.html">
+        <div class="name">Bulma</div>
+        <div class="stack">CSS-only (Flexbox/Grid)</div>
+        <div class="desc">Чистый CSS без JS, современный вид, лёгкая кастомизация через HSL-переменные.</div>
+        <div class="icons">Иконки: Font Awesome</div>
+      </a>
+      <a class="card" href="kits/materialize/index.html">
+        <div class="name">Materialize CSS</div>
+        <div class="stack">CSS + JS · Material Design 1</div>
+        <div class="desc">Классический Material Design без React/Angular, простая семантика классов.</div>
+        <div class="icons">Иконки: Material Icons</div>
+      </a>
+      <a class="card" href="kits/fomantic-ui/index.html">
+        <div class="name">Fomantic-UI</div>
+        <div class="stack">CSS + jQuery</div>
+        <div class="desc">Форк Semantic UI, «человекочитаемая» разметка, богатый набор компонентов.</div>
+        <div class="icons">Иконки: встроенный icon-font</div>
+      </a>
+      <a class="card" href="kits/tailwind-daisyui/index.html">
+        <div class="name">Tailwind CSS + DaisyUI</div>
+        <div class="stack">Utility-first + компонентный слой</div>
+        <div class="desc">Полный контроль над стилем через утилиты + готовые компоненты DaisyUI поверх.</div>
+        <div class="icons">Иконки: Heroicons</div>
+      </a>
+    </div>
+  </div>
+
+  <div class="group">
+    <h2>Web Components (framework-agnostic)</h2>
+    <div class="grid">
+      <a class="card" href="kits/shoelace/index.html">
+        <div class="name">Shoelace</div>
+        <div class="stack">Web Components</div>
+        <div class="desc">Работает в любом фреймворке или без него, строгая доступность, лёгкий autoloader.</div>
+        <div class="icons">Иконки: Bootstrap Icons (через icon-library)</div>
+      </a>
+      <a class="card" href="kits/fluent-ui/index.html">
+        <div class="name">Fluent UI Web Components</div>
+        <div class="stack">Web Components · Microsoft</div>
+        <div class="desc">Официальный дизайн-язык Microsoft, идеален для продуктов вокруг Office/Teams.</div>
+        <div class="icons">Иконки: Fluent UI System Icons</div>
+      </a>
+      <a class="card" href="kits/carbon/index.html">
+        <div class="name">Carbon Design System</div>
+        <div class="stack">Web Components · IBM</div>
+        <div class="desc">Enterprise/data-dense дизайн-язык IBM, заточен под сложные таблицы и формы.</div>
+        <div class="icons">Иконки: Carbon Icons</div>
+      </a>
+    </div>
+  </div>
+
+  <div class="group">
+    <h2>Vue-экосистема</h2>
+    <div class="grid">
+      <a class="card" href="kits/vuetify/index.html">
+        <div class="name">Vuetify 3</div>
+        <div class="stack">Vue 3 · Material Design</div>
+        <div class="desc">Самый зрелый Material-кит для Vue, огромный набор готовых компонентов.</div>
+        <div class="icons">Иконки: Material Design Icons</div>
+      </a>
+      <a class="card" href="kits/element-plus/index.html">
+        <div class="name">Element Plus</div>
+        <div class="stack">Vue 3 · Enterprise</div>
+        <div class="desc">Мощный enterprise-кит для бизнес-приложений, отличные Table/Form-компоненты.</div>
+        <div class="icons">Иконки: Element Plus Icons</div>
+      </a>
+      <a class="card" href="kits/primevue/index.html">
+        <div class="name">PrimeVue 4</div>
+        <div class="stack">Vue 3 · Enterprise</div>
+        <div class="desc">Самый широкий набор enterprise-виджетов среди Vue-китов, гибкая система тем.</div>
+        <div class="icons">Иконки: PrimeIcons</div>
+      </a>
+      <a class="card" href="kits/antd-vue/index.html">
+        <div class="name">Ant Design Vue</div>
+        <div class="stack">Vue 3 · Enterprise</div>
+        <div class="desc">Портирует эталонный enterprise design-language Ant Design на Vue.</div>
+        <div class="icons">Иконки: Ant Design Icons</div>
+      </a>
+    </div>
+  </div>
+</main>
+
+<footer>
+  Учебный проект для изучения ассортимента UI-китов. Визуальный стиль вдохновлён
+  сайтом energosetstroy.pro, логотип и данные — вымышленные/иллюстративные, страница
+  не связана с реальной компанией. Все 12 страниц — самодостаточные HTML-файлы,
+  подключающие компоненты только через публичные CDN, без сборки.
+</footer>
+</body>
+</html>
