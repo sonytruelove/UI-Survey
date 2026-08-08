@@ -132,7 +132,9 @@
 
   /* dialog / form */
   fluent-dialog{--dialog-width:660px; --dialog-height:auto;}
-  fluent-dialog::part(positioning-region){align-items:flex-start; padding-top:5vh;}
+  /* keep the modal above the mobile off-canvas sidebar (z-index 210) and its backdrop */
+  fluent-dialog::part(overlay){z-index:999;}
+  fluent-dialog::part(positioning-region){align-items:flex-start; padding-top:5vh; z-index:1000;}
   fluent-dialog::part(control){border-radius:12px; padding:0; max-height:90vh; overflow:auto;}
   .dialog-inner{padding:24px 28px 28px; width:660px; max-width:90vw;}
   .dialog-inner h2{font-size:20px; margin-bottom:20px;}
@@ -152,12 +154,91 @@
 
   fluent-button[appearance="accent"]::part(control){font-weight:600;}
   fluent-select::part(control), fluent-text-field::part(root), fluent-text-area::part(control){border-radius:8px !important;}
+
+  /* ==================== Responsive (mobile/tablet) ==================== */
+  /* Fluent UI Web Components ship no grid/layout system and no mobile-nav
+     pattern (see RESEARCH.md) -- the off-canvas sidebar below is hand-rolled
+     with CSS transform + a small JS toggle, as expected for this kit. */
+
+  .hamburger-btn{ display:none; color:#fff; }
+  .hamburger-btn .ic{ width:20px; height:20px; display:inline-flex; }
+
+  @media (max-width:959px){
+    /* the fixed 1280px floor only made sense pre-responsive; let the shell
+       actually shrink below 960px so nothing forces horizontal scrolling */
+    body{ min-width:0; }
+
+    .hamburger-btn{ display:inline-flex; }
+    .header-search{ display:none; }
+
+    .app-sider{
+      position:fixed; top:64px; left:0; bottom:0; z-index:210;
+      transform:translateX(-100%);
+      transition:transform .22s ease;
+      box-shadow:0 8px 28px rgba(0,0,0,.30);
+      overflow-y:auto;
+    }
+    .app-sider.open{ transform:translateX(0); }
+
+    .sider-backdrop{
+      display:block; position:fixed; top:64px; left:0; right:0; bottom:0;
+      background:rgba(0,0,0,.4); z-index:205;
+      opacity:0; pointer-events:none; transition:opacity .18s ease;
+    }
+    .sider-backdrop.show{ opacity:1; pointer-events:auto; }
+
+    .content-wrap{ padding:20px 16px 32px; }
+  }
+  @media (min-width:960px){
+    .sider-backdrop{ display:none; }
+  }
+
+  @media (max-width:559px){
+    .app-header{ padding:0 12px 0 10px; gap:10px; }
+    .brand .wordmark{ font-size:13px; }
+    .user-box .user-text{ display:none; }
+    #openDialogBtnHeader .btn-text{ display:none; }
+  }
+
+  /* KPI cards: 4 -> 2 -> 1 columns */
+  @media (max-width:959px){
+    .kpi-row{ grid-template-columns:repeat(2,1fr); }
+  }
+  @media (max-width:559px){
+    .kpi-row{ grid-template-columns:repeat(1,1fr); }
+  }
+
+  /* Toolbar: already wraps; stack full-width on small screens */
+  @media (max-width:559px){
+    .toolbar{ flex-direction:column; align-items:stretch; }
+    .toolbar > *{ width:100% !important; }
+  }
+
+  /* Table: horizontal scroll container, columns keep their width */
+  .table-scroll{ overflow-x:auto; }
+  table.data-table{ min-width:760px; }
+
+  /* Request dialog: full-width sheet on narrow screens */
+  @media (max-width:959px){
+    fluent-dialog{ --dialog-width:92vw; }
+    .dialog-inner{ width:92vw; max-width:92vw; }
+    .form-row{ grid-template-columns:1fr 1fr; }
+  }
+  @media (max-width:559px){
+    fluent-dialog{ --dialog-width:95vw; }
+    .dialog-inner{ width:95vw; max-width:95vw; }
+    .form-row{ grid-template-columns:1fr; }
+  }
 </style>
 </head>
 <body>
 
 <div id="app-root" style="display:none;">
   <div class="app-header" id="headerRegion">
+    <fluent-button class="hamburger-btn" appearance="stealth" id="hamburgerBtn" aria-label="Открыть меню">
+      <span class="ic" data-icon="line_horizontal_3_20_regular"></span>
+    </fluent-button>
+
     <div class="brand">
       <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
         <circle cx="50" cy="50" r="42" fill="none" stroke="currentColor" stroke-width="7" stroke-dasharray="240 24" stroke-linecap="round"/>
@@ -176,17 +257,19 @@
       </fluent-button>
       <fluent-button appearance="accent" id="openDialogBtnHeader">
         <span slot="start" class="ic" data-icon="add_20_regular" style="width:16px;height:16px;display:inline-flex;"></span>
-        Новая заявка
+        <span class="btn-text">Новая заявка</span>
       </fluent-button>
       <div class="user-box">
         <div class="avatar-chip">ИК</div>
-        <div>
+        <div class="user-text">
           <div class="u-name">Иванова К.С.</div>
           <div class="u-role">Диспетчер</div>
         </div>
       </div>
     </div>
   </div>
+
+  <div class="sider-backdrop" id="siderBackdrop"></div>
 
   <div class="app-body">
     <div class="app-sider" id="siderRegion">
@@ -250,6 +333,7 @@
       </fluent-card>
 
       <fluent-card class="table-card">
+        <div class="table-scroll">
         <table class="data-table">
           <thead>
             <tr>
@@ -259,6 +343,7 @@
           </thead>
           <tbody id="tableBody"></tbody>
         </table>
+        </div>
         <div class="pagination-bar">
           <span>Всего: 10</span>
           <fluent-select style="width:90px;">
@@ -486,6 +571,21 @@
   EXECUTORS.forEach(e => {
     const opt = document.createElement("fluent-option"); opt.textContent = e; opt.value = e; execForm.appendChild(opt);
   });
+
+  // ---------- Mobile off-canvas sidebar (hand-rolled: no native Fluent drawer) ----------
+  const siderEl = document.getElementById("siderRegion");
+  const backdropEl = document.getElementById("siderBackdrop");
+  const hamburgerBtn = document.getElementById("hamburgerBtn");
+
+  function openSider(){ siderEl.classList.add("open"); backdropEl.classList.add("show"); }
+  function closeSider(){ siderEl.classList.remove("open"); backdropEl.classList.remove("show"); }
+
+  hamburgerBtn.addEventListener("click", () => {
+    siderEl.classList.contains("open") ? closeSider() : openSider();
+  });
+  backdropEl.addEventListener("click", closeSider);
+  siderEl.querySelectorAll(".nav-item").forEach(btn => btn.addEventListener("click", closeSider));
+  window.addEventListener("resize", () => { if (window.innerWidth >= 960) closeSider(); });
 
   // dialog wiring
   const dialog = document.getElementById("requestDialog");

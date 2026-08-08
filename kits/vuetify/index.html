@@ -58,6 +58,53 @@
   .avatar-initials{ font-family:'Inter',sans-serif; font-weight:600; font-size:12px; }
 
   .v-data-table td, .v-data-table th{ font-family:'Inter',sans-serif !important; }
+
+  /* ==================== Responsive (mobile/tablet) ==================== */
+  /* Sidebar visibility/backdrop/off-canvas transform is handled natively by
+     Vuetify's v-navigation-drawer (permanent -> temporary) + v-app-bar-nav-icon,
+     see the app markup/JS below. Everything here is layout-only CSS. */
+
+  /* Table always horizontally scrollable inside its own wrapper on narrow screens */
+  .v-data-table .v-table__wrapper, .v-data-table__wrapper{ overflow-x:auto; }
+  .v-data-table table{ min-width:760px; }
+
+  /* KPI cards: 4 -> 2 -> 1 columns */
+  @media (max-width:959px){
+    .kpi-row .v-col{ flex:0 0 50% !important; max-width:50% !important; }
+  }
+  @media (max-width:559px){
+    .kpi-row .v-col{ flex:0 0 100% !important; max-width:100% !important; }
+  }
+
+  /* Header: shrink logo column, hide search, collapse user/button text */
+  @media (max-width:959px){
+    .header-logo-col{ width:auto !important; padding-left:12px !important; }
+    .header-search-field{ display:none !important; }
+  }
+  @media (max-width:559px){
+    .header-user-block .user-text{ display:none; }
+    .header-new-btn .btn-text{ display:none; }
+    .header-new-btn{ min-width:44px !important; padding:0 10px !important; }
+    .v-app-bar .mr-6{ margin-right:10px !important; }
+    .v-app-bar .mr-4{ margin-right:8px !important; }
+    .v-app-bar .mr-2{ margin-right:6px !important; }
+  }
+
+  /* Toolbar: wrap on <960, full-width stacked controls on <560 */
+  @media (max-width:559px){
+    .toolbar-row{ flex-direction:column; align-items:stretch; }
+    .toolbar-row > *{ width:100% !important; max-width:none !important; }
+    .toolbar-row > .v-spacer{ display:none; }
+  }
+
+  /* Request dialog: full-width sheet on narrow screens */
+  @media (max-width:959px){
+    .request-dialog{ width:92vw !important; max-width:none !important; max-height:90vh !important; }
+    .request-dialog > .v-card{ max-height:90vh; overflow-y:auto; }
+  }
+  @media (max-width:559px){
+    .request-dialog{ width:95vw !important; }
+  }
 </style>
 </head>
 <body>
@@ -66,7 +113,9 @@
   <v-app>
     <!-- HEADER -->
     <v-app-bar theme="brandDark" height="64" flat elevation="0" style="border-bottom:1px solid var(--border-dark);">
-      <div class="d-flex align-center" style="padding-left:16px; width:250px; flex-shrink:0;">
+      <v-app-bar-nav-icon v-if="mobile" style="color:#fff;" class="ml-1" @click="drawer = !drawer"></v-app-bar-nav-icon>
+
+      <div class="d-flex align-center header-logo-col" style="padding-left:16px; width:250px; flex-shrink:0;">
         <div class="brand-logo-wrap">
           <svg class="brand-logo-icon" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
             <circle cx="50" cy="50" r="42" fill="none" stroke="currentColor" stroke-width="7" stroke-dasharray="240 24" stroke-linecap="round"/>
@@ -86,7 +135,7 @@
         placeholder="Поиск по номеру, теме, объекту…"
         style="max-width:360px; border-radius:8px;"
         bg-color="#1A1A1A"
-        class="mx-4"
+        class="mx-4 header-search-field"
       ></v-text-field>
 
       <v-spacer></v-spacer>
@@ -97,13 +146,13 @@
         </v-badge>
       </v-btn>
 
-      <v-btn color="primary" prepend-icon="mdi-plus" class="mr-4" @click="dialog=true">
-        Новая заявка
+      <v-btn color="primary" prepend-icon="mdi-plus" class="mr-4 header-new-btn" @click="dialog=true">
+        <span class="btn-text">Новая заявка</span>
       </v-btn>
 
-      <div class="d-flex align-center mr-6" style="gap:10px;">
+      <div class="d-flex align-center mr-6 header-user-block" style="gap:10px;">
         <v-avatar color="#2A2A2A" size="36"><span class="avatar-initials" style="color:#fff;">ИП</span></v-avatar>
-        <div style="line-height:1.2;">
+        <div class="user-text" style="line-height:1.2;">
           <div style="font-size:13px; font-weight:600; color:#fff;">Ионов П. С.</div>
           <div style="font-size:11px; color:var(--text-onDark-muted);">Диспетчер заявок</div>
         </div>
@@ -111,7 +160,7 @@
     </v-app-bar>
 
     <!-- SIDEBAR -->
-    <v-navigation-drawer theme="brandDark" permanent width="250" style="border-right:1px solid var(--border-dark);">
+    <v-navigation-drawer v-model="drawer" theme="brandDark" :permanent="!mobile" width="250" style="border-right:1px solid var(--border-dark);">
       <v-list nav density="comfortable" style="padding-top:14px;">
         <v-list-item
           v-for="item in navItems"
@@ -120,6 +169,7 @@
           :title="item.title"
           class="side-nav-item"
           :class="{ 'active-item': item.active }"
+          @click="onNavClick"
         ></v-list-item>
       </v-list>
     </v-navigation-drawer>
@@ -132,7 +182,7 @@
         <h1 class="page-title mb-6">Заявки</h1>
 
         <!-- KPI cards -->
-        <v-row class="mb-4">
+        <v-row class="mb-4 kpi-row">
           <v-col cols="3" v-for="kpi in kpis" :key="kpi.label">
             <v-card class="kpi-card pa-4" flat>
               <div class="d-flex align-center justify-space-between">
@@ -150,7 +200,7 @@
 
         <!-- Toolbar + Table -->
         <v-card class="surface-card" flat>
-          <div class="d-flex align-center pa-4" style="gap:12px; flex-wrap:wrap; border-bottom:1px solid var(--border);">
+          <div class="d-flex align-center pa-4 toolbar-row" style="gap:12px; flex-wrap:wrap; border-bottom:1px solid var(--border);">
             <v-text-field v-model="search" density="compact" variant="outlined" hide-details prepend-inner-icon="mdi-magnify" placeholder="Поиск по номеру, теме, объекту…" style="max-width:300px;"></v-text-field>
             <v-select v-model="filterStatus" :items="statusOptions" density="compact" variant="outlined" hide-details label="Статус" style="max-width:170px;"></v-select>
             <v-select v-model="filterPriority" :items="priorityOptions" density="compact" variant="outlined" hide-details label="Приоритет" style="max-width:170px;"></v-select>
@@ -195,7 +245,7 @@
     </v-main>
 
     <!-- NEW REQUEST DIALOG -->
-    <v-dialog v-model="dialog" max-width="640">
+    <v-dialog v-model="dialog" max-width="640" content-class="request-dialog">
       <v-card class="pa-2" style="border-radius:12px;">
         <v-card-title class="page-title" style="font-size:20px; padding:16px 20px 0;">Новая заявка</v-card-title>
         <v-card-text style="padding:12px 20px;">
@@ -244,10 +294,15 @@
 </div>
 
 <script>
-const { createApp, ref, reactive, computed } = Vue;
-const { createVuetify } = Vuetify;
+const { createApp, ref, reactive, computed, watch } = Vue;
+const { createVuetify, useDisplay } = Vuetify;
 
 const vuetify = createVuetify({
+  display: {
+    // mobile === true when viewport width < 960px, matching the shared
+    // responsive spec's tablet/mobile breakpoint.
+    mobileBreakpoint: 960,
+  },
   theme: {
     defaultTheme: 'brandLight',
     themes: {
@@ -305,6 +360,12 @@ createApp({
     const dateMenu = ref(false);
     const dateVal = ref(null);
 
+    // ---- Responsive sidebar (native Vuetify navigation-drawer behavior) ----
+    const { mobile } = useDisplay();
+    const drawer = ref(!mobile.value); // permanent+visible on desktop, closed by default on mobile
+    watch(mobile, (isMobile) => { drawer.value = !isMobile; });
+    function onNavClick(){ if (mobile.value) drawer.value = false; }
+
     const navItems = [
       { title:'Дашборд', icon:'mdi-view-dashboard-outline', active:false },
       { title:'Заявки', icon:'mdi-clipboard-text-outline', active:true },
@@ -360,6 +421,7 @@ createApp({
 
     return {
       search, filterStatus, filterPriority, filterObject, dialog, dateMenu, dateVal,
+      mobile, drawer, onNavClick,
       navItems, kpis, headers, statusOptions, priorityOptions, objectOptions, categoryOptions, executorOptions,
       form, filteredRequests, priorityColor, statusColor, initials, avatarColor, onDatePicked, createRequest,
     };

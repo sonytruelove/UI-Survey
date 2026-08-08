@@ -78,7 +78,9 @@
     --rounded-badge: 0.5rem;  /* 8px default; priority pills override to full */
   }
 
-  html, body { background: #F4F5F7; font-family: 'Inter', sans-serif; min-width: 1280px; }
+  html, body { background: #F4F5F7; font-family: 'Inter', sans-serif; }
+  /* Desktop (>=960px) keeps the original fixed-width canvas untouched */
+  @media (min-width:960px){ html, body { min-width: 1280px; } }
   h1, h2, h3, .stat-value, .logo-word, .font-display { font-family: 'Rajdhani', sans-serif; }
 
   ::-webkit-scrollbar { height: 10px; width: 10px; }
@@ -101,6 +103,62 @@
   }
 
   dialog.modal::backdrop { background: rgba(16,16,16,.45); }
+  .btn-label { display: inline; }
+
+  /* ============ off-canvas sidebar drawer (DaisyUI-style, custom 960px breakpoint) ============ */
+  #app-sidebar { transition: transform .25s ease; }
+  #hamburger-btn { display: none; }
+  #sidebar-backdrop { display: none; }
+
+  /* ============ RESPONSIVE (<960px / <560px) — see shared/responsive.md ============ */
+  @media (max-width: 959px) {
+    .header-search { display: none; }
+    #hamburger-btn { display: inline-flex; }
+
+    #app-sidebar {
+      position: fixed;
+      top: 64px; left: 0; bottom: 0;
+      width: 250px;
+      transform: translateX(-100%);
+      z-index: 260;
+      overflow-y: auto;
+      box-shadow: 4px 0 24px rgba(0,0,0,.25);
+    }
+    #app-sidebar.drawer-open { transform: translateX(0); }
+
+    #sidebar-backdrop.show {
+      display: block;
+      position: fixed;
+      top: 64px; left: 0; right: 0; bottom: 0;
+      background: rgba(16,16,16,.45);
+      z-index: 250;
+    }
+
+    #kpi-stats { grid-template-columns: repeat(2, 1fr) !important; }
+
+    #toolbar .input,
+    #toolbar select { flex: 1 1 200px; min-width: 0; }
+
+    main { padding-left: 20px !important; padding-right: 20px !important; }
+
+    .modal-box { width: 92vw; max-width: none; max-height: 90vh; overflow-y: auto; }
+  }
+
+  @media (max-width: 559px) {
+    #kpi-stats { grid-template-columns: 1fr !important; }
+
+    #toolbar { flex-direction: column; align-items: stretch; }
+    #toolbar .input,
+    #toolbar select,
+    #toolbar button { width: 100% !important; flex: none; }
+    #toolbar .flex-1 { display: none; }
+
+    #user-meta-block { display: none; }
+    #btn-new-request-header .btn-label { display: none; }
+
+    .modal-box { width: 95vw; }
+    .modal-box .grid-cols-2 { grid-template-columns: 1fr; }
+  }
 </style>
 </head>
 <body class="bg-bgApp text-textPrimary">
@@ -110,6 +168,11 @@
   <!-- ===================== HEADER ===================== -->
   <header class="h-16 bg-bgDark border-b border-borderDark flex items-center justify-between px-6 sticky top-0 z-40">
     <div class="flex items-center gap-3">
+      <button id="hamburger-btn" class="btn btn-ghost btn-circle text-onDarkMuted hover:text-white" aria-label="Открыть меню" aria-expanded="false" aria-controls="app-sidebar">
+        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+        </svg>
+      </button>
       <svg class="w-8 h-8 text-accent flex-none" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
         <circle cx="50" cy="50" r="42" fill="none" stroke="currentColor" stroke-width="7" stroke-dasharray="240 24" stroke-linecap="round"/>
         <circle cx="50" cy="50" r="27" fill="none" stroke="currentColor" stroke-width="7" stroke-dasharray="148 22" stroke-linecap="round" transform="rotate(35 50 50)"/>
@@ -135,11 +198,11 @@
         </div>
       </button>
 
-      <button class="btn btn-primary gap-2 h-10 min-h-0 text-white" onclick="new_request_modal.showModal()">
+      <button id="btn-new-request-header" class="btn btn-primary gap-2 h-10 min-h-0 text-white" onclick="new_request_modal.showModal()">
         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
         </svg>
-        Новая заявка
+        <span class="btn-label">Новая заявка</span>
       </button>
 
       <div class="flex items-center gap-2.5 pl-1">
@@ -148,7 +211,7 @@
             <span>СА</span>
           </div>
         </div>
-        <div class="leading-tight">
+        <div class="leading-tight" id="user-meta-block">
           <div class="text-white text-[13px] font-semibold">Соколов А.П.</div>
           <div class="text-onDarkMuted text-[11.5px]">Диспетчер участка</div>
         </div>
@@ -158,7 +221,7 @@
 
   <div class="flex flex-1">
     <!-- ===================== SIDEBAR ===================== -->
-    <aside class="w-[250px] flex-none bg-bgDark border-r border-borderDark py-4">
+    <aside id="app-sidebar" class="w-[250px] flex-none bg-bgDark border-r border-borderDark py-4">
       <ul class="menu menu-vertical w-full gap-0.5 px-3">
         <li>
           <a class="rounded-lg text-onDarkMuted hover:bg-bgDark2 hover:text-white text-sm font-medium py-2.5">
@@ -211,6 +274,7 @@
         </li>
       </ul>
     </aside>
+    <div id="sidebar-backdrop"></div>
 
     <!-- ===================== CONTENT ===================== -->
     <main class="flex-1 min-w-0 px-8 py-7 pb-16">
@@ -226,7 +290,7 @@
       </div>
 
       <!-- KPI stats -->
-      <div class="stats shadow-brand w-full grid grid-cols-4 bg-bgSurface border border-borderC rounded-xl mb-6">
+      <div id="kpi-stats" class="stats shadow-brand w-full grid grid-cols-4 bg-bgSurface border border-borderC rounded-xl mb-6">
         <div class="stat">
           <div class="stat-title text-textSecondary text-xs font-semibold uppercase tracking-wide">Всего заявок</div>
           <div class="stat-value font-display text-textPrimary text-4xl">128</div>
@@ -246,7 +310,7 @@
       </div>
 
       <!-- Toolbar -->
-      <div class="flex items-center gap-3 mb-4 flex-wrap">
+      <div id="toolbar" class="flex items-center gap-3 mb-4 flex-wrap">
         <div class="relative">
           <svg class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-textSecondary" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
@@ -298,7 +362,7 @@
       <!-- Table -->
       <div class="bg-bgSurface border border-borderC rounded-xl shadow-brand overflow-hidden">
         <div class="overflow-x-auto">
-        <table class="table">
+        <table class="table min-w-[760px]">
           <thead>
             <tr class="text-textSecondary text-[11.5px] uppercase tracking-wide">
               <th>№</th>
@@ -599,6 +663,31 @@
     });
     btn.classList.add('btn-primary', 'text-white');
   });
+
+  // ---- off-canvas sidebar drawer (mobile/tablet <960px) ----
+  (function () {
+    var sidebar = document.getElementById('app-sidebar');
+    var backdrop = document.getElementById('sidebar-backdrop');
+    var hamburger = document.getElementById('hamburger-btn');
+
+    function openSidebar() {
+      sidebar.classList.add('drawer-open');
+      backdrop.classList.add('show');
+      hamburger.setAttribute('aria-expanded', 'true');
+    }
+    function closeSidebar() {
+      sidebar.classList.remove('drawer-open');
+      backdrop.classList.remove('show');
+      hamburger.setAttribute('aria-expanded', 'false');
+    }
+    hamburger.addEventListener('click', function () {
+      sidebar.classList.contains('drawer-open') ? closeSidebar() : openSidebar();
+    });
+    backdrop.addEventListener('click', closeSidebar);
+    sidebar.querySelectorAll('a').forEach(function (link) {
+      link.addEventListener('click', closeSidebar);
+    });
+  })();
 </script>
 
 </body>

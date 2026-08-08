@@ -75,12 +75,68 @@
   .priority-tag, .status-tag{ font-weight:600; border:none; }
   .field-label{ font-size:12px; color:var(--text-secondary); margin-bottom:6px; font-weight:500; }
   .el-form-item{ margin-bottom:16px; }
+
+  /* ==================== Responsive (mobile/tablet) ==================== */
+  /* No native responsive drawer ships with el-menu/el-aside, so the mobile
+     sidebar is an el-drawer (native Element Plus component) hosting the same
+     nav menu, toggled by a hamburger button. */
+  .hamburger-btn{ display:none; color:#fff; font-size:20px; margin-right:6px; }
+  .header-search-input{ }
+  .mobile-drawer-menu{ border-right:none !important; }
+  .mobile-drawer-menu .el-menu-item.is-active{ background:rgba(224,123,62,.14) !important; }
+  .mobile-drawer .el-drawer__body{ padding:0; background:#101010; }
+  .mobile-drawer .el-drawer__header{ display:none; }
+
+  @media (max-width:959px){
+    .hamburger-btn{ display:inline-flex; }
+    .app-aside{ display:none; }
+    .header-search-input{ display:none; }
+    .brand-logo-wrap{ width:auto !important; }
+  }
+
+  @media (max-width:559px){
+    .app-header{ padding:0 12px; gap:8px; }
+    .header-user-text{ display:none; }
+    .header-new-btn .btn-text{ display:none; }
+    .header-new-btn{ margin-right:10px !important; padding:8px 10px !important; }
+  }
+
+  /* KPI cards: 4 -> 2 -> 1 columns */
+  @media (max-width:959px){
+    .kpi-row .el-col{ width:50% !important; flex:0 0 50% !important; max-width:50% !important; }
+  }
+  @media (max-width:559px){
+    .kpi-row .el-col{ width:100% !important; flex:0 0 100% !important; max-width:100% !important; }
+  }
+
+  /* Toolbar: wraps by default (flex-wrap already set); stack full-width on small screens */
+  @media (max-width:559px){
+    .toolbar-row{ flex-direction:column; align-items:stretch; }
+    .toolbar-row > *{ width:100% !important; max-width:none !important; }
+  }
+
+  /* Table: horizontal scroll container, columns keep their width */
+  .table-scroll{ overflow-x:auto; }
+  .table-scroll .el-table{ min-width:760px; }
+
+  /* Request dialog: full-width sheet on narrow screens */
+  @media (max-width:959px){
+    .request-dialog.el-dialog{ width:92vw !important; max-width:none !important; }
+    .request-dialog .el-dialog__body{ max-height:calc(90vh - 120px); overflow-y:auto; }
+  }
+  @media (max-width:559px){
+    .request-dialog.el-dialog{ width:95vw !important; }
+  }
 </style>
 </head>
 <body>
 <div id="app">
   <el-container style="height:100vh;">
     <el-header class="app-header">
+      <el-button class="hamburger-btn" circle text @click="mobileDrawerVisible=true" aria-label="Открыть меню">
+        <el-icon :size="20"><Menu /></el-icon>
+      </el-button>
+
       <div class="brand-logo-wrap">
         <svg class="brand-logo-icon" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
           <circle cx="50" cy="50" r="42" fill="none" stroke="currentColor" stroke-width="7" stroke-dasharray="240 24" stroke-linecap="round"/>
@@ -89,7 +145,7 @@
         <div class="brand-wordmark"><span>Энерго</span><span class="sub">СетьСтрой</span></div>
       </div>
 
-      <el-input v-model="search" placeholder="Поиск по номеру, теме, объекту…" style="max-width:360px; margin-left:24px;" :prefix-icon="Search"></el-input>
+      <el-input v-model="search" placeholder="Поиск по номеру, теме, объекту…" style="max-width:360px; margin-left:24px;" :prefix-icon="Search" class="header-search-input"></el-input>
 
       <div style="flex:1;"></div>
 
@@ -97,11 +153,11 @@
         <el-button circle text style="color:#fff;"><el-icon :size="18"><Bell /></el-icon></el-button>
       </el-badge>
 
-      <el-button type="primary" :icon="Plus" style="margin-right:20px;" @click="dialogVisible=true">Новая заявка</el-button>
+      <el-button type="primary" :icon="Plus" class="header-new-btn" style="margin-right:20px;" @click="dialogVisible=true"><span class="btn-text">Новая заявка</span></el-button>
 
       <div style="display:flex; align-items:center; gap:10px; margin-right:8px;">
         <el-avatar :size="36" style="background:#2A2A2A; font-size:12px; font-weight:600;">ИП</el-avatar>
-        <div style="line-height:1.2;">
+        <div class="header-user-text" style="line-height:1.2;">
           <div style="font-size:13px; font-weight:600; color:#fff;">Ионов П. С.</div>
           <div style="font-size:11px; color:var(--text-onDark-muted);">Диспетчер заявок</div>
         </div>
@@ -111,20 +167,26 @@
     <el-container>
       <el-aside width="250px" class="app-aside">
         <el-menu :default-active="'requests'" background-color="#101010" text-color="#9A9CA5" active-text-color="#E07B3E" class="side-menu" style="padding-top:14px;">
-          <el-menu-item index="dashboard"><el-icon><Odometer /></el-icon><span>Дашборд</span></el-menu-item>
-          <el-menu-item index="requests"><el-icon><Document /></el-icon><span>Заявки</span></el-menu-item>
-          <el-menu-item index="objects"><el-icon><OfficeBuilding /></el-icon><span>Объекты</span></el-menu-item>
-          <el-menu-item index="executors"><el-icon><UserFilled /></el-icon><span>Исполнители</span></el-menu-item>
-          <el-menu-item index="reports"><el-icon><TrendCharts /></el-icon><span>Отчёты</span></el-menu-item>
-          <el-menu-item index="settings"><el-icon><Setting /></el-icon><span>Настройки</span></el-menu-item>
+          <el-menu-item v-for="item in navItems" :key="item.index" :index="item.index">
+            <el-icon><component :is="item.icon" /></el-icon><span>{{ item.title }}</span>
+          </el-menu-item>
         </el-menu>
       </el-aside>
+
+      <!-- Mobile off-canvas nav: same menu, inside a native el-drawer -->
+      <el-drawer v-model="mobileDrawerVisible" direction="ltr" size="250px" :with-header="false" class="mobile-drawer">
+        <el-menu :default-active="'requests'" background-color="#101010" text-color="#9A9CA5" active-text-color="#E07B3E" class="side-menu mobile-drawer-menu" style="height:100%; padding-top:14px;" @select="mobileDrawerVisible=false">
+          <el-menu-item v-for="item in navItems" :key="item.index" :index="item.index">
+            <el-icon><component :is="item.icon" /></el-icon><span>{{ item.title }}</span>
+          </el-menu-item>
+        </el-menu>
+      </el-drawer>
 
       <el-main class="app-main">
         <div class="breadcrumb-note">Главная / Заявки</div>
         <h1 class="page-title">Заявки</h1>
 
-        <el-row :gutter="16" style="margin-bottom:16px;">
+        <el-row :gutter="16" style="margin-bottom:16px;" class="kpi-row">
           <el-col :span="6" v-for="kpi in kpis" :key="kpi.label">
             <el-card class="kpi-card" shadow="never">
               <div style="display:flex; align-items:center; justify-content:space-between;">
@@ -156,6 +218,7 @@
             <el-button type="primary" :icon="Plus" @click="dialogVisible=true">Новая заявка</el-button>
           </div>
 
+          <div class="table-scroll">
           <el-table :data="pagedRequests" style="width:100%;" :header-cell-style="{background:'#FAFAFB', color:'var(--text-secondary)', fontWeight:600, fontSize:'12px', textTransform:'uppercase'}">
             <el-table-column prop="id" label="№" width="100" />
             <el-table-column prop="topic" label="Тема заявки" min-width="260" />
@@ -187,6 +250,7 @@
               </template>
             </el-table-column>
           </el-table>
+          </div>
 
           <div style="display:flex; justify-content:flex-end; padding:16px;">
             <el-pagination background layout="prev, pager, next" :total="filteredRequests.length" :page-size="pageSize" v-model:current-page="currentPage" />
@@ -200,7 +264,7 @@
     </el-container>
   </el-container>
 
-  <el-dialog v-model="dialogVisible" title="Новая заявка" width="600px">
+  <el-dialog v-model="dialogVisible" title="Новая заявка" width="600px" custom-class="request-dialog" class="request-dialog">
     <el-form label-position="top" :model="form">
       <el-form-item label="Тема заявки" required>
         <el-input v-model="form.topic" placeholder="Кратко опишите суть заявки"></el-input>
@@ -291,6 +355,16 @@ const app = createApp({
     const dialogVisible = ref(false);
     const currentPage = ref(1);
     const pageSize = 8;
+    const mobileDrawerVisible = ref(false); // off-canvas nav drawer state (<960px)
+
+    const navItems = [
+      { index:'dashboard', icon:'Odometer', title:'Дашборд' },
+      { index:'requests', icon:'Document', title:'Заявки' },
+      { index:'objects', icon:'OfficeBuilding', title:'Объекты' },
+      { index:'executors', icon:'UserFilled', title:'Исполнители' },
+      { index:'reports', icon:'TrendCharts', title:'Отчёты' },
+      { index:'settings', icon:'Setting', title:'Настройки' },
+    ];
 
     const kpis = [
       { label:'Всего заявок', value:128, icon:'Files', color:'#101010', tint:'#EEEEEF' },
@@ -330,6 +404,7 @@ const app = createApp({
 
     return {
       search, filterStatus, filterPriority, filterObject, dialogVisible, currentPage, pageSize,
+      mobileDrawerVisible, navItems,
       kpis, statusOptions, priorityFilterOptions, objectFilterOptions, categoryOptions, executorOptions,
       form, filteredRequests, pagedRequests, priorityColor, statusTagStyle, initials, avatarColor,
       Search: ElementPlusIconsVue.Search,
@@ -337,6 +412,7 @@ const app = createApp({
       View: ElementPlusIconsVue.View,
       Edit: ElementPlusIconsVue.Edit,
       Paperclip: ElementPlusIconsVue.Paperclip,
+      Menu: ElementPlusIconsVue.Menu,
     };
   }
 });

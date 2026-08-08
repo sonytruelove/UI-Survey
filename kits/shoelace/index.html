@@ -64,7 +64,10 @@
     background:var(--bg-app);
     font-family:'Inter',sans-serif;
     color:var(--text-primary);
-    min-width:1280px;
+  }
+  /* Desktop (>=960px) keeps the original fixed-width canvas untouched */
+  @media (min-width:960px){
+    html,body{min-width:1280px;}
   }
   h1,h2,h3,.kpi-value,.logo-word,.font-display{font-family:'Rajdhani',sans-serif;}
 
@@ -72,6 +75,9 @@
   sl-card::part(base){border-radius:12px;border-color:var(--border);}
   sl-dialog::part(panel){border-radius:12px;}
   sl-dialog::part(title){font-family:'Rajdhani',sans-serif;text-transform:uppercase;letter-spacing:.02em;font-weight:700;}
+  #dialog-new-request{--width:640px;}
+  @media (max-width:959px){ #dialog-new-request{--width:92vw;} }
+  @media (max-width:559px){ #dialog-new-request{--width:95vw;} }
   sl-button::part(base){border-radius:8px;font-weight:600;}
   sl-input::part(base){border-radius:8px;}
   sl-select::part(combobox){border-radius:8px;}
@@ -120,6 +126,10 @@
   .header-search::part(input)::placeholder{color:var(--text-onDark-muted);}
   .header-search::part(prefix){color:var(--text-onDark-muted);}
 
+  .hamburger-btn{display:none;}
+  .hamburger-btn::part(base){color:var(--text-onDark-muted);font-size:20px;}
+  .hamburger-btn::part(base):hover{color:#fff;}
+
   .bell-wrap{position:relative;}
   .bell-wrap sl-icon-button::part(base){color:var(--text-onDark-muted);font-size:19px;}
   .bell-wrap sl-icon-button::part(base):hover{color:#fff;}
@@ -153,6 +163,8 @@
   }
   sl-menu.sidebar-menu sl-menu-item sl-icon{font-size:16px;margin-right:2px;}
 
+  .sidebar-backdrop{display:none;}
+
   .app-content{flex:1;padding:28px 32px 60px;background:var(--bg-app);min-width:0;}
 
   .page-head{margin-bottom:22px;}
@@ -184,7 +196,8 @@
     box-shadow:0 1px 2px rgba(16,16,16,.06),0 8px 24px rgba(16,16,16,.06);
     overflow:hidden;
   }
-  table.requests-table{width:100%;border-collapse:collapse;font-family:var(--sl-font-sans);}
+  .table-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+  table.requests-table{width:100%;border-collapse:collapse;font-family:var(--sl-font-sans);min-width:760px;}
   table.requests-table thead th{
     text-align:left;
     background:var(--bg-surface);
@@ -240,6 +253,51 @@
   }
 
   .footer-bar{padding:14px 32px 20px;color:#9A9CA5;font-size:11.5px;background:var(--bg-app);}
+
+  /* ============ RESPONSIVE (<960px / <560px) — see shared/responsive.md ============ */
+  @media (max-width:959px){
+    .header-center{display:none;}
+    .hamburger-btn{display:inline-flex !important;}
+
+    .app-sidebar{
+      position:fixed;
+      top:64px;left:0;bottom:0;
+      width:250px;
+      transform:translateX(-100%);
+      transition:transform .25s ease;
+      z-index:260;
+      overflow-y:auto;
+      box-shadow:4px 0 24px rgba(0,0,0,.25);
+    }
+    .app-sidebar.open{transform:translateX(0);}
+
+    .sidebar-backdrop.show{
+      display:block;
+      position:fixed;
+      top:64px;left:0;right:0;bottom:0;
+      background:rgba(16,16,16,.45);
+      z-index:250;
+    }
+
+    .kpi-row{grid-template-columns:repeat(2,1fr);}
+
+    .toolbar sl-input,.toolbar sl-select{width:auto;flex:1 1 200px;min-width:0;}
+
+    .app-content{padding:24px 20px 48px;}
+  }
+
+  @media (max-width:559px){
+    .kpi-row{grid-template-columns:1fr;}
+
+    .toolbar{flex-direction:column;align-items:stretch;}
+    .toolbar sl-input,.toolbar sl-select,.toolbar sl-button{width:100%;}
+    .toolbar-spacer{display:none;}
+
+    .user-meta{display:none;}
+    #btn-new-request-header .btn-label{display:none;}
+
+    .form-grid{grid-template-columns:1fr;}
+  }
 </style>
 </head>
 <body>
@@ -248,6 +306,7 @@
   <!-- ===================== HEADER ===================== -->
   <header class="app-header">
     <div class="header-left">
+      <sl-icon-button class="hamburger-btn" id="btn-sidebar-toggle" name="list" label="Открыть меню" aria-expanded="false" aria-controls="app-sidebar"></sl-icon-button>
       <svg class="logo-mark" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
         <circle cx="50" cy="50" r="42" fill="none" stroke="currentColor" stroke-width="7" stroke-dasharray="240 24" stroke-linecap="round"/>
         <circle cx="50" cy="50" r="27" fill="none" stroke="currentColor" stroke-width="7" stroke-dasharray="148 22" stroke-linecap="round" transform="rotate(35 50 50)"/>
@@ -269,7 +328,7 @@
 
       <sl-button variant="primary" id="btn-new-request-header">
         <sl-icon slot="prefix" name="plus-lg"></sl-icon>
-        Новая заявка
+        <span class="btn-label">Новая заявка</span>
       </sl-button>
 
       <div class="user-chip">
@@ -284,7 +343,7 @@
 
   <div class="body-row">
     <!-- ===================== SIDEBAR ===================== -->
-    <aside class="app-sidebar">
+    <aside class="app-sidebar" id="app-sidebar">
       <sl-menu class="sidebar-menu">
         <sl-menu-item><sl-icon slot="prefix" name="speedometer2"></sl-icon>Дашборд</sl-menu-item>
         <sl-menu-item class="active"><sl-icon slot="prefix" name="clipboard-check"></sl-icon>Заявки</sl-menu-item>
@@ -294,6 +353,7 @@
         <sl-menu-item><sl-icon slot="prefix" name="gear"></sl-icon>Настройки</sl-menu-item>
       </sl-menu>
     </aside>
+    <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
 
     <!-- ===================== CONTENT ===================== -->
     <main class="app-content">
@@ -369,6 +429,7 @@
 
       <!-- Table -->
       <div class="table-card">
+        <div class="table-scroll">
         <table class="requests-table">
           <thead>
             <tr>
@@ -496,6 +557,7 @@
             </tr>
           </tbody>
         </table>
+        </div>
         <div class="table-footer">
           <div class="result-count">Показано 10 из 128 заявок</div>
           <div class="pager" style="display:flex;gap:4px;">
@@ -518,7 +580,7 @@
 </div>
 
 <!-- ===================== DIALOG: NEW REQUEST ===================== -->
-<sl-dialog label="Новая заявка" id="dialog-new-request" style="--width:640px;">
+<sl-dialog label="Новая заявка" id="dialog-new-request">
   <div class="form-field">
     <label>Тема заявки<span class="required-star">*</span></label>
     <sl-input placeholder="Например: Замена автоматического выключателя на ТП-14"></sl-input>
@@ -615,6 +677,29 @@
         document.querySelectorAll('.pager sl-button').forEach(function (b) { b.classList.remove('active'); b.variant = 'default'; });
         btn.classList.add('active');
       });
+    });
+
+    // ---- off-canvas sidebar (mobile/tablet <960px) ----
+    var sidebar = document.getElementById('app-sidebar');
+    var backdrop = document.getElementById('sidebar-backdrop');
+    var hamburger = document.getElementById('btn-sidebar-toggle');
+
+    function openSidebar() {
+      sidebar.classList.add('open');
+      backdrop.classList.add('show');
+      hamburger.setAttribute('aria-expanded', 'true');
+    }
+    function closeSidebar() {
+      sidebar.classList.remove('open');
+      backdrop.classList.remove('show');
+      hamburger.setAttribute('aria-expanded', 'false');
+    }
+    hamburger.addEventListener('click', function () {
+      sidebar.classList.contains('open') ? closeSidebar() : openSidebar();
+    });
+    backdrop.addEventListener('click', closeSidebar);
+    sidebar.querySelectorAll('sl-menu-item').forEach(function (item) {
+      item.addEventListener('click', closeSidebar);
     });
   }
   window.addEventListener('DOMContentLoaded', bindWhenReady);

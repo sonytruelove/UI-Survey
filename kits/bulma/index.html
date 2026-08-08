@@ -133,6 +133,58 @@ input:focus, select:focus, textarea:focus, .select select:focus, .input:focus, .
 .footer-bar{ margin-left:250px; padding:8px 32px 28px; font-size:11.5px; color:var(--text-secondary); }
 
 .field-label-strong{ font-weight:600; font-size:13px; }
+
+.req-table{ min-width:760px; }
+
+/* ---- responsive (mobile/tablet) ---- */
+html{ overflow-x:hidden; }
+
+.navbar-burger{
+  display:none; color:#fff; margin-right:6px;
+}
+.navbar-burger span{ background-color:#fff; }
+.navbar-burger:hover{ background-color:var(--bg-dark-2); }
+
+.sidebar-backdrop{
+  display:none; position:fixed; top:64px; left:0; right:0; bottom:0;
+  background:rgba(0,0,0,.4); z-index:35;
+}
+.sidebar-backdrop.show{ display:block; }
+
+@media (max-width:959px){
+  .navbar-burger{ display:inline-flex; }
+  .header-search-wrap{ display:none; }
+  .logo-block{ width:auto; }
+
+  .app-sidebar{
+    transform:translateX(-100%);
+    transition:transform .25s ease;
+    z-index:36;
+    box-shadow:none;
+  }
+  .app-sidebar.is-open{ transform:translateX(0); box-shadow:8px 0 24px rgba(0,0,0,.3); }
+
+  .app-content{ margin-left:0; }
+  .footer-bar{ margin-left:0; }
+
+  .kpi-col{ flex:none; width:50%; }
+
+  .toolbar-row{ flex-wrap:wrap; }
+  .toolbar-row .toolbar-col{ flex:1 1 220px; width:auto; }
+
+  .modal-card{ width:92vw !important; max-width:none; }
+}
+
+@media (max-width:559px){
+  .kpi-col{ width:100%; }
+
+  .toolbar-row .toolbar-col{ flex:1 1 100%; width:100%; }
+
+  .header-btn-label{ display:none; }
+  .user-name, .user-role{ display:none; }
+
+  .modal-card{ width:95vw !important; }
+}
 </style>
 </head>
 <body>
@@ -147,6 +199,11 @@ input:focus, select:focus, textarea:focus, .select select:focus, .input:focus, .
       </svg>
       <span class="logo-word">ЭНЕРГО<br>СЕТЬСТРОЙ</span>
     </a>
+    <a role="button" class="navbar-burger" id="sidebarBurger" aria-label="Открыть меню" aria-expanded="false" aria-controls="appSidebar">
+      <span aria-hidden="true"></span>
+      <span aria-hidden="true"></span>
+      <span aria-hidden="true"></span>
+    </a>
   </div>
   <div class="navbar-menu is-active" style="background:transparent;">
     <div class="navbar-start" style="margin-left:1rem;">
@@ -160,7 +217,7 @@ input:focus, select:focus, textarea:focus, .select select:focus, .input:focus, .
     <div class="navbar-end">
       <div class="navbar-item">
         <button class="button is-primary js-modal-trigger" data-target="newRequestModal">
-          <span class="icon"><i class="fas fa-plus"></i></span><span>Новая заявка</span>
+          <span class="icon"><i class="fas fa-plus"></i></span><span class="header-btn-label">Новая заявка</span>
         </button>
       </div>
       <div class="navbar-item">
@@ -186,7 +243,7 @@ input:focus, select:focus, textarea:focus, .select select:focus, .input:focus, .
 </nav>
 
 <!-- SIDEBAR (Bulma menu) -->
-<aside class="menu app-sidebar">
+<aside class="menu app-sidebar" id="appSidebar">
   <p class="menu-label">Навигация</p>
   <ul class="menu-list">
     <li><a><span class="icon"><i class="fas fa-gauge"></i></span> Дашборд</a></li>
@@ -197,6 +254,7 @@ input:focus, select:focus, textarea:focus, .select select:focus, .input:focus, .
     <li><a><span class="icon"><i class="fas fa-gear"></i></span> Настройки</a></li>
   </ul>
 </aside>
+<div class="sidebar-backdrop" id="sidebarBackdrop"></div>
 
 <!-- CONTENT -->
 <main class="app-content">
@@ -211,7 +269,7 @@ input:focus, select:focus, textarea:focus, .select select:focus, .input:focus, .
 
   <!-- KPI cards -->
   <div class="columns is-multiline mb-4">
-    <div class="column is-3">
+    <div class="column is-3 kpi-col">
       <div class="card kpi-card">
         <div class="card-content is-flex is-justify-content-space-between is-align-items-flex-start">
           <div>
@@ -222,7 +280,7 @@ input:focus, select:focus, textarea:focus, .select select:focus, .input:focus, .
         </div>
       </div>
     </div>
-    <div class="column is-3">
+    <div class="column is-3 kpi-col">
       <div class="card kpi-card">
         <div class="card-content is-flex is-justify-content-space-between is-align-items-flex-start">
           <div>
@@ -233,7 +291,7 @@ input:focus, select:focus, textarea:focus, .select select:focus, .input:focus, .
         </div>
       </div>
     </div>
-    <div class="column is-3">
+    <div class="column is-3 kpi-col">
       <div class="card kpi-card">
         <div class="card-content is-flex is-justify-content-space-between is-align-items-flex-start">
           <div>
@@ -244,7 +302,7 @@ input:focus, select:focus, textarea:focus, .select select:focus, .input:focus, .
         </div>
       </div>
     </div>
-    <div class="column is-3">
+    <div class="column is-3 kpi-col">
       <div class="card kpi-card">
         <div class="card-content is-flex is-justify-content-space-between is-align-items-flex-start">
           <div>
@@ -259,14 +317,14 @@ input:focus, select:focus, textarea:focus, .select select:focus, .input:focus, .
 
   <!-- Toolbar -->
   <div class="box toolbar-card mb-3">
-    <div class="columns is-vcentered is-mobile mb-0">
-      <div class="column is-4">
+    <div class="columns is-vcentered is-mobile mb-0 toolbar-row">
+      <div class="column is-4 toolbar-col">
         <div class="control has-icons-left">
           <input class="input" type="search" placeholder="Поиск по номеру, теме, объекту…">
           <span class="icon is-small is-left"><i class="fas fa-magnifying-glass"></i></span>
         </div>
       </div>
-      <div class="column is-2">
+      <div class="column is-2 toolbar-col">
         <div class="select is-fullwidth">
           <select>
             <option>Статус: Все</option>
@@ -278,7 +336,7 @@ input:focus, select:focus, textarea:focus, .select select:focus, .input:focus, .
           </select>
         </div>
       </div>
-      <div class="column is-2">
+      <div class="column is-2 toolbar-col">
         <div class="select is-fullwidth">
           <select>
             <option>Приоритет: Все</option>
@@ -289,7 +347,7 @@ input:focus, select:focus, textarea:focus, .select select:focus, .input:focus, .
           </select>
         </div>
       </div>
-      <div class="column is-2">
+      <div class="column is-2 toolbar-col">
         <div class="select is-fullwidth">
           <select>
             <option>Объект: Все</option>
@@ -301,7 +359,7 @@ input:focus, select:focus, textarea:focus, .select select:focus, .input:focus, .
           </select>
         </div>
       </div>
-      <div class="column is-2">
+      <div class="column is-2 toolbar-col">
         <button class="button is-primary is-fullwidth js-modal-trigger" data-target="newRequestModal">
           <span class="icon"><i class="fas fa-plus"></i></span><span>Новая заявка</span>
         </button>
@@ -661,6 +719,37 @@ input:focus, select:focus, textarea:focus, .select select:focus, .input:focus, .
     });
   });
   document.addEventListener('click', function(){ execDropdown.classList.remove('is-active'); });
+
+  // Off-canvas sidebar on <960px — Bulma ships the navbar-burger markup
+  // pattern but (by design, per Bulma's docs) no JS behaviour for it; this
+  // wires the burger up to open/close the sidebar drawer + backdrop.
+  var burger = document.getElementById('sidebarBurger');
+  var sidebar = document.getElementById('appSidebar');
+  var sidebarBackdrop = document.getElementById('sidebarBackdrop');
+
+  function openSidebar(){
+    sidebar.classList.add('is-open');
+    sidebarBackdrop.classList.add('show');
+    burger.classList.add('is-active');
+    burger.setAttribute('aria-expanded', 'true');
+  }
+  function closeSidebar(){
+    sidebar.classList.remove('is-open');
+    sidebarBackdrop.classList.remove('show');
+    burger.classList.remove('is-active');
+    burger.setAttribute('aria-expanded', 'false');
+  }
+
+  burger.addEventListener('click', function(){
+    sidebar.classList.contains('is-open') ? closeSidebar() : openSidebar();
+  });
+  sidebarBackdrop.addEventListener('click', closeSidebar);
+  sidebar.querySelectorAll('.menu-list a').forEach(function(link){
+    link.addEventListener('click', closeSidebar);
+  });
+  document.addEventListener('keydown', function(e){
+    if(e.key === 'Escape') closeSidebar();
+  });
 </script>
 </body>
 </html>

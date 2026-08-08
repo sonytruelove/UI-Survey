@@ -196,6 +196,50 @@ table.req-table tbody tr:hover{ background:#FBFAF9; }
 .modal .modal-content{ padding:24px; }
 .modal .modal-footer{ padding:14px 24px; }
 .file-field .btn{ background-color:var(--accent); }
+
+.req-table{ min-width:760px; }
+.table-scroll{ overflow-x:auto; }
+
+/* ---- responsive (mobile/tablet) ---- */
+html{ overflow-x:hidden; }
+
+/* Materialize's own sidenav-fixed already switches from a permanently
+   visible sidebar to an off-canvas drawer with overlay + open/close JS at
+   its native "medium-and-down" breakpoint (max-width:992px) — we lean on
+   that native behaviour rather than reimplementing it, and simply hide the
+   sidenav-trigger burger again above that point since sidenav-fixed makes
+   it unnecessary on desktop. */
+.sidenav-trigger{ color:#fff; margin:0 14px 0 0; }
+@media (min-width:993px){ .sidenav-trigger{ display:none !important; } }
+
+@media (max-width:992px){
+  .app-content{ margin-left:0; }
+  .footer-bar{ margin-left:0; }
+}
+
+@media (max-width:959px){
+  .header-search{ display:none; }
+  .logo-block{ width:auto; }
+
+  .kpi-col{ width:50%; }
+
+  .toolbar-card .row{ display:flex; flex-wrap:wrap; margin:0; }
+  .toolbar-card .row .toolbar-col{ float:none; flex:1 1 220px; width:auto; padding:0 8px 12px 0; }
+
+  #newRequestModal{ width:92vw; }
+}
+
+@media (max-width:559px){
+  .kpi-col{ width:100%; }
+
+  .toolbar-card .row .toolbar-col{ flex:1 1 100%; width:100%; }
+
+  .header-btn-label{ display:none; }
+  .user-trigger .user-name, .user-trigger .user-role{ display:none; }
+  .user-trigger{ padding-left:0; border-left:none; gap:0; }
+
+  #newRequestModal{ width:95vw; }
+}
 </style>
 </head>
 <body>
@@ -203,6 +247,9 @@ table.req-table tbody tr:hover{ background:#FBFAF9; }
 <div class="navbar-fixed">
   <nav class="app-header">
     <div class="nav-wrapper">
+      <a href="#" data-target="side-nav" class="sidenav-trigger" aria-label="Открыть меню">
+        <i class="material-icons">menu</i>
+      </a>
       <div class="logo-block">
         <svg viewBox="0 0 100 100" aria-hidden="true">
           <circle cx="50" cy="50" r="42" fill="none" stroke="currentColor" stroke-width="7" stroke-dasharray="240 24" stroke-linecap="round"/>
@@ -222,7 +269,7 @@ table.req-table tbody tr:hover{ background:#FBFAF9; }
       <div class="header-spacer"></div>
 
       <a class="btn waves-effect waves-light modal-trigger" href="#newRequestModal" style="margin-right:14px;">
-        <i class="material-icons left">add</i>Новая заявка
+        <i class="material-icons left">add</i><span class="header-btn-label">Новая заявка</span>
       </a>
       <span class="header-icon-btn"><i class="material-icons" style="font-size:20px;">notifications</i><span class="dot"></span></span>
 
@@ -243,14 +290,16 @@ table.req-table tbody tr:hover{ background:#FBFAF9; }
   </nav>
 </div>
 
-<!-- SIDEBAR — Materialize's native "sidenav-fixed" keeps it permanently visible on desktop -->
+<!-- SIDEBAR — Materialize's native "sidenav-fixed" keeps it permanently visible
+     on desktop and automatically becomes an off-canvas overlay drawer (with
+     its own backdrop + open/close JS) below its medium-and-down breakpoint. -->
 <ul id="side-nav" class="sidenav sidenav-fixed">
-  <li><a href="#" class="waves-effect"><i class="material-icons">speed</i>Дашборд</a></li>
-  <li class="active"><a href="#" class="waves-effect"><i class="material-icons">fact_check</i>Заявки</a></li>
-  <li><a href="#" class="waves-effect"><i class="material-icons">apartment</i>Объекты</a></li>
-  <li><a href="#" class="waves-effect"><i class="material-icons">groups</i>Исполнители</a></li>
-  <li><a href="#" class="waves-effect"><i class="material-icons">bar_chart</i>Отчёты</a></li>
-  <li><a href="#" class="waves-effect"><i class="material-icons">settings</i>Настройки</a></li>
+  <li><a href="#" class="waves-effect sidenav-close"><i class="material-icons">speed</i>Дашборд</a></li>
+  <li class="active"><a href="#" class="waves-effect sidenav-close"><i class="material-icons">fact_check</i>Заявки</a></li>
+  <li><a href="#" class="waves-effect sidenav-close"><i class="material-icons">apartment</i>Объекты</a></li>
+  <li><a href="#" class="waves-effect sidenav-close"><i class="material-icons">groups</i>Исполнители</a></li>
+  <li><a href="#" class="waves-effect sidenav-close"><i class="material-icons">bar_chart</i>Отчёты</a></li>
+  <li><a href="#" class="waves-effect sidenav-close"><i class="material-icons">settings</i>Настройки</a></li>
 </ul>
 
 <main class="app-content">
@@ -263,7 +312,7 @@ table.req-table tbody tr:hover{ background:#FBFAF9; }
 
   <!-- KPI cards -->
   <div class="row" style="margin-bottom:6px;">
-    <div class="col s3">
+    <div class="col s3 kpi-col">
       <div class="card kpi-card">
         <div class="card-content">
           <div>
@@ -274,7 +323,7 @@ table.req-table tbody tr:hover{ background:#FBFAF9; }
         </div>
       </div>
     </div>
-    <div class="col s3">
+    <div class="col s3 kpi-col">
       <div class="card kpi-card">
         <div class="card-content">
           <div>
@@ -285,7 +334,7 @@ table.req-table tbody tr:hover{ background:#FBFAF9; }
         </div>
       </div>
     </div>
-    <div class="col s3">
+    <div class="col s3 kpi-col">
       <div class="card kpi-card">
         <div class="card-content">
           <div>
@@ -296,7 +345,7 @@ table.req-table tbody tr:hover{ background:#FBFAF9; }
         </div>
       </div>
     </div>
-    <div class="col s3">
+    <div class="col s3 kpi-col">
       <div class="card kpi-card">
         <div class="card-content">
           <div>
@@ -312,12 +361,12 @@ table.req-table tbody tr:hover{ background:#FBFAF9; }
   <!-- Toolbar -->
   <div class="card toolbar-card">
     <div class="row" style="margin-bottom:0;">
-      <div class="col s4 input-field">
+      <div class="col s4 input-field toolbar-col">
         <i class="material-icons prefix" style="top:.6rem; font-size:20px; color:var(--text-secondary);">search</i>
         <input id="table-search" type="search">
         <label for="table-search">Поиск по номеру, теме, объекту…</label>
       </div>
-      <div class="col s2 input-field">
+      <div class="col s2 input-field toolbar-col">
         <select id="filter-status">
           <option value="" selected>Статус: Все</option>
           <option value="new">Новая</option>
@@ -327,7 +376,7 @@ table.req-table tbody tr:hover{ background:#FBFAF9; }
           <option value="overdue">Просрочена</option>
         </select>
       </div>
-      <div class="col s2 input-field">
+      <div class="col s2 input-field toolbar-col">
         <select id="filter-priority">
           <option value="" selected>Приоритет: Все</option>
           <option value="low">Низкий</option>
@@ -336,7 +385,7 @@ table.req-table tbody tr:hover{ background:#FBFAF9; }
           <option value="critical">Критический</option>
         </select>
       </div>
-      <div class="col s2 input-field">
+      <div class="col s2 input-field toolbar-col">
         <select id="filter-object">
           <option value="" selected>Объект: Все</option>
           <option>Братск</option>
@@ -346,7 +395,7 @@ table.req-table tbody tr:hover{ background:#FBFAF9; }
           <option>Усть-Кут</option>
         </select>
       </div>
-      <div class="col s2" style="padding-top:6px;">
+      <div class="col s2 toolbar-col" style="padding-top:6px;">
         <a class="btn waves-effect waves-light modal-trigger" href="#newRequestModal" style="width:100%; text-align:center;">
           <i class="material-icons left" style="margin-right:4px;">add</i>Новая заявка
         </a>
@@ -356,6 +405,7 @@ table.req-table tbody tr:hover{ background:#FBFAF9; }
 
   <!-- Table -->
   <div class="card table-card">
+    <div class="table-scroll">
     <table class="req-table highlight">
       <thead>
         <tr>
@@ -513,6 +563,7 @@ table.req-table tbody tr:hover{ background:#FBFAF9; }
         </tr>
       </tbody>
     </table>
+    </div>
     <div class="pagination-wrap">
       <div style="color:var(--text-secondary); font-size:13px;">Показано 1–10 из 128</div>
       <ul class="pagination">
@@ -642,6 +693,11 @@ document.addEventListener('DOMContentLoaded', function() {
   M.Modal.init(document.querySelectorAll('.modal'));
   M.Dropdown.init(document.querySelectorAll('.dropdown-trigger'), { constrainWidth:false, coverTrigger:false });
   M.updateTextFields();
+
+  // Native Materialize sidenav: below its own breakpoint this gives the
+  // sidebar an off-canvas overlay drawer + backdrop + swipe-to-close for
+  // free — the .sidenav-trigger link above just needs wiring up via init.
+  M.Sidenav.init(document.querySelectorAll('.sidenav'), { edge: 'left' });
 
   M.Datepicker.init(document.querySelectorAll('.datepicker'), {
     format: 'dd.mm.yyyy',
