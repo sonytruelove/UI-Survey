@@ -167,7 +167,7 @@ html{ overflow-x:hidden; }
   .app-content{ margin-left:0; }
   .footer-bar{ margin-left:0; }
 
-  .kpi-col{ flex:none; width:50%; }
+  .kpi-col{ flex:none !important; width:50% !important; }
 
   .toolbar-row{ flex-wrap:wrap; }
   .toolbar-row .toolbar-col{ flex:1 1 220px; width:auto; }
@@ -176,7 +176,7 @@ html{ overflow-x:hidden; }
 }
 
 @media (max-width:559px){
-  .kpi-col{ width:100%; }
+  .kpi-col{ width:100% !important; }
 
   .toolbar-row .toolbar-col{ flex:1 1 100%; width:100%; }
 
@@ -192,17 +192,17 @@ html{ overflow-x:hidden; }
 <!-- HEADER (Bulma navbar) -->
 <nav class="navbar is-fixed-top app-header" role="navigation">
   <div class="navbar-brand">
+    <a role="button" class="navbar-burger" id="sidebarBurger" aria-label="Открыть меню" aria-expanded="false" aria-controls="appSidebar">
+      <span aria-hidden="true"></span>
+      <span aria-hidden="true"></span>
+      <span aria-hidden="true"></span>
+    </a>
     <a class="navbar-item logo-block" href="#">
       <svg viewBox="0 0 100 100" aria-hidden="true">
         <circle cx="50" cy="50" r="42" fill="none" stroke="currentColor" stroke-width="7" stroke-dasharray="240 24" stroke-linecap="round"/>
         <circle cx="50" cy="50" r="27" fill="none" stroke="currentColor" stroke-width="7" stroke-dasharray="148 22" stroke-linecap="round" transform="rotate(35 50 50)"/>
       </svg>
       <span class="logo-word">ЭНЕРГО<br>СЕТЬСТРОЙ</span>
-    </a>
-    <a role="button" class="navbar-burger" id="sidebarBurger" aria-label="Открыть меню" aria-expanded="false" aria-controls="appSidebar">
-      <span aria-hidden="true"></span>
-      <span aria-hidden="true"></span>
-      <span aria-hidden="true"></span>
     </a>
   </div>
   <div class="navbar-menu is-active" style="background:transparent;">
