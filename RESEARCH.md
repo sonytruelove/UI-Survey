@@ -25,7 +25,7 @@
 | **Utility-first** | Атомарные классы, компонентов как таковых нет — вы строите их сами или берёте готовый слой поверх | Tailwind CSS (+ DaisyUI/Flowbite/Preline как слой компонентов) |
 | **Классические JS-компонентные киты (framework-agnostic)** | HTML+CSS+JS (обычно на jQuery-подобной или ванильной логике), работают без фреймворка | Bootstrap (JS-часть), Fomantic/Semantic UI, Materialize |
 | **Web Components киты** | Кастомные элементы (`<sl-button>`, `<cds-button>`), работают в любом фреймворке или без него | Shoelace, Fluent UI Web Components, Carbon Web Components, Ionic |
-| **React-компонентные библиотеки** | Готовые React-компоненты, нужен build (Vite/webpack) | MUI, Ant Design (antd), Chakra UI, Mantine, Blueprint |
+| **React-компонентные библиотеки** | Готовые React-компоненты, нужен build (Vite/webpack) | MUI, Ant Design (antd), Chakra UI, Mantine, HeroUI, Blueprint |
 | **Vue-компонентные библиотеки** | То же для Vue | Vuetify, Element Plus, PrimeVue, Naive UI, Ant Design Vue, Quasar, Arco Design |
 | **Headless / unstyled** | Логика и доступность есть, вёрстки нет — стилизуете сами (часто вместе с Tailwind) | Radix UI, Headless UI, Radix Vue/Reka UI, Ark UI, shadcn/ui (это не библиотека, а генератор кода на Radix+Tailwind) |
 | **Корпоративные design-system киты** | Официальный дизайн-язык крупной компании, обычно самые строгие и «тяжёлые» | Fluent UI (Microsoft), Carbon (IBM), Material/MUI (Google), Polaris (Shopify), Atlassian Design System |
@@ -234,6 +234,7 @@ npm.
 | **Carbon Design System (IBM)** | Web Components / React | Один из самых продуманных enterprise/data-dense дизайн-языков — строгая типографика, сетка `cds-grid` (16 колонок, чёткие брейкпоинты), отличная доступность; визуально консервативный «квадратный» стиль; через CDN без сборщика доступна не вся функциональность — для прода нужен npm |
 | **PrimeVue** | Vue 3 (+ PrimeReact/PrimeNG) | Самый широкий набор enterprise-виджетов среди Vue-китов (DataTable с `responsiveLayout="stack"` для мобильных, Kanban, Timeline), гибкая система тем (Aura/Lara/Material); новая Pass Through/design-tokens система тем имеет кривую обучения |
 | **Ant Design Vue** | Vue 3 (+ antd для React) | Портирует эталонный enterprise design-language Ant Design (Alibaba) на Vue, продуманная темизация через `ConfigProvider`, `Sider breakpoint` для авто-drawer на мобильном; сильный узнаваемый «Ant-стиль» требует дисциплины при кастомизации |
+| **HeroUI** (бывший NextUI, ребрендинг 2024) | React + Tailwind | Один из самых модных китов последних лет для SaaS/инди-продуктов: построен на Tailwind CSS + React Aria (примитивы доступности от Adobe) + Framer Motion для анимаций; современный «мягкий», слегка glassmorphism-вид со скруглениями и плавными переходами из коробки; тесно завязан на Tailwind-конфиг (плагин прописывается в `tailwind.config`, `content`-глобы должны включать пакет) — практически всегда требует npm/сборщик, честный CDN-only прототип рискован по тем же причинам, что подвели Carbon/PrimeVue/antd-vue в этом репозитории |
 | **MUI (Material UI)** | React | Самый популярный React-кит enterprise-уровня, эталонная реализация Material Design для React, огромная экосистема (MUI X — таблицы/графики/датапикеры) |
 | **Chakra UI** | React | Лёгкий, дружелюбный API, отличная доступность и тёмная тема из коробки, менее «представительный» вид, чем MUI/antd |
 | **Mantine** | React | Молодой, но очень полный (100+ компонентов + hooks), нативная поддержка форм/дат/нотификаций, быстро растущая популярность |
@@ -259,6 +260,7 @@ npm.
 | Уникальный бренд, свой дизайн с нуля | Tailwind + (DaisyUI или shadcn/ui) | максимальный контроль без борьбы с чужими классами |
 | Внутренняя админка/CRM с обилием таблиц и форм (наш кейс «Заявки») | Ant Design (Vue/React), Element Plus, PrimeVue/PrimeReact, Carbon | готовые data-table/form-паттерны, продумано под плотные бизнес-данные |
 | React-продукт, нужна зрелая экосистема | MUI, Mantine, antd | наибольшее число готовых компонентов и интеграций |
+| Современный SaaS-продукт, важен «отполированный» визуал из коробки | HeroUI, Mantine | анимации/скругления/микро-интеракции по умолчанию, без ручной доводки |
 | Vue-продукт | Element Plus, PrimeVue, Vuetify, Naive UI | зрелость + нативная реактивность Vue |
 | Мультифреймворковая дизайн-система/виджеты для встраивания куда угодно | Shoelace, Fluent UI Web Components, Carbon Web Components | Web Components независимы от фреймворка хоста |
 | Продукт для Microsoft-экосистемы (Teams/SharePoint) | Fluent UI | ощущается «родным» для этой аудитории |
