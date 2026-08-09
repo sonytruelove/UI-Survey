@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="energo">
+<head>
+<meta charset="UTF-8">
+<title>Заявки — ЭнергоСетьСтрой (Tailwind + DaisyUI)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          bgApp: '#F4F5F7',
+          bgSurface: '#FFFFFF',
+          bgDark: '#101010',
+          bgDark2: '#1A1A1A',
+          borderC: '#E4E5E9',
+          borderDark: 'rgba(255,255,255,.09)',
+          accent: '#E07B3E',
+          accentHover: '#C2632D',
+          accentTint: '#FDEEE3',
+          textPrimary: '#15161A',
+          textSecondary: '#6B6E76',
+          onDark: '#FFFFFF',
+          onDarkMuted: '#9A9CA5',
+          success: '#2FA968',
+          info: '#3B82C4',
+          purple: '#8B6CC1',
+          danger: '#E4483D',
+          warning: '#F2B33D',
+          low: '#8A8D96',
+        },
+        fontFamily: {
+          display: ['Rajdhani', 'sans-serif'],
+          sans: ['Inter', 'sans-serif'],
+        },
+        boxShadow: {
+          brand: '0 1px 2px rgba(16,16,16,.06), 0 8px 24px rgba(16,16,16,.06)',
+        },
+      },
+    },
+  };
+</script>
+
+<!-- DaisyUI plugin CDN (precompiled component layer on top of Tailwind CDN) -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daisyui@4.12.24/dist/full.min.css" type="text/css">
+
+<style>
+  /* ============ DaisyUI custom theme "energo" — recolor tokens to brand HSL ============ */
+  [data-theme="energo"] {
+    --p: 22 72% 56%;      /* primary = accent #E07B3E */
+    --pc: 0 0% 100%;
+    --s: 262 41% 59%;     /* secondary ~ brand purple #8B6CC1 */
+    --sc: 0 0% 100%;
+    --a: 148 56% 42%;     /* daisy "accent" slot ~ brand success #2FA968 */
+    --ac: 0 0% 100%;
+    --n: 0 0% 6%;         /* neutral = bg-dark #101010 (header/sidebar) */
+    --nc: 0 0% 100%;
+    --b1: 0 0% 100%;      /* base-100 = bg-surface #FFFFFF */
+    --b2: 220 16% 96%;    /* base-200 = bg-app #F4F5F7 */
+    --b3: 220 10% 91%;    /* base-300 = border #E4E5E9 */
+    --bc: 228 11% 9%;     /* base content = text-primary #15161A */
+    --in: 209 54% 50%;    /* info = brand info #3B82C4 */
+    --inc: 0 0% 100%;
+    --su: 148 56% 42%;    /* success = brand success #2FA968 */
+    --suc: 0 0% 100%;
+    --wa: 39 87% 59%;     /* warning = brand warning #F2B33D */
+    --wac: 20 45% 15%;
+    --er: 4 76% 57%;      /* error = brand danger #E4483D */
+    --erc: 0 0% 100%;
+
+    --rounded-box: 0.75rem;   /* 12px: cards / table / modal */
+    --rounded-btn: 0.5rem;    /* 8px: buttons / inputs / badges */
+    --rounded-badge: 0.5rem;  /* 8px default; priority pills override to full */
+  }
+
+  html, body { background: #F4F5F7; font-family: 'Inter', sans-serif; }
+  /* Desktop (>=960px) keeps the original fixed-width canvas untouched */
+  @media (min-width:960px){ html, body { min-width: 1280px; } }
+  h1, h2, h3, .stat-value, .logo-word, .font-display { font-family: 'Rajdhani', sans-serif; }
+
+  ::-webkit-scrollbar { height: 10px; width: 10px; }
+  ::-webkit-scrollbar-thumb { background: #d8d9dd; border-radius: 8px; }
+
+  /* header search input on dark bg */
+  .header-search input::placeholder { color: #6f7178; }
+
+  /* table row hover */
+  .req-row:hover { background: #FDEEE3 !important; }
+
+  /* status dot */
+  .status-dot { width: 6px; height: 6px; border-radius: 999px; background: currentColor; display: inline-block; }
+
+  /* focus ring uses accent */
+  .input-bordered:focus, .select-bordered:focus, .textarea-bordered:focus, .file-input-bordered:focus {
+    outline: 2px solid #E07B3E;
+    outline-offset: 0;
+    border-color: #E07B3E;
+  }
+
+  dialog.modal::backdrop { background: rgba(16,16,16,.45); }
+  .btn-label { display: inline; }
+
+  /* ============ off-canvas sidebar drawer (DaisyUI-style, custom 960px breakpoint) ============ */
+  #app-sidebar { transition: transform .25s ease; }
+  #hamburger-btn { display: none; }
+  #sidebar-backdrop { display: none; }
+
+  /* ============ RESPONSIVE (<960px / <560px) — see shared/responsive.md ============ */
+  @media (max-width: 959px) {
+    .header-search { display: none; }
+    #hamburger-btn { display: inline-flex; }
+
+    #app-sidebar {
+      position: fixed;
+      top: 64px; left: 0; bottom: 0;
+      width: 250px;
+      transform: translateX(-100%);
+      z-index: 260;
+      overflow-y: auto;
+      box-shadow: 4px 0 24px rgba(0,0,0,.25);
+    }
+    #app-sidebar.drawer-open { transform: translateX(0); }
+
+    #sidebar-backdrop.show {
+      display: block;
+      position: fixed;
+      top: 64px; left: 0; right: 0; bottom: 0;
+      background: rgba(16,16,16,.45);
+      z-index: 250;
+    }
+
+    #kpi-stats { grid-template-columns: repeat(2, 1fr) !important; }
+
+    #toolbar .input,
+    #toolbar select { flex: 1 1 200px; min-width: 0; }
+
+    main { padding-left: 20px !important; padding-right: 20px !important; }
+
+    .modal-box { width: 92vw; max-width: none; max-height: 90vh; overflow-y: auto; }
+  }
+
+  @media (max-width: 559px) {
+    #kpi-stats { grid-template-columns: 1fr !important; }
+
+    #toolbar { flex-direction: column; align-items: stretch; }
+    #toolbar .input,
+    #toolbar select,
+    #toolbar button { width: 100% !important; flex: none; }
+    #toolbar .flex-1 { display: none; }
+
+    #user-meta-block { display: none; }
+    #btn-new-request-header .btn-label { display: none; }
+
+    .modal-box { width: 95vw; }
+    .modal-box .grid-cols-2 { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body class="bg-bgApp text-textPrimary">
+
+<div class="min-h-screen flex flex-col">
+
+  <!-- ===================== HEADER ===================== -->
+  <header class="h-16 bg-bgDark border-b border-borderDark flex items-center justify-between px-6 sticky top-0 z-40">
+    <div class="flex items-center gap-3">
+      <button id="hamburger-btn" class="btn btn-ghost btn-circle text-onDarkMuted hover:text-white" aria-label="Открыть меню" aria-expanded="false" aria-controls="app-sidebar">
+        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+        </svg>
+      </button>
+      <svg class="w-8 h-8 text-accent flex-none" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <circle cx="50" cy="50" r="42" fill="none" stroke="currentColor" stroke-width="7" stroke-dasharray="240 24" stroke-linecap="round"/>
+        <circle cx="50" cy="50" r="27" fill="none" stroke="currentColor" stroke-width="7" stroke-dasharray="148 22" stroke-linecap="round" transform="rotate(35 50 50)"/>
+      </svg>
+      <div class="logo-word text-white font-bold text-[15px] uppercase leading-[.95] tracking-wide">ЭНЕРГО<br>СЕТЬСТРОЙ</div>
+    </div>
+
+    <div class="header-search flex-1 max-w-md mx-8 relative">
+      <svg class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-onDarkMuted" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
+      </svg>
+      <input type="text" placeholder="Поиск по номеру, теме, объекту…"
+        class="input input-bordered w-full pl-9 h-10 bg-bgDark2 border-borderDark text-white placeholder:text-onDarkMuted text-sm">
+    </div>
+
+    <div class="flex items-center gap-4">
+      <button class="btn btn-ghost btn-circle text-onDarkMuted hover:text-white" aria-label="Уведомления">
+        <div class="indicator">
+          <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0" />
+          </svg>
+          <span class="badge badge-error indicator-item w-2 h-2 p-0 border-none"></span>
+        </div>
+      </button>
+
+      <button id="btn-new-request-header" class="btn btn-primary gap-2 h-10 min-h-0 text-white" onclick="new_request_modal.showModal()">
+        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+        </svg>
+        <span class="btn-label">Новая заявка</span>
+      </button>
+
+      <div class="flex items-center gap-2.5 pl-1">
+        <div class="avatar placeholder">
+          <div class="bg-accentTint text-accentHover rounded-full w-9 font-display font-bold text-sm">
+            <span>СА</span>
+          </div>
+        </div>
+        <div class="leading-tight" id="user-meta-block">
+          <div class="text-white text-[13px] font-semibold">Соколов А.П.</div>
+          <div class="text-onDarkMuted text-[11.5px]">Диспетчер участка</div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="flex flex-1">
+    <!-- ===================== SIDEBAR ===================== -->
+    <aside id="app-sidebar" class="w-[250px] flex-none bg-bgDark border-r border-borderDark py-4">
+      <ul class="menu menu-vertical w-full gap-0.5 px-3">
+        <li>
+          <a class="rounded-lg text-onDarkMuted hover:bg-bgDark2 hover:text-white text-sm font-medium py-2.5">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 0 1 6 3.75h2.25A2.25 2.25 0 0 1 10.5 6v2.25a2.25 2.25 0 0 1-2.25 2.25H6a2.25 2.25 0 0 1-2.25-2.25V6ZM3.75 15.75A2.25 2.25 0 0 1 6 13.5h2.25a2.25 2.25 0 0 1 2.25 2.25V18a2.25 2.25 0 0 1-2.25 2.25H6A2.25 2.25 0 0 1 3.75 18v-2.25ZM13.5 6a2.25 2.25 0 0 1 2.25-2.25H18A2.25 2.25 0 0 1 20.25 6v2.25A2.25 2.25 0 0 1 18 10.5h-2.25a2.25 2.25 0 0 1-2.25-2.25V6ZM13.5 15.75a2.25 2.25 0 0 1 2.25-2.25H18a2.25 2.25 0 0 1 2.25 2.25V18A2.25 2.25 0 0 1 18 20.25h-2.25A2.25 2.25 0 0 1 13.5 18v-2.25Z" />
+            </svg>
+            Дашборд
+          </a>
+        </li>
+        <li>
+          <a class="rounded-lg bg-accentTint text-accent font-semibold text-sm py-2.5 border-r-[3px] border-accent">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 0 0 2.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 0 0-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 0 0 .75-.75 2.25 2.25 0 0 0-.1-.664m-5.8 0A2.251 2.251 0 0 1 13.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25Z" />
+            </svg>
+            Заявки
+          </a>
+        </li>
+        <li>
+          <a class="rounded-lg text-onDarkMuted hover:bg-bgDark2 hover:text-white text-sm font-medium py-2.5">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21m4.5-13.5h3.75c.621 0 1.125.504 1.125 1.125V21" />
+            </svg>
+            Объекты
+          </a>
+        </li>
+        <li>
+          <a class="rounded-lg text-onDarkMuted hover:bg-bgDark2 hover:text-white text-sm font-medium py-2.5">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 0 1 8.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0 1 11.964-3.07M12 6.375a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0Zm8.25 2.25a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z" />
+            </svg>
+            Исполнители
+          </a>
+        </li>
+        <li>
+          <a class="rounded-lg text-onDarkMuted hover:bg-bgDark2 hover:text-white text-sm font-medium py-2.5">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 0 1 3 19.875v-6.75ZM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V8.625ZM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V4.125Z" />
+            </svg>
+            Отчёты
+          </a>
+        </li>
+        <li>
+          <a class="rounded-lg text-onDarkMuted hover:bg-bgDark2 hover:text-white text-sm font-medium py-2.5">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 0 1 1.37.49l1.296 2.247a1.125 1.125 0 0 1-.26 1.431l-1.003.827c-.293.24-.438.613-.431.992a6.759 6.759 0 0 1 0 .255c-.007.378.138.75.43.99l1.005.828c.424.35.534.954.26 1.43l-1.298 2.247a1.125 1.125 0 0 1-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.57 6.57 0 0 1-.22.128c-.331.183-.581.495-.644.869l-.213 1.281c-.09.543-.56.94-1.11.94h-2.594c-.55 0-1.019-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 0 1-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 0 1-1.369-.49l-1.297-2.247a1.125 1.125 0 0 1 .26-1.431l1.004-.827c.292-.24.437-.613.43-.992a6.932 6.932 0 0 1 0-.255c.007-.378-.138-.75-.43-.99l-1.004-.828a1.125 1.125 0 0 1-.26-1.43l1.297-2.247a1.125 1.125 0 0 1 1.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.086.22-.128.332-.183.582-.495.644-.869l.214-1.28Z" />
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+            </svg>
+            Настройки
+          </a>
+        </li>
+      </ul>
+    </aside>
+    <div id="sidebar-backdrop"></div>
+
+    <!-- ===================== CONTENT ===================== -->
+    <main class="flex-1 min-w-0 px-8 py-7 pb-16">
+
+      <div class="mb-6">
+        <div class="text-sm breadcrumbs text-textSecondary px-0 min-h-0 py-0 mb-1">
+          <ul>
+            <li>Главная</li>
+            <li class="text-textPrimary font-medium">Заявки</li>
+          </ul>
+        </div>
+        <h1 class="font-display text-2xl font-bold uppercase tracking-wide text-textPrimary">Заявки</h1>
+      </div>
+
+      <!-- KPI stats -->
+      <div id="kpi-stats" class="stats shadow-brand w-full grid grid-cols-4 bg-bgSurface border border-borderC rounded-xl mb-6">
+        <div class="stat">
+          <div class="stat-title text-textSecondary text-xs font-semibold uppercase tracking-wide">Всего заявок</div>
+          <div class="stat-value font-display text-textPrimary text-4xl">128</div>
+        </div>
+        <div class="stat">
+          <div class="stat-title text-textSecondary text-xs font-semibold uppercase tracking-wide">В работе</div>
+          <div class="stat-value font-display text-accent text-4xl">34</div>
+        </div>
+        <div class="stat">
+          <div class="stat-title text-textSecondary text-xs font-semibold uppercase tracking-wide">Выполнено</div>
+          <div class="stat-value font-display text-success text-4xl">81</div>
+        </div>
+        <div class="stat">
+          <div class="stat-title text-textSecondary text-xs font-semibold uppercase tracking-wide">Просрочено</div>
+          <div class="stat-value font-display text-danger text-4xl">7</div>
+        </div>
+      </div>
+
+      <!-- Toolbar -->
+      <div id="toolbar" class="flex items-center gap-3 mb-4 flex-wrap">
+        <div class="relative">
+          <svg class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-textSecondary" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
+          </svg>
+          <input type="text" placeholder="Поиск по номеру, теме, объекту…" class="input input-bordered pl-9 h-10 w-72 bg-white border-borderC text-sm">
+        </div>
+
+        <select class="select select-bordered h-10 min-h-0 bg-white border-borderC text-sm">
+          <option>Статус: Все</option>
+          <option>Новая</option>
+          <option>В работе</option>
+          <option>На проверке</option>
+          <option>Выполнена</option>
+          <option>Просрочена</option>
+        </select>
+
+        <select class="select select-bordered h-10 min-h-0 bg-white border-borderC text-sm">
+          <option>Приоритет: Все</option>
+          <option>Низкий</option>
+          <option>Средний</option>
+          <option>Высокий</option>
+          <option>Критический</option>
+        </select>
+
+        <select class="select select-bordered h-10 min-h-0 bg-white border-borderC text-sm">
+          <option>Объект: Все</option>
+          <option>Братск</option>
+          <option>Усть-Илимск</option>
+          <option>Иркутск</option>
+          <option>Ангарск</option>
+          <option>Усть-Кут</option>
+          <option>Яракта</option>
+          <option>Бохан</option>
+          <option>Тимлюй</option>
+          <option>Краснокаменск</option>
+          <option>Торей</option>
+        </select>
+
+        <div class="flex-1"></div>
+
+        <button class="btn btn-primary gap-2 h-10 min-h-0 text-white" onclick="new_request_modal.showModal()">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+          </svg>
+          Новая заявка
+        </button>
+      </div>
+
+      <!-- Table -->
+      <div class="bg-bgSurface border border-borderC rounded-xl shadow-brand overflow-hidden">
+        <div class="overflow-x-auto">
+        <table class="table min-w-[760px]">
+          <thead>
+            <tr class="text-textSecondary text-[11.5px] uppercase tracking-wide">
+              <th>№</th>
+              <th>Тема заявки</th>
+              <th>Категория</th>
+              <th>Объект</th>
+              <th>Приоритет</th>
+              <th>Статус</th>
+              <th>Исполнитель</th>
+              <th>Срок</th>
+              <th>Действия</th>
+            </tr>
+          </thead>
+          <tbody class="text-[13.5px]">
+            <tr class="req-row">
+              <td class="font-display font-bold text-textSecondary">ЗЯ-2481</td>
+              <td class="font-semibold">Замена автоматического выключателя на ТП-14</td>
+              <td>Электромонтажные работы</td>
+              <td>Братск</td>
+              <td><span class="badge !rounded-full border-none font-semibold text-xs bg-accentTint text-accentHover">Высокий</span></td>
+              <td><span class="badge border-none font-semibold text-xs bg-accentTint text-accentHover gap-1.5"><span class="status-dot"></span>В работе</span></td>
+              <td class="flex items-center gap-2 py-3.5"><span class="avatar placeholder"><span class="bg-accentTint text-accentHover rounded-full w-6 text-[10px] font-display font-bold">СА</span></span>Соколов А.П.</td>
+              <td>12.08.2026</td>
+              <td>
+                <div class="flex gap-3 text-textSecondary">
+                  <svg class="w-4 h-4 cursor-pointer hover:text-accent" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /></svg>
+                  <svg class="w-4 h-4 cursor-pointer hover:text-accent" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" /></svg>
+                </div>
+              </td>
+            </tr>
+            <tr class="req-row">
+              <td class="font-display font-bold text-textSecondary">ЗЯ-2480</td>
+              <td class="font-semibold">Плановое ТО ВЛ-10кВ, участок Братск—Усть-Илимск</td>
+              <td>Обслуживание сетей</td>
+              <td>Усть-Илимск</td>
+              <td><span class="badge !rounded-full border-none font-semibold text-xs" style="background:#FDF3E0;color:#B8801F;">Средний</span></td>
+              <td><span class="badge border-none font-semibold text-xs gap-1.5" style="background:#E7F1FA;color:#3B82C4;"><span class="status-dot"></span>Новая</span></td>
+              <td class="flex items-center gap-2 py-3.5"><span class="avatar placeholder"><span class="bg-accentTint text-accentHover rounded-full w-6 text-[10px] font-display font-bold">ГД</span></span>Гришин Д.О.</td>
+              <td>18.08.2026</td>
+              <td>
+                <div class="flex gap-3 text-textSecondary">
+                  <svg class="w-4 h-4 cursor-pointer hover:text-accent" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /></svg>
+                  <svg class="w-4 h-4 cursor-pointer hover:text-accent" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" /></svg>
+                </div>
+              </td>
+            </tr>
+            <tr class="req-row">
+              <td class="font-display font-bold text-textSecondary">ЗЯ-2479</td>
+              <td class="font-semibold">Аварийное отключение на подстанции №3</td>
+              <td>Аварийная заявка</td>
+              <td>Иркутск</td>
+              <td><span class="badge !rounded-full border-none font-semibold text-xs" style="background:#FCE7E5;color:#E4483D;">Критический</span></td>
+              <td><span class="badge border-none font-semibold text-xs bg-accentTint text-accentHover gap-1.5"><span class="status-dot"></span>В работе</span></td>
+              <td class="flex items-center gap-2 py-3.5"><span class="avatar placeholder"><span class="bg-accentTint text-accentHover rounded-full w-6 text-[10px] font-display font-bold">МС</span></span>Марков С.И.</td>
+              <td>07.08.2026</td>
+              <td>
+                <div class="flex gap-3 text-textSecondary">
+                  <svg class="w-4 h-4 cursor-pointer hover:text-accent" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /></svg>
+                  <svg class="w-4 h-4 cursor-pointer hover:text-accent" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" /></svg>
+                </div>
+              </td>
+            </tr>
+            <tr class="req-row">
+              <td class="font-display font-bold text-textSecondary">ЗЯ-2478</td>
+              <td class="font-semibold">Монтаж кабельной линии 0.4кВ</td>
+              <td>Электромонтажные работы</td>
+              <td>Ангарск</td>
+              <td><span class="badge !rounded-full border-none font-semibold text-xs" style="background:#FDF3E0;color:#B8801F;">Средний</span></td>
+              <td><span class="badge border-none font-semibold text-xs" style="background:#F1ECFA;color:#8B6CC1;"><span class="status-dot"></span>&nbsp;На проверке</span></td>
+              <td class="flex items-center gap-2 py-3.5"><span class="avatar placeholder"><span class="bg-accentTint text-accentHover rounded-full w-6 text-[10px] font-display font-bold">ТЕ</span></span>Титова Е.В.</td>
+              <td>15.08.2026</td>
+              <td>
+                <div class="flex gap-3 text-textSecondary">
+                  <svg class="w-4 h-4 cursor-pointer hover:text-accent" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /></svg>
+                  <svg class="w-4 h-4 cursor-pointer hover:text-accent" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" /></svg>
+                </div>
+              </td>
+            </tr>
+            <tr class="req-row">
+              <td class="font-display font-bold text-textSecondary">ЗЯ-2477</td>
+              <td class="font-semibold">Проверка изоляции трансформатора Т-2</td>
+              <td>Диагностика оборудования</td>
+              <td>Тимлюй</td>
+              <td><span class="badge !rounded-full border-none font-semibold text-xs" style="background:#EEEEF0;color:#8A8D96;">Низкий</span></td>
+              <td><span class="badge border-none font-semibold text-xs gap-1.5" style="background:#E6F6ED;color:#2FA968;"><span class="status-dot"></span>Выполнена</span></td>
+              <td class="flex items-center gap-2 py-3.5"><span class="avatar placeholder"><span class="bg-accentTint text-accentHover rounded-full w-6 text-[10px] font-display font-bold">СА</span></span>Соколов А.П.</td>
+              <td>02.08.2026</td>
+              <td>
+                <div class="flex gap-3 text-textSecondary">
+                  <svg class="w-4 h-4 cursor-pointer hover:text-accent" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /></svg>
+                  <svg class="w-4 h-4 cursor-pointer hover:text-accent" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" /></svg>
+                </div>
+              </td>
+            </tr>
+            <tr class="req-row">
+              <td class="font-display font-bold text-textSecondary">ЗЯ-2476</td>
+              <td class="font-semibold">Ремонт опоры ЛЭП после грозового повреждения</td>
+              <td>Аварийная заявка</td>
+              <td>Усть-Кут</td>
+              <td><span class="badge !rounded-full border-none font-semibold text-xs" style="background:#FCE7E5;color:#E4483D;">Критический</span></td>
+              <td><span class="badge border-none font-semibold text-xs gap-1.5" style="background:#FCE7E5;color:#E4483D;"><span class="status-dot"></span>Просрочена</span></td>
+              <td class="flex items-center gap-2 py-3.5"><span class="avatar placeholder"><span class="bg-accentTint text-accentHover rounded-full w-6 text-[10px] font-display font-bold">ГД</span></span>Гришин Д.О.</td>
+              <td>04.08.2026</td>
+              <td>
+                <div class="flex gap-3 text-textSecondary">
+                  <svg class="w-4 h-4 cursor-pointer hover:text-accent" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /></svg>
+                  <svg class="w-4 h-4 cursor-pointer hover:text-accent" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" /></svg>
+                </div>
+              </td>
+            </tr>
+            <tr class="req-row">
+              <td class="font-display font-bold text-textSecondary">ЗЯ-2475</td>
+              <td class="font-semibold">Технологическое присоединение нового объекта</td>
+              <td>Технологическое присоединение</td>
+              <td>Яракта</td>
+              <td><span class="badge !rounded-full border-none font-semibold text-xs bg-accentTint text-accentHover">Высокий</span></td>
+              <td><span class="badge border-none font-semibold text-xs gap-1.5" style="background:#E7F1FA;color:#3B82C4;"><span class="status-dot"></span>Новая</span></td>
+              <td class="flex items-center gap-2 py-3.5"><span class="avatar placeholder"><span class="bg-accentTint text-accentHover rounded-full w-6 text-[10px] font-display font-bold">КО</span></span>Кузнецова О.Р.</td>
+              <td>22.08.2026</td>
+              <td>
+                <div class="flex gap-3 text-textSecondary">
+                  <svg class="w-4 h-4 cursor-pointer hover:text-accent" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /></svg>
+                  <svg class="w-4 h-4 cursor-pointer hover:text-accent" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" /></svg>
+                </div>
+              </td>
+            </tr>
+            <tr class="req-row">
+              <td class="font-display font-bold text-textSecondary">ЗЯ-2474</td>
+              <td class="font-semibold">Замена счётчика электроэнергии</td>
+              <td>Обслуживание сетей</td>
+              <td>Бохан</td>
+              <td><span class="badge !rounded-full border-none font-semibold text-xs" style="background:#EEEEF0;color:#8A8D96;">Низкий</span></td>
+              <td><span class="badge border-none font-semibold text-xs gap-1.5" style="background:#E6F6ED;color:#2FA968;"><span class="status-dot"></span>Выполнена</span></td>
+              <td class="flex items-center gap-2 py-3.5"><span class="avatar placeholder"><span class="bg-accentTint text-accentHover rounded-full w-6 text-[10px] font-display font-bold">МС</span></span>Марков С.И.</td>
+              <td>30.07.2026</td>
+              <td>
+                <div class="flex gap-3 text-textSecondary">
+                  <svg class="w-4 h-4 cursor-pointer hover:text-accent" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /></svg>
+                  <svg class="w-4 h-4 cursor-pointer hover:text-accent" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" /></svg>
+                </div>
+              </td>
+            </tr>
+            <tr class="req-row">
+              <td class="font-display font-bold text-textSecondary">ЗЯ-2473</td>
+              <td class="font-semibold">Диагностика РЗА на подстанции</td>
+              <td>Диагностика оборудования</td>
+              <td>Краснокаменск</td>
+              <td><span class="badge !rounded-full border-none font-semibold text-xs" style="background:#FDF3E0;color:#B8801F;">Средний</span></td>
+              <td><span class="badge border-none font-semibold text-xs bg-accentTint text-accentHover gap-1.5"><span class="status-dot"></span>В работе</span></td>
+              <td class="flex items-center gap-2 py-3.5"><span class="avatar placeholder"><span class="bg-accentTint text-accentHover rounded-full w-6 text-[10px] font-display font-bold">ТЕ</span></span>Титова Е.В.</td>
+              <td>19.08.2026</td>
+              <td>
+                <div class="flex gap-3 text-textSecondary">
+                  <svg class="w-4 h-4 cursor-pointer hover:text-accent" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /></svg>
+                  <svg class="w-4 h-4 cursor-pointer hover:text-accent" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" /></svg>
+                </div>
+              </td>
+            </tr>
+            <tr class="req-row">
+              <td class="font-display font-bold text-textSecondary">ЗЯ-2472</td>
+              <td class="font-semibold">Плановый осмотр опор ВЛ-35кВ</td>
+              <td>Обслуживание сетей</td>
+              <td>Торей</td>
+              <td><span class="badge !rounded-full border-none font-semibold text-xs" style="background:#EEEEF0;color:#8A8D96;">Низкий</span></td>
+              <td><span class="badge border-none font-semibold text-xs gap-1.5" style="background:#E6F6ED;color:#2FA968;"><span class="status-dot"></span>Выполнена</span></td>
+              <td class="flex items-center gap-2 py-3.5"><span class="avatar placeholder"><span class="bg-accentTint text-accentHover rounded-full w-6 text-[10px] font-display font-bold">КО</span></span>Кузнецова О.Р.</td>
+              <td>28.07.2026</td>
+              <td>
+                <div class="flex gap-3 text-textSecondary">
+                  <svg class="w-4 h-4 cursor-pointer hover:text-accent" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /></svg>
+                  <svg class="w-4 h-4 cursor-pointer hover:text-accent" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" /></svg>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        </div>
+        <div class="flex items-center justify-between px-5 py-3.5 border-t border-borderC">
+          <div class="text-xs text-textSecondary">Показано 10 из 128 заявок</div>
+          <div class="join">
+            <button class="join-item btn btn-sm btn-ghost border-borderC">
+              <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" /></svg>
+            </button>
+            <button class="join-item btn btn-sm btn-primary text-white border-none">1</button>
+            <button class="join-item btn btn-sm btn-ghost border-borderC">2</button>
+            <button class="join-item btn btn-sm btn-ghost border-borderC">3</button>
+            <button class="join-item btn btn-sm btn-ghost border-borderC">…</button>
+            <button class="join-item btn btn-sm btn-ghost border-borderC">13</button>
+            <button class="join-item btn btn-sm btn-ghost border-borderC">
+              <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" /></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <div class="px-8 py-4 text-[11px] text-textSecondary/70">
+    Kit: Tailwind CSS (Play CDN, 3.x) + DaisyUI v4.12.24 · CDN: cdn.tailwindcss.com, cdn.jsdelivr.net/npm/daisyui@4.12.24/dist/full.min.css · Icons: Heroicons (inline SVG, outline 24px)
+  </div>
+</div>
+
+<!-- ===================== MODAL: NEW REQUEST ===================== -->
+<dialog id="new_request_modal" class="modal">
+  <div class="modal-box max-w-2xl rounded-xl">
+    <h3 class="font-display text-lg font-bold uppercase tracking-wide mb-4">Новая заявка</h3>
+    <form method="dialog" class="space-y-4" onsubmit="event.preventDefault(); new_request_modal.close();">
+
+      <div class="form-control">
+        <label class="label py-1"><span class="label-text font-medium">Тема заявки <span class="text-danger">*</span></span></label>
+        <input type="text" required placeholder="Например: Замена автоматического выключателя на ТП-14" class="input input-bordered w-full">
+      </div>
+
+      <div class="grid grid-cols-2 gap-4">
+        <div class="form-control">
+          <label class="label py-1"><span class="label-text font-medium">Категория</span></label>
+          <select class="select select-bordered w-full">
+            <option disabled selected>Выберите категорию</option>
+            <option>Электромонтажные работы</option>
+            <option>Обслуживание сетей</option>
+            <option>Аварийная заявка</option>
+            <option>Технологическое присоединение</option>
+            <option>Диагностика оборудования</option>
+          </select>
+        </div>
+        <div class="form-control">
+          <label class="label py-1"><span class="label-text font-medium">Объект</span></label>
+          <select class="select select-bordered w-full">
+            <option disabled selected>Выберите объект</option>
+            <option>Братск</option>
+            <option>Усть-Илимск</option>
+            <option>Иркутск</option>
+            <option>Ангарск</option>
+            <option>Усть-Кут</option>
+            <option>Яракта</option>
+            <option>Бохан</option>
+            <option>Тимлюй</option>
+            <option>Краснокаменск</option>
+            <option>Торей</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-control">
+        <label class="label py-1"><span class="label-text font-medium">Приоритет</span></label>
+        <div class="join" id="priority-join">
+          <button type="button" data-priority="low" class="join-item btn btn-sm normal-case">Низкий</button>
+          <button type="button" data-priority="medium" class="join-item btn btn-sm normal-case">Средний</button>
+          <button type="button" data-priority="high" class="join-item btn btn-sm btn-primary text-white normal-case">Высокий</button>
+          <button type="button" data-priority="critical" class="join-item btn btn-sm normal-case">Критический</button>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-4">
+        <div class="form-control">
+          <label class="label py-1"><span class="label-text font-medium">Ответственный исполнитель</span></label>
+          <select class="select select-bordered w-full">
+            <option disabled selected>Выберите исполнителя</option>
+            <option>Соколов А.П.</option>
+            <option>Гришин Д.О.</option>
+            <option>Марков С.И.</option>
+            <option>Титова Е.В.</option>
+            <option>Кузнецова О.Р.</option>
+          </select>
+        </div>
+        <div class="form-control">
+          <label class="label py-1"><span class="label-text font-medium">Срок выполнения</span></label>
+          <input type="date" value="2026-08-20" class="input input-bordered w-full">
+        </div>
+      </div>
+
+      <div class="form-control">
+        <label class="label py-1"><span class="label-text font-medium">Описание заявки</span></label>
+        <textarea rows="4" placeholder="Опишите характер работ, адрес, особые условия…" class="textarea textarea-bordered w-full"></textarea>
+      </div>
+
+      <div class="form-control">
+        <label class="label py-1"><span class="label-text font-medium">Вложение</span></label>
+        <input type="file" accept="image/*,.pdf" class="file-input file-input-bordered w-full" title="Прикрепить фото/схему">
+        <label class="label py-1"><span class="label-text-alt text-textSecondary">Прикрепить фото/схему объекта</span></label>
+      </div>
+
+      <div class="modal-action mt-2">
+        <button type="button" class="btn btn-ghost normal-case" onclick="new_request_modal.close()">Отмена</button>
+        <button type="submit" class="btn btn-primary text-white normal-case">Создать заявку</button>
+      </div>
+    </form>
+  </div>
+  <form method="dialog" class="modal-backdrop"><button>close</button></form>
+</dialog>
+
+<script>
+  document.getElementById('priority-join').addEventListener('click', function (e) {
+    var btn = e.target.closest('button[data-priority]');
+    if (!btn) return;
+    this.querySelectorAll('button').forEach(function (b) {
+      b.classList.remove('btn-primary', 'text-white');
+    });
+    btn.classList.add('btn-primary', 'text-white');
+  });
+
+  // ---- off-canvas sidebar drawer (mobile/tablet <960px) ----
+  (function () {
+    var sidebar = document.getElementById('app-sidebar');
+    var backdrop = document.getElementById('sidebar-backdrop');
+    var hamburger = document.getElementById('hamburger-btn');
+
+    function openSidebar() {
+      sidebar.classList.add('drawer-open');
+      backdrop.classList.add('show');
+      hamburger.setAttribute('aria-expanded', 'true');
+    }
+    function closeSidebar() {
+      sidebar.classList.remove('drawer-open');
+      backdrop.classList.remove('show');
+      hamburger.setAttribute('aria-expanded', 'false');
+    }
+    hamburger.addEventListener('click', function () {
+      sidebar.classList.contains('drawer-open') ? closeSidebar() : openSidebar();
+    });
+    backdrop.addEventListener('click', closeSidebar);
+    sidebar.querySelectorAll('a').forEach(function (link) {
+      link.addEventListener('click', closeSidebar);
+    });
+  })();
+</script>
+
+</body>
+</html>

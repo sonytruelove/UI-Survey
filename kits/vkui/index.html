@@ -1,0 +1,732 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Заявки — ЭнергоСетьСтрой (VK UI)</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<!-- VK UI's own static stylesheet (real npm dist asset, served as-is via jsDelivr — no build step needed for CSS, unlike the Tailwind-Play-CDN approach used for kits/heroui). -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@vkontakte/vkui@8.3.1/dist/vkui.css">
+
+<!--
+  VK UI (@vkontakte/vkui) is a React library, same constraint as kits/heroui.
+  Same build-step-free technique as there:
+  1) React/ReactDOM loaded as classic UMD globals;
+  2) those globals bridged into real ES modules via `data:` URI shims wired
+     through an import map, so `@vkontakte/vkui` (loaded as a genuine ES
+     module from esm.sh) resolves "react"/"react-dom" to the SAME instance
+     instead of minting a second copy;
+  3) the app itself is JSX in a `type="text/babel"` block, compiled
+     in-browser with @babel/standalone and executed only after VK UI +
+     icons have loaded.
+  Unlike HeroUI, VK UI ships a plain, non-Tailwind CSS file (dist/vkui.css)
+  and themes itself through public, documented CSS custom properties
+  (`--vkui--color_*`, see the accent overrides below) rather than a build
+  plugin — so there is no Tailwind-Play-CDN-style bootstrapping step here.
+-->
+<script type="importmap">
+{
+  "imports": {
+    "react": "data:text/javascript,const R=window.React;export default R;export const useState=R.useState;export const useEffect=R.useEffect;export const useLayoutEffect=R.useLayoutEffect;export const useRef=R.useRef;export const useMemo=R.useMemo;export const useCallback=R.useCallback;export const useContext=R.useContext;export const useReducer=R.useReducer;export const useImperativeHandle=R.useImperativeHandle;export const useDebugValue=R.useDebugValue;export const useDeferredValue=R.useDeferredValue;export const useTransition=R.useTransition;export const useId=R.useId;export const useSyncExternalStore=R.useSyncExternalStore;export const useInsertionEffect=R.useInsertionEffect;export const createContext=R.createContext;export const createElement=R.createElement;export const createRef=R.createRef;export const cloneElement=R.cloneElement;export const isValidElement=R.isValidElement;export const forwardRef=R.forwardRef;export const memo=R.memo;export const lazy=R.lazy;export const startTransition=R.startTransition;export const Component=R.Component;export const PureComponent=R.PureComponent;export const Fragment=R.Fragment;export const StrictMode=R.StrictMode;export const Suspense=R.Suspense;export const Children=R.Children;export const version=R.version;",
+    "react-dom": "data:text/javascript,const RD=window.ReactDOM;export default RD;export const render=RD.render;export const createPortal=RD.createPortal;export const findDOMNode=RD.findDOMNode;export const flushSync=RD.flushSync;export const unstable_batchedUpdates=RD.unstable_batchedUpdates;export const version=RD.version;",
+    "react-dom/client": "data:text/javascript,const RD=window.ReactDOM;export const createRoot=RD.createRoot;export const hydrateRoot=RD.hydrateRoot;",
+    "react/jsx-runtime": "data:text/javascript,const R=window.React;function jsx(type,props,key){var p=props||{};if(key!==undefined){p=Object.assign({},p,{key:key});}return R.createElement(type,p);}export{jsx,jsx as jsxs};export const Fragment=R.Fragment;",
+    "react/jsx-dev-runtime": "data:text/javascript,const R=window.React;function jsxDEV(type,props,key){var p=props||{};if(key!==undefined){p=Object.assign({},p,{key:key});}return R.createElement(type,p);}export{jsxDEV};export const Fragment=R.Fragment;"
+  }
+}
+</script>
+
+<script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<script>
+  if (window.Babel && Babel.disableScriptLoading) Babel.disableScriptLoading();
+</script>
+
+<style>
+  :root{
+    --bg-app:#F4F5F7; --bg-surface:#FFFFFF; --bg-dark:#101010; --bg-dark-2:#1A1A1A;
+    --border:#E4E5E9; --border-dark:rgba(255,255,255,.09);
+    --accent:#E07B3E; --accent-hover:#C2632D; --accent-tint:#FDEEE3;
+    --text-primary:#15161A; --text-secondary:#6B6E76; --text-onDark:#FFFFFF; --text-onDark-muted:#9A9CA5;
+    --success:#2FA968; --info:#3B82C4; --purple:#8B6CC1; --danger:#E4483D; --warning:#F2B33D;
+
+    /* ---- VK UI theming: real, documented CSS custom properties from
+       @vkontakte/vkui/dist/cssm/styles/themes.css, repointed at the brand
+       accent so native components (Button, Select, Search, links, focus
+       rings…) pick up --accent instead of VK's default blue without
+       touching any internal/hashed CSS-module class names. ---- */
+    --vkui--color_background_accent: var(--accent);
+    --vkui--color_background_accent--hover: var(--accent-hover);
+    --vkui--color_background_accent--active: var(--accent-hover);
+    --vkui--color_background_accent_themed: var(--accent);
+    --vkui--color_background_accent_themed--hover: var(--accent-hover);
+    --vkui--color_background_accent_themed--active: var(--accent-hover);
+    --vkui--color_background_accent_themed_alpha: rgba(224,123,62,.16);
+    --vkui--color_text_accent: var(--accent-hover);
+    --vkui--color_text_accent--hover: var(--accent-hover);
+    --vkui--color_text_accent--active: var(--accent-hover);
+    --vkui--color_text_accent_themed: var(--accent-hover);
+    --vkui--color_icon_accent: var(--accent);
+    --vkui--color_icon_accent--hover: var(--accent-hover);
+    --vkui--color_icon_accent_themed: var(--accent);
+    --vkui--color_stroke_accent: var(--accent);
+    --vkui--color_stroke_accent--hover: var(--accent-hover);
+  }
+  *{ box-sizing:border-box; }
+  html, body{ margin:0; padding:0; }
+  body{
+    font-family:'Inter', sans-serif;
+    background:var(--bg-app);
+    color:var(--text-primary);
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3{ margin:0; }
+
+  .boot-screen{ display:flex; align-items:center; justify-content:center; min-height:100vh; flex-direction:column; gap:14px; color:var(--text-secondary); font-size:13px; }
+  .boot-spinner{ width:30px; height:30px; border-radius:50%; border:3px solid var(--border); border-top-color:var(--accent); animation:boot-spin .8s linear infinite; }
+  @keyframes boot-spin{ to{ transform:rotate(360deg); } }
+  .boot-error{ max-width:520px; margin:60px auto; padding:22px 26px; background:#fff; border:1px solid var(--border); border-radius:12px; box-shadow:0 1px 2px rgba(16,16,16,.06), 0 8px 24px rgba(16,16,16,.06); }
+  .boot-error .t{ color:var(--danger); font-weight:700; font-family:'Rajdhani',sans-serif; text-transform:uppercase; letter-spacing:.02em; font-size:16px; margin-bottom:8px; }
+  .boot-error .d{ color:var(--text-secondary); font-size:13px; line-height:1.5; }
+
+  /* ==================== App shell ==================== */
+  .app-shell{ min-height:100vh; display:flex; flex-direction:column; }
+
+  .app-header{ background:var(--bg-dark); border-bottom:1px solid var(--border-dark); padding:0 24px; height:64px; flex-shrink:0; display:flex; align-items:center; gap:16px; }
+  .header-start{ display:flex; align-items:center; gap:14px; flex-shrink:0; }
+  .header-end{ margin-left:auto; display:flex; align-items:center; gap:10px; }
+
+  .hamburger-btn{ display:none !important; color:#fff !important; }
+  .brand-wrap{ display:flex; align-items:center; gap:10px; }
+  .brand-icon{ width:32px; height:32px; color:var(--accent); flex-shrink:0; }
+  .brand-wordmark{ font-family:'Rajdhani',sans-serif; font-weight:700; color:#fff; line-height:.95; letter-spacing:.03em; font-size:15px; text-transform:uppercase; }
+  .brand-wordmark span{ display:block; }
+  .brand-wordmark .sub{ color:var(--text-onDark-muted); font-size:13px; }
+
+  .header-search{ width:320px; max-width:34vw; }
+  .header-search input{ color:#fff !important; }
+  .header-icon-btn{ color:#fff !important; position:relative; }
+  .header-badge{ position:absolute; top:6px; right:6px; width:8px; height:8px; border-radius:50%; background:var(--danger); border:1.5px solid var(--bg-dark); pointer-events:none; }
+  .header-user{ display:flex; align-items:center; gap:10px; }
+  .header-user-text{ line-height:1.2; }
+  .header-user .u-name{ font-size:13px; font-weight:600; color:#fff; }
+  .header-user .u-role{ font-size:11px; color:var(--text-onDark-muted); }
+
+  .app-body{ flex:1; display:flex; align-items:stretch; min-height:0; position:relative; }
+  .split-layout{ flex:1; min-height:0; display:flex; align-items:stretch; }
+  .split-col-main{ flex:1; min-width:0; }
+
+  .app-sider{ width:250px; flex-shrink:0; background:var(--bg-dark) !important; padding:14px 10px 20px; }
+  .side-group{ background:transparent !important; }
+  .side-item{ border-radius:8px !important; color:var(--text-onDark-muted) !important; margin-bottom:2px; }
+  .side-item.active{ background:rgba(224,123,62,.14) !important; color:var(--accent) !important; }
+  .side-item.active .side-item-icon{ color:var(--accent) !important; }
+
+  .sider-backdrop{ display:none; }
+
+  .app-main{ flex:1; min-width:0; background:var(--bg-app); padding:28px 32px 40px; }
+  .breadcrumb{ font-size:12px; color:var(--text-secondary); margin-bottom:4px; }
+  .page-title{ font-family:'Rajdhani',sans-serif; font-weight:700; text-transform:uppercase; letter-spacing:.02em; font-size:26px; margin:0 0 20px; }
+
+  .kpi-grid{ display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:16px; }
+  .kpi-card{ border:1px solid var(--border) !important; border-radius:12px !important; background:var(--bg-surface) !important; box-shadow:0 1px 2px rgba(16,16,16,.06); }
+  .kpi-card-body{ display:flex; align-items:center; justify-content:space-between; padding:18px; }
+  .kpi-number{ font-family:'Rajdhani',sans-serif; font-weight:700; font-size:34px; line-height:1; }
+  .kpi-label{ font-size:13px; font-weight:500; color:var(--text-secondary); margin-top:2px; }
+  .kpi-icon-box{ width:44px; height:44px; border-radius:10px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+
+  .table-card{ border:1px solid var(--border) !important; border-radius:12px !important; background:var(--bg-surface) !important; box-shadow:0 1px 2px rgba(16,16,16,.06); overflow:hidden; }
+  .toolbar{ display:flex; align-items:center; gap:12px; flex-wrap:wrap; padding:16px; border-bottom:1px solid var(--border); }
+  .toolbar-search{ width:260px; max-width:100%; }
+  .toolbar-select{ width:170px; }
+  .toolbar-spacer{ flex:1; }
+
+  .table-scroll{ overflow-x:auto; }
+  .requests-table{ min-width:820px; width:100%; border-collapse:collapse; font-size:13.5px; }
+  .requests-table thead th{ text-align:left; font-weight:600; font-size:11.5px; text-transform:uppercase; letter-spacing:.03em; color:var(--text-secondary); padding:10px 14px; border-bottom:1px solid var(--border); white-space:nowrap; }
+  .requests-table tbody td{ padding:12px 14px; border-bottom:1px solid var(--border); vertical-align:middle; }
+  .requests-table tbody tr:last-child td{ border-bottom:none; }
+  .requests-table tbody tr:hover{ background:var(--accent-tint); }
+  .topic-cell{ display:block; max-width:300px; }
+  /* VKUI's own Badge is a notification-dot component (its label text is
+     visually hidden, screen-reader only by design) — not a fit for a
+     visible status/priority pill, so those are a plain styled span. */
+  .status-pill{ display:inline-block; padding:3px 10px; border-radius:999px; font-size:12px; font-weight:600; white-space:nowrap; }
+  .executor-cell{ display:flex; align-items:center; gap:8px; }
+  .row-actions{ display:flex; align-items:center; gap:2px; justify-content:flex-end; }
+  .avatar-initials{ font-size:11px; font-weight:600; color:#fff; }
+  .select-avatar-value{ display:flex; align-items:center; gap:8px; }
+  .tiny-avatar{ width:22px !important; height:22px !important; font-size:10px !important; }
+  .th-actions{ text-align:right; }
+
+  .table-footer{ display:flex; justify-content:flex-end; align-items:center; padding:14px 16px; }
+
+  .footer-note{ font-size:11px; line-height:1.6; color:#9a9ca5; padding:14px 24px; text-align:center; border-top:1px solid var(--border); background:var(--bg-surface); }
+
+  .modal-form-page{ padding:4px 16px 20px; }
+  .field-block{ margin-bottom:2px; }
+  .field-label{ font-size:12px; color:var(--text-secondary); margin-bottom:8px; font-weight:500; }
+  .file-input-fallback{
+    display:flex; align-items:center; gap:8px; cursor:pointer;
+    border:1px solid var(--border); border-radius:8px; padding:10px 14px;
+    font-size:13.5px; color:var(--text-secondary); background:#fff; width:fit-content;
+  }
+  .file-input-fallback:hover{ border-color:var(--accent); color:var(--accent); }
+  .file-input-fallback .fname{ color:var(--text-primary); font-weight:500; }
+  .modal-form > * + *{ margin-top:14px; }
+
+  /* ModalPage defaults to VK UI's compact "S" desktop width (430px, tuned
+     for VK Mini Apps) and its overlay ships fully transparent by default —
+     both real, stable (non-hashed) VK UI class names, confirmed live in a
+     real browser, widened/dimmed here to match this repo's modal sizing
+     and the backdrop dimming every other kit page uses. */
+  .vkuiModalPage__hostDesktopMaxWidthS{ max-width:640px !important; }
+  .vkuiModalOverlay__host{ background:rgba(0,0,0,.4) !important; }
+
+  /* ==================== Responsive (mobile/tablet) ====================
+     VK UI's own layout primitive for this exact problem is
+     SplitLayout/SplitCol (columns collapse based on real viewport width via
+     AdaptivityProvider) — a real, valuable capability of the kit. This demo
+     does NOT use it for the sidebar/content split, though: verified live in
+     a real browser, SplitCol under AdaptivityProvider's default (no
+     explicit viewWidth/media-query wiring) collapsed to a near-zero-height
+     box and pushed its first child up behind the header, rather than the
+     expected fixed 250px column — properly driving it needs the adaptivity
+     hooks wired to real breakpoints, more machinery than a CDN one-off
+     warrants. The shell below is plain flex `<div>`s instead (same as every
+     other kit here), same as Element Plus/Fluent UI/Shoelace/HeroUI use for
+     their off-canvas drawer + backdrop, hand-rolled with plain CSS
+     transform + React state, to keep the mobile UX identical across all 11
+     kit pages for a fair comparison. */
+  @media (max-width:959px){
+    .hamburger-btn{ display:inline-flex !important; }
+    .header-search{ display:none; }
+
+    .app-sider{
+      position:fixed; top:64px; left:0; bottom:0; z-index:210;
+      transform:translateX(-100%);
+      transition:transform .22s ease;
+      box-shadow:0 8px 28px rgba(0,0,0,.30);
+      overflow-y:auto;
+    }
+    .app-sider.open{ transform:translateX(0); }
+
+    .sider-backdrop{
+      display:block; position:fixed; top:64px; left:0; right:0; bottom:0;
+      background:rgba(0,0,0,.4); z-index:205;
+      opacity:0; pointer-events:none; transition:opacity .18s ease;
+    }
+    .sider-backdrop.show{ opacity:1; pointer-events:auto; }
+
+    .app-main{ padding:20px 16px 32px; }
+    .kpi-grid{ grid-template-columns:repeat(2,1fr); }
+  }
+
+  @media (max-width:559px){
+    .brand-wordmark{ font-size:13px; }
+    .header-user-text{ display:none; }
+    .header-new-btn .btn-text{ display:none; }
+    .header-new-btn{ min-width:0 !important; padding:0 12px !important; }
+    .header-search{ display:none; }
+
+    .kpi-grid{ grid-template-columns:repeat(1,1fr); }
+
+    .toolbar{ flex-direction:column; align-items:stretch; }
+    .toolbar > *{ width:100% !important; max-width:none !important; }
+    .toolbar-spacer{ display:none; }
+  }
+</style>
+</head>
+<body>
+
+<div id="root">
+  <div class="boot-screen">
+    <div class="boot-spinner"></div>
+    <div>Загрузка VK UI‑демо (React + @vkontakte/vkui через CDN)…</div>
+  </div>
+</div>
+
+<!-- ============================================================
+     App source: plain JSX read off globals (React, ReactDOM,
+     window.VKUI, window.VKIcons) prepared by the bootstrap module below.
+     Kept inert as type="text/babel" and compiled manually via
+     Babel.transform() once VK UI is ready.
+     ============================================================ -->
+<script type="text/babel" id="app-src">
+(function(){
+  var VKUI = window.VKUI || {};
+  var Icons = window.VKIcons || {};
+
+  if (!VKUI.AppRoot) {
+    document.getElementById('root').innerHTML =
+      '<div class="boot-error"><div class="t">Не удалось загрузить @vkontakte/vkui через CDN</div>' +
+      '<div class="d">esm.sh не отдал модуль (сетевой сбой/недоступность в этой песочнице). ' +
+      'Откройте консоль браузера (F12) для деталей — сама разметка страницы в порядке, ' +
+      'проблема исключительно в доступности внешнего CDN в момент загрузки.</div></div>';
+    return;
+  }
+
+  var ConfigProvider = VKUI.ConfigProvider, AdaptivityProvider = VKUI.AdaptivityProvider, AppRoot = VKUI.AppRoot;
+  var Group = VKUI.Group, SimpleCell = VKUI.SimpleCell, Card = VKUI.Card;
+  var Search = VKUI.Search, Select = VKUI.Select, Button = VKUI.Button, IconButton = VKUI.IconButton;
+  var Avatar = VKUI.Avatar, Pagination = VKUI.Pagination;
+  var ModalRoot = VKUI.ModalRoot, ModalPage = VKUI.ModalPage, ModalPageHeader = VKUI.ModalPageHeader;
+  var FormItem = VKUI.FormItem, Input = VKUI.Input, Textarea = VKUI.Textarea;
+  var RadioGroup = VKUI.RadioGroup, Radio = VKUI.Radio;
+
+  // ---------- Icons: @vkontakte/icons, with a generic-glyph fallback
+  // (same defensive pattern as kits/heroui's Icon() — an unresolved icon
+  // name degrades to a plain circle instead of crashing the render). ----------
+  function Icon(props){
+    var name = props.name, size = props.size || 20, className = props.className || '';
+    var rest = {};
+    for (var k in props) if (k !== 'name' && k !== 'size' && k !== 'className') rest[k] = props[k];
+    var Cmp = Icons && Icons[name];
+    if (Cmp) return React.createElement(Cmp, Object.assign({ width: size, height: size, className: className }, rest));
+    return React.createElement('svg', Object.assign({
+      width: size, height: size, viewBox: '0 0 24 24', fill: 'none',
+      stroke: 'currentColor', strokeWidth: 1.8, className: className
+    }, rest), React.createElement('circle', { cx: 12, cy: 12, r: 8.4 }));
+  }
+
+  var ErrorBoundary = /*#__PURE__*/(function(Base){
+    function ErrorBoundary(props){ var self = Base.call(this, props) || this; self.state = { error: null }; return self; }
+    ErrorBoundary.prototype = Object.create(Base.prototype);
+    ErrorBoundary.prototype.constructor = ErrorBoundary;
+    ErrorBoundary.getDerivedStateFromError = function(error){ return { error: error }; };
+    ErrorBoundary.prototype.componentDidCatch = function(error, info){ console.error('[VK UI demo] render error:', error, info); };
+    ErrorBoundary.prototype.render = function(){
+      if (this.state.error) {
+        return React.createElement('div', { className: 'boot-error' },
+          React.createElement('div', { className: 't' }, 'Ошибка рендеринга VK UI‑демо'),
+          React.createElement('div', { className: 'd' }, 'Подробности — в консоли браузера (F12). Наиболее вероятная причина: один из @vkontakte/vkui-компонентов недоступен в модуле, отданном esm.sh, либо изменилась форма пропсов между версиями.')
+        );
+      }
+      return this.props.children;
+    };
+    return ErrorBoundary;
+  })(React.Component);
+
+  // ---------- Data (shared across all 11 kit demos, see shared/brand.md) ----------
+  var REQUESTS = [
+    { id:'ЗЯ-2481', topic:'Замена автоматического выключателя на ТП-14', category:'Электромонтажные работы', object:'Братск', priority:'Высокий', status:'В работе', executor:'Соколов А.П.', due:'12.08.2026' },
+    { id:'ЗЯ-2480', topic:'Плановое ТО ВЛ-10кВ, участок Братск—Усть-Илимск', category:'Обслуживание сетей', object:'Усть-Илимск', priority:'Средний', status:'Новая', executor:'Гришин Д.О.', due:'18.08.2026' },
+    { id:'ЗЯ-2479', topic:'Аварийное отключение на подстанции №3', category:'Аварийная заявка', object:'Иркутск', priority:'Критический', status:'В работе', executor:'Марков С.И.', due:'07.08.2026' },
+    { id:'ЗЯ-2478', topic:'Монтаж кабельной линии 0.4кВ', category:'Электромонтажные работы', object:'Ангарск', priority:'Средний', status:'На проверке', executor:'Титова Е.В.', due:'15.08.2026' },
+    { id:'ЗЯ-2477', topic:'Проверка изоляции трансформатора Т-2', category:'Диагностика оборудования', object:'Тимлюй', priority:'Низкий', status:'Выполнена', executor:'Соколов А.П.', due:'02.08.2026' },
+    { id:'ЗЯ-2476', topic:'Ремонт опоры ЛЭП после грозового повреждения', category:'Аварийная заявка', object:'Усть-Кут', priority:'Критический', status:'Просрочена', executor:'Гришин Д.О.', due:'04.08.2026' },
+    { id:'ЗЯ-2475', topic:'Технологическое присоединение нового объекта', category:'Технологическое присоединение', object:'Яракта', priority:'Высокий', status:'Новая', executor:'Кузнецова О.Р.', due:'22.08.2026' },
+    { id:'ЗЯ-2474', topic:'Замена счётчика электроэнергии', category:'Обслуживание сетей', object:'Бохан', priority:'Низкий', status:'Выполнена', executor:'Марков С.И.', due:'30.07.2026' },
+    { id:'ЗЯ-2473', topic:'Диагностика РЗА на подстанции', category:'Диагностика оборудования', object:'Краснокаменск', priority:'Средний', status:'В работе', executor:'Титова Е.В.', due:'19.08.2026' },
+    { id:'ЗЯ-2472', topic:'Плановый осмотр опор ВЛ-35кВ', category:'Обслуживание сетей', object:'Торей', priority:'Низкий', status:'Выполнена', executor:'Кузнецова О.Р.', due:'28.07.2026' }
+  ];
+
+  var PRIORITY_COLORS = { 'Низкий':'#8A8D96', 'Средний':'#F2B33D', 'Высокий':'#E07B3E', 'Критический':'#E4483D' };
+  var STATUS_COLORS = { 'Новая':'#3B82C4', 'В работе':'#E07B3E', 'На проверке':'#8B6CC1', 'Выполнена':'#2FA968', 'Просрочена':'#E4483D' };
+  var AVATAR_PALETTE = ['#E07B3E','#3B82C4','#8B6CC1','#2FA968','#C2632D'];
+
+  var NAV_ITEMS = [
+    { key:'dashboard', icon:'Icon24GraphOutline', label:'Дашборд', active:false },
+    { key:'requests', icon:'Icon24Document', label:'Заявки', active:true },
+    { key:'objects', icon:'Icon24Home', label:'Объекты', active:false },
+    { key:'executors', icon:'Icon24Users', label:'Исполнители', active:false },
+    { key:'reports', icon:'Icon24PollOutline', label:'Отчёты', active:false },
+    { key:'settings', icon:'Icon24Settings', label:'Настройки', active:false }
+  ];
+
+  var KPIS = [
+    { key:'total', label:'Всего заявок', value:128, icon:'Icon24Document', color:'#101010', tint:'#EEEEEF' },
+    { key:'active', label:'В работе', value:34, icon:'Icon24Recent', color:'#E07B3E', tint:'#FDEEE3' },
+    { key:'done', label:'Выполнено', value:81, icon:'Icon24CheckCircleOn', color:'#2FA968', tint:'#E6F5ED' },
+    { key:'overdue', label:'Просрочено', value:7, icon:'Icon24ErrorCircle', color:'#E4483D', tint:'#FBE7E5' }
+  ];
+
+  var STATUS_FILTER_OPTIONS = ['Все','Новая','В работе','На проверке','Выполнена','Просрочена'];
+  var PRIORITY_OPTIONS = ['Низкий','Средний','Высокий','Критический'];
+  var PRIORITY_FILTER_OPTIONS = ['Все'].concat(PRIORITY_OPTIONS);
+  var OBJECTS = ['Братск','Усть-Илимск','Иркутск','Ангарск','Усть-Кут','Яракта','Бохан','Тимлюй','Краснокаменск','Торей'];
+  var OBJECT_FILTER_OPTIONS = ['Все'].concat(OBJECTS);
+  var CATEGORIES = ['Электромонтажные работы','Обслуживание сетей','Аварийная заявка','Технологическое присоединение','Диагностика оборудования'];
+  var EXECUTORS = ['Соколов А.П.','Гришин Д.О.','Марков С.И.','Титова Е.В.','Кузнецова О.Р.'];
+  var PAGE_SIZE = 8;
+
+  function initials(name){ var p = name.split(' '); return (p[0][0] + (p[1] ? p[1][0] : '')).toUpperCase(); }
+  function avatarColor(name){ var h = 0; for (var i=0;i<name.length;i++) h += name.charCodeAt(i); return AVATAR_PALETTE[h % AVATAR_PALETTE.length]; }
+  function toOptions(list){ return list.map(function(v){ return { label: v, value: v }; }); }
+  function hexToRgba(hex, alpha){
+    var r = parseInt(hex.slice(1,3),16), g = parseInt(hex.slice(3,5),16), b = parseInt(hex.slice(5,7),16);
+    return 'rgba(' + r + ',' + g + ',' + b + ',' + alpha + ')';
+  }
+
+  function App(){
+    var _s = React.useState(''); var search = _s[0], setSearch = _s[1];
+    var _fs = React.useState('Все'); var filterStatus = _fs[0], setFilterStatus = _fs[1];
+    var _fp = React.useState('Все'); var filterPriority = _fp[0], setFilterPriority = _fp[1];
+    var _fo = React.useState('Все'); var filterObject = _fo[0], setFilterObject = _fo[1];
+    var _pg = React.useState(1); var page = _pg[0], setPage = _pg[1];
+    var _sb = React.useState(false); var sidebarOpen = _sb[0], setSidebarOpen = _sb[1];
+    var _am = React.useState(null); var activeModal = _am[0], setActiveModal = _am[1];
+
+    var _form = React.useState({
+      topic:'', category:'', priority:'Средний', object:'', executor:'',
+      due:'', description:'', attachmentName:''
+    });
+    var form = _form[0], setForm = _form[1];
+    function patchForm(k, v){ setForm(function(f){ var n = Object.assign({}, f); n[k] = v; return n; }); }
+
+    function closeSidebar(){ setSidebarOpen(false); }
+    function openModal(){ setActiveModal('new-request'); }
+    function closeModal(){ setActiveModal(null); }
+
+    var filtered = React.useMemo(function(){
+      var q = search.trim().toLowerCase();
+      return REQUESTS.filter(function(r){
+        var okStatus = filterStatus === 'Все' || filterStatus === r.status;
+        var okPriority = filterPriority === 'Все' || filterPriority === r.priority;
+        var okObject = filterObject === 'Все' || filterObject === r.object;
+        var okSearch = !q || (r.id + r.topic + r.object).toLowerCase().indexOf(q) !== -1;
+        return okStatus && okPriority && okObject && okSearch;
+      });
+    }, [search, filterStatus, filterPriority, filterObject]);
+
+    var totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+    var pageItems = React.useMemo(function(){
+      var start = (page - 1) * PAGE_SIZE;
+      return filtered.slice(start, start + PAGE_SIZE);
+    }, [filtered, page]);
+
+    React.useEffect(function(){ if (page > totalPages) setPage(1); }, [totalPages]);
+
+    function selectHandler(setter){
+      return function(e){ setter(e.target.value || 'Все'); };
+    }
+
+    var modal = React.createElement(ModalRoot, { activeModal: activeModal, onClose: closeModal },
+      React.createElement(ModalPage, {
+        id: 'new-request', onClose: closeModal,
+        header: React.createElement(ModalPageHeader, null, 'Новая заявка')
+      },
+        React.createElement('div', { className: 'modal-form-page modal-form' },
+          React.createElement(FormItem, { top: 'Тема заявки' },
+            React.createElement(Input, { placeholder: 'Кратко опишите суть заявки', value: form.topic, onChange: function(e){ patchForm('topic', e.target.value); } })
+          ),
+          React.createElement(FormItem, { top: 'Категория' },
+            React.createElement(Select, {
+              placeholder: 'Выберите категорию', options: toOptions(CATEGORIES),
+              value: form.category, onChange: function(e){ patchForm('category', e.target.value); }
+            })
+          ),
+          React.createElement(FormItem, { top: 'Приоритет' },
+            React.createElement(RadioGroup, { mode: 'horizontal' },
+              PRIORITY_OPTIONS.map(function(p){
+                return React.createElement(Radio, {
+                  key: p, name: 'priority', value: p,
+                  checked: form.priority === p,
+                  onChange: function(e){ patchForm('priority', e.target.value); }
+                }, p);
+              })
+            )
+          ),
+          React.createElement(FormItem, { top: 'Объект' },
+            React.createElement(Select, {
+              placeholder: 'Выберите объект', options: toOptions(OBJECTS),
+              value: form.object, onChange: function(e){ patchForm('object', e.target.value); }
+            })
+          ),
+          React.createElement(FormItem, { top: 'Ответственный исполнитель' },
+            React.createElement(Select, {
+              placeholder: 'Выберите исполнителя', options: toOptions(EXECUTORS),
+              value: form.executor, onChange: function(e){ patchForm('executor', e.target.value); }
+            })
+          ),
+          React.createElement(FormItem, { top: 'Срок выполнения' },
+            React.createElement(Input, { type: 'date', value: form.due, onChange: function(e){ patchForm('due', e.target.value); } })
+          ),
+          React.createElement(FormItem, { top: 'Описание заявки' },
+            React.createElement(Textarea, {
+              placeholder: 'Опишите характер работ, адрес, особые условия…',
+              value: form.description, onChange: function(e){ patchForm('description', e.target.value); }
+            })
+          ),
+          React.createElement(FormItem, { top: 'Вложение' },
+            React.createElement('label', { className: 'file-input-fallback' },
+              React.createElement(Icon, { name: 'Icon24Attach', size: 16 }),
+              React.createElement('span', null, form.attachmentName ? React.createElement('span', { className: 'fname' }, form.attachmentName) : 'Прикрепить фото/схему'),
+              React.createElement('input', {
+                type: 'file', hidden: true,
+                onChange: function(e){ patchForm('attachmentName', e.target.files && e.target.files[0] ? e.target.files[0].name : ''); }
+              })
+            )
+          ),
+          React.createElement(FormItem, null,
+            React.createElement('div', { style: { display:'flex', gap:'10px', justifyContent:'flex-end' } },
+              React.createElement(Button, { appearance: 'neutral', mode: 'secondary', size: 'm', onClick: closeModal }, 'Отмена'),
+              React.createElement(Button, { appearance: 'accent', mode: 'primary', size: 'm', onClick: closeModal }, 'Создать заявку')
+            )
+          )
+        )
+      )
+    );
+
+    return React.createElement(AppRoot, null,
+      React.createElement('div', { className: 'app-shell' },
+
+        // ---------- Header (custom flex bar, built from VK UI primitives) ----------
+        React.createElement('header', { className: 'app-header' },
+          React.createElement('div', { className: 'header-start' },
+            React.createElement(IconButton, {
+              className: 'hamburger-btn', label: 'Открыть меню',
+              onClick: function(){ setSidebarOpen(function(v){ return !v; }); }
+            }, React.createElement(Icon, { name: 'Icon24MenuOutline', size: 22 })),
+            React.createElement('div', { className: 'brand-wrap' },
+              React.createElement('svg', { className: 'brand-icon', viewBox: '0 0 100 100', 'aria-hidden': true },
+                React.createElement('circle', { cx: 50, cy: 50, r: 42, fill: 'none', stroke: 'currentColor', strokeWidth: 7, strokeDasharray: '240 24', strokeLinecap: 'round' }),
+                React.createElement('circle', { cx: 50, cy: 50, r: 27, fill: 'none', stroke: 'currentColor', strokeWidth: 7, strokeDasharray: '148 22', strokeLinecap: 'round', transform: 'rotate(35 50 50)' })
+              ),
+              React.createElement('div', { className: 'brand-wordmark' },
+                React.createElement('span', null, 'Энерго'),
+                React.createElement('span', { className: 'sub' }, 'СетьСтрой')
+              )
+            ),
+            React.createElement(Search, {
+              className: 'header-search', value: search,
+              onChange: function(e){ setSearch(e.target.value); },
+              placeholder: 'Поиск по номеру, теме, объекту…', after: null
+            })
+          ),
+          React.createElement('div', { className: 'header-end' },
+            React.createElement(IconButton, { className: 'header-icon-btn', label: 'Уведомления' },
+              React.createElement(Icon, { name: 'Icon24Notification', size: 20 }),
+              React.createElement('span', { className: 'header-badge' })
+            ),
+            React.createElement(Button, {
+              appearance: 'accent', mode: 'primary', size: 'm', className: 'header-new-btn',
+              before: React.createElement(Icon, { name: 'Icon24Add', size: 18 }),
+              onClick: openModal
+            }, React.createElement('span', { className: 'btn-text' }, 'Новая заявка')),
+            React.createElement('div', { className: 'header-user' },
+              React.createElement(Avatar, { size: 36, style: { background: '#2A2A2A', color: '#fff' } }, 'ИП'),
+              React.createElement('div', { className: 'header-user-text' },
+                React.createElement('div', { className: 'u-name' }, 'Ионов П. С.'),
+                React.createElement('div', { className: 'u-role' }, 'Диспетчер заявок')
+              )
+            )
+          )
+        ),
+
+        // ---------- Body: sidebar + content ----------
+        // (a plain flex shell, not SplitLayout/SplitCol — see the
+        // "Responsive" comment in <style> above for why)
+        React.createElement('div', { className: 'app-body' },
+          React.createElement('div', { className: 'sider-backdrop' + (sidebarOpen ? ' show' : ''), onClick: closeSidebar }),
+
+          React.createElement('div', { className: 'split-layout' },
+            React.createElement('aside', { className: 'app-sider' + (sidebarOpen ? ' open' : '') },
+              React.createElement(Group, { className: 'side-group' },
+                NAV_ITEMS.map(function(item){
+                  return React.createElement(SimpleCell, {
+                    key: item.key,
+                    className: 'side-item' + (item.active ? ' active' : ''),
+                    before: React.createElement(Icon, { name: item.icon, size: 20, className: 'side-item-icon' }),
+                    onClick: closeSidebar
+                  }, item.label);
+                })
+              )
+            ),
+
+            React.createElement('div', { className: 'split-col-main' },
+              React.createElement('main', { className: 'app-main' },
+                React.createElement('div', { className: 'breadcrumb' }, 'Главная / Заявки'),
+                React.createElement('h1', { className: 'page-title' }, 'Заявки'),
+
+                React.createElement('div', { className: 'kpi-grid' },
+                  KPIS.map(function(k){
+                    return React.createElement(Card, { key: k.key, className: 'kpi-card', mode: 'shadow' },
+                      React.createElement('div', { className: 'kpi-card-body' },
+                        React.createElement('div', null,
+                          React.createElement('div', { className: 'kpi-number', style: { color: k.color } }, k.value),
+                          React.createElement('div', { className: 'kpi-label' }, k.label)
+                        ),
+                        React.createElement('div', { className: 'kpi-icon-box', style: { background: k.tint } },
+                          React.createElement(Icon, { name: k.icon, size: 20, style: { color: k.color } })
+                        )
+                      )
+                    );
+                  })
+                ),
+
+                React.createElement(Card, { className: 'table-card', mode: 'shadow' },
+                  React.createElement('div', { className: 'toolbar' },
+                    React.createElement(Search, {
+                      className: 'toolbar-search', value: search,
+                      onChange: function(e){ setSearch(e.target.value); },
+                      placeholder: 'Поиск по номеру, теме, объекту…', after: null
+                    }),
+                    React.createElement(Select, {
+                      className: 'toolbar-select', placeholder: 'Статус',
+                      options: toOptions(STATUS_FILTER_OPTIONS),
+                      value: filterStatus, onChange: selectHandler(setFilterStatus)
+                    }),
+                    React.createElement(Select, {
+                      className: 'toolbar-select', placeholder: 'Приоритет',
+                      options: toOptions(PRIORITY_FILTER_OPTIONS),
+                      value: filterPriority, onChange: selectHandler(setFilterPriority)
+                    }),
+                    React.createElement(Select, {
+                      className: 'toolbar-select', placeholder: 'Объект',
+                      options: toOptions(OBJECT_FILTER_OPTIONS),
+                      value: filterObject, onChange: selectHandler(setFilterObject)
+                    }),
+                    React.createElement('div', { className: 'toolbar-spacer' }),
+                    React.createElement(Button, {
+                      appearance: 'accent', mode: 'primary', size: 'm',
+                      before: React.createElement(Icon, { name: 'Icon24Add', size: 18 }),
+                      onClick: openModal
+                    }, 'Новая заявка')
+                  ),
+
+                  React.createElement('div', { className: 'table-scroll' },
+                    React.createElement('table', { className: 'requests-table' },
+                      React.createElement('thead', null,
+                        React.createElement('tr', null,
+                          React.createElement('th', null, '№'),
+                          React.createElement('th', null, 'Тема заявки'),
+                          React.createElement('th', null, 'Категория'),
+                          React.createElement('th', null, 'Объект'),
+                          React.createElement('th', null, 'Приоритет'),
+                          React.createElement('th', null, 'Статус'),
+                          React.createElement('th', null, 'Исполнитель'),
+                          React.createElement('th', null, 'Срок'),
+                          React.createElement('th', { className: 'th-actions' }, 'Действия')
+                        )
+                      ),
+                      React.createElement('tbody', null,
+                        pageItems.length === 0
+                          ? React.createElement('tr', null, React.createElement('td', { colSpan: 9, style: { textAlign:'center', color:'var(--text-secondary)', padding:'24px' } }, 'Ничего не найдено'))
+                          : pageItems.map(function(row){
+                            return React.createElement('tr', { key: row.id },
+                              React.createElement('td', null, row.id),
+                              React.createElement('td', null, React.createElement('span', { className: 'topic-cell' }, row.topic)),
+                              React.createElement('td', null, row.category),
+                              React.createElement('td', null, row.object),
+                              React.createElement('td', null, React.createElement('span', { className: 'status-pill', style: { background: PRIORITY_COLORS[row.priority], color:'#fff' } }, row.priority)),
+                              React.createElement('td', null, React.createElement('span', { className: 'status-pill', style: { background: hexToRgba(STATUS_COLORS[row.status], .14), color: STATUS_COLORS[row.status] } }, row.status)),
+                              React.createElement('td', null,
+                                React.createElement('div', { className: 'executor-cell' },
+                                  React.createElement(Avatar, { size: 26, className: 'avatar-initials', style: { background: avatarColor(row.executor) } }, initials(row.executor)),
+                                  React.createElement('span', null, row.executor)
+                                )
+                              ),
+                              React.createElement('td', null, row.due),
+                              React.createElement('td', null,
+                                React.createElement('div', { className: 'row-actions' },
+                                  React.createElement(IconButton, { label: 'Просмотреть' }, React.createElement(Icon, { name: 'Icon24ViewOutline', size: 18 })),
+                                  React.createElement(IconButton, { label: 'Редактировать' }, React.createElement(Icon, { name: 'Icon24WriteOutline', size: 18 }))
+                                )
+                              )
+                            );
+                          })
+                      )
+                    )
+                  ),
+
+                  React.createElement('div', { className: 'table-footer' },
+                    Pagination
+                      ? React.createElement(Pagination, { currentPage: page, totalPages: totalPages, onChange: setPage })
+                      : React.createElement('div', { style: { display:'flex', gap:'8px', alignItems:'center' } },
+                          React.createElement(IconButton, { label: 'Назад', disabled: page <= 1, onClick: function(){ setPage(function(p){ return Math.max(1, p-1); }); } }, React.createElement(Icon, { name: 'Icon24Back', size: 18 })),
+                          React.createElement('span', { style: { fontSize:'13px', color:'var(--text-secondary)' } }, page + ' / ' + totalPages),
+                          React.createElement(IconButton, { label: 'Вперёд', disabled: page >= totalPages, onClick: function(){ setPage(function(p){ return Math.min(totalPages, p+1); }); } }, React.createElement(Icon, { name: 'Icon24Forward', size: 18 }))
+                        )
+                  )
+                ),
+
+                React.createElement('div', { className: 'footer-note' },
+                  'Kit: VK UI v8 (@vkontakte/vkui) · CDN: react@18 + react-dom@18 (unpkg, UMD dev build) · @babel/standalone (unpkg, in‑browser JSX) · ',
+                  '@vkontakte/vkui@8.3.1 + @vkontakte/icons@3 via esm.sh ESM (React UMD ↔ ESM bridged through a data: URI import map, no duplicate React instance) · dist/vkui.css loaded as a plain stylesheet (no build plugin needed, unlike Tailwind-based kits) · ',
+                  'Icons: @vkontakte/icons (иконки проверены вживую в браузере, генерический глиф‑fallback остаётся на случай нерезолвящихся имён) · Компромиссы: SplitLayout/SplitCol без явной настройки AdaptivityProvider под реальные брейкпоинты схлопнулись некорректно при живой проверке — сайдбар/контент собраны обычными flex‑',
+                  React.createElement('code', null, '<div>'),
+                  ', как и у остальных китов; ', React.createElement('code', null, 'Badge'),
+                  ' у VK UI — это индикатор‑точка (его текст визуально скрыт, только для скринридера), а не цветной пилл, поэтому бейджи приоритета/статуса — обычный ', React.createElement('code', null, '<span>'),
+                  '; своей desktop‑таблицы у VK UI нет (это мобайл‑ориентированный кит — списки строятся из ',
+                  React.createElement('code', null, 'SimpleCell'),
+                  '/', React.createElement('code', null, 'RichCell'),
+                  '), поэтому таблица заявок собрана обычным ', React.createElement('code', null, '<table>'),
+                  ', оформленным токенами VK UI, как и у Fluent UI/Shoelace в этой подборке; аккуратный цвет темы задан через публичные CSS‑переменные ',
+                  React.createElement('code', null, '--vkui--color_*_accent'),
+                  ' вместо подмены внутренних (хэшированных CSS‑module) классов компонентов.'
+                )
+              )
+            )
+          ),
+          modal
+        )
+      )
+    );
+  }
+
+  var rootEl = document.getElementById('root');
+  var root = ReactDOM.createRoot(rootEl);
+  root.render(
+    React.createElement(ErrorBoundary, null,
+      React.createElement(ConfigProvider, null,
+        React.createElement(AdaptivityProvider, null, React.createElement(App, null))
+      )
+    )
+  );
+})();
+</script>
+
+<!-- ============================================================
+     Bootstrap: loads @vkontakte/vkui + @vkontakte/icons from esm.sh,
+     THEN compiles and runs the JSX app above. No theme-plugin step is
+     needed here (unlike kits/heroui) — dist/vkui.css is a plain
+     stylesheet already linked in <head>, and brand colours are applied
+     purely through the CSS custom properties set on :root above.
+     ============================================================ -->
+<script type="module">
+  function importWithTimeout(url, ms){
+    return Promise.race([
+      import(/* @vite-ignore */ url),
+      new Promise(function(_, reject){ setTimeout(function(){ reject(new Error('timeout: ' + url)); }, ms); })
+    ]);
+  }
+
+  (async function boot(){
+    var VKUI = null;
+    try {
+      VKUI = await importWithTimeout('https://esm.sh/@vkontakte/vkui@8.3.1?external=react,react-dom,react-dom/client', 25000);
+      window.VKUI = VKUI;
+    } catch (e) {
+      console.error('[vkui] failed to load @vkontakte/vkui from esm.sh', e);
+      window.VKUI = {};
+    }
+
+    try {
+      window.VKIcons = await importWithTimeout('https://esm.sh/@vkontakte/icons@3?external=react,react-dom', 12000);
+    } catch (e) {
+      console.warn('[icons] @vkontakte/icons unavailable via esm.sh — using fallback glyphs for every icon', e);
+      window.VKIcons = {};
+    }
+
+    try {
+      var src = document.getElementById('app-src').textContent;
+      var compiled = Babel.transform(src, { presets: ['react'], filename: 'vkui-app.jsx' }).code;
+      var tag = document.createElement('script');
+      tag.textContent = compiled;
+      document.body.appendChild(tag);
+    } catch (e) {
+      console.error('[app] failed to compile/mount the VK UI demo', e);
+      document.getElementById('root').innerHTML =
+        '<div class="boot-error"><div class="t">Не удалось скомпилировать/запустить демо</div>' +
+        '<div class="d">Подробности — в консоли браузера (F12).</div></div>';
+    }
+  })();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Заявки — ЭнергоСетьСтрой (Vuetify 3)</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<link href="https://cdn.jsdelivr.net/npm/@mdi/font@latest/css/materialdesignicons.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/vuetify@3/dist/vuetify.min.css" rel="stylesheet">
+
+<script src="https://cdn.jsdelivr.net/npm/vue@3/dist/vue.global.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/vuetify@3/dist/vuetify.min.js"></script>
+
+<style>
+  :root{
+    --bg-app:#F4F5F7; --bg-surface:#FFFFFF; --bg-dark:#101010; --bg-dark-2:#1A1A1A;
+    --border:#E4E5E9; --border-dark:rgba(255,255,255,.09);
+    --accent:#E07B3E; --accent-hover:#C2632D; --accent-tint:#FDEEE3;
+    --text-primary:#15161A; --text-secondary:#6B6E76; --text-onDark:#FFFFFF; --text-onDark-muted:#9A9CA5;
+    --success:#2FA968; --info:#3B82C4; --purple:#8B6CC1; --danger:#E4483D; --warning:#F2B33D;
+  }
+  *{ box-sizing:border-box; }
+  html, body{ margin:0; padding:0; }
+  #app, .v-application{
+    font-family:'Inter', sans-serif !important;
+    color:var(--text-primary);
+  }
+  .display-font{ font-family:'Rajdhani','Roboto',sans-serif; font-weight:700; text-transform:uppercase; letter-spacing:.02em; }
+
+  /* ---- Logo ---- */
+  .brand-logo-wrap{ display:flex; align-items:center; gap:12px; }
+  .brand-logo-icon{ width:34px; height:34px; color:var(--accent); flex-shrink:0; }
+  .brand-wordmark{ font-family:'Rajdhani',sans-serif; font-weight:700; color:#fff; line-height:.95; letter-spacing:.03em; font-size:15px; text-transform:uppercase; }
+  .brand-wordmark span{ display:block; }
+  .brand-wordmark .sub{ color:var(--text-onDark-muted); font-size:13px; }
+
+  /* ---- Sidebar nav ---- */
+  .side-nav-item{ margin:2px 10px; border-radius:8px !important; color:var(--text-onDark-muted) !important; }
+  .side-nav-item.active-item{ background:rgba(224,123,62,.14) !important; color:var(--accent) !important; }
+  .side-nav-item.active-item .v-icon{ color:var(--accent) !important; }
+  .side-nav-item:hover{ background:var(--bg-dark-2) !important; }
+
+  /* ---- KPI cards ---- */
+  .kpi-card{ border-radius:12px !important; box-shadow:0 1px 2px rgba(16,16,16,.06), 0 8px 24px rgba(16,16,16,.06) !important; border:1px solid var(--border); }
+  .kpi-number{ font-family:'Rajdhani',sans-serif; font-weight:700; font-size:34px; line-height:1; }
+  .kpi-label{ font-family:'Inter',sans-serif; color:var(--text-secondary); font-size:13px; font-weight:500; }
+  .kpi-icon-box{ width:44px; height:44px; border-radius:10px; display:flex; align-items:center; justify-content:center; }
+
+  h1.page-title{ font-family:'Rajdhani',sans-serif; font-weight:700; text-transform:uppercase; letter-spacing:.02em; font-size:26px; margin:0; }
+
+  .surface-card{ border-radius:12px !important; box-shadow:0 1px 2px rgba(16,16,16,.06), 0 8px 24px rgba(16,16,16,.06) !important; border:1px solid var(--border); }
+
+  .footer-note{ font-size:11px; color:#9a9ca5; padding:10px 24px; text-align:center; border-top:1px solid var(--border); background:var(--bg-surface); }
+
+  .avatar-initials{ font-family:'Inter',sans-serif; font-weight:600; font-size:12px; }
+
+  .v-data-table td, .v-data-table th{ font-family:'Inter',sans-serif !important; }
+
+  /* ==================== Responsive (mobile/tablet) ==================== */
+  /* Sidebar visibility/backdrop/off-canvas transform is handled natively by
+     Vuetify's v-navigation-drawer (permanent -> temporary) + v-app-bar-nav-icon,
+     see the app markup/JS below. Everything here is layout-only CSS. */
+
+  /* Table always horizontally scrollable inside its own wrapper on narrow screens */
+  .v-data-table .v-table__wrapper, .v-data-table__wrapper{ overflow-x:auto; }
+  .v-data-table table{ min-width:760px; }
+
+  /* KPI cards: 4 -> 2 -> 1 columns */
+  @media (max-width:959px){
+    .kpi-row .v-col{ flex:0 0 50% !important; max-width:50% !important; }
+  }
+  @media (max-width:559px){
+    .kpi-row .v-col{ flex:0 0 100% !important; max-width:100% !important; }
+  }
+
+  /* Header: shrink logo column, hide search, collapse user/button text */
+  @media (max-width:959px){
+    .header-logo-col{ width:auto !important; padding-left:12px !important; }
+    .header-search-field{ display:none !important; }
+  }
+  @media (max-width:559px){
+    .header-user-block .user-text{ display:none; }
+    .header-new-btn .btn-text{ display:none; }
+    .header-new-btn{ min-width:44px !important; padding:0 10px !important; }
+    .v-app-bar .mr-6{ margin-right:10px !important; }
+    .v-app-bar .mr-4{ margin-right:8px !important; }
+    .v-app-bar .mr-2{ margin-right:6px !important; }
+  }
+
+  /* Toolbar: wrap on <960, full-width stacked controls on <560 */
+  @media (max-width:559px){
+    .toolbar-row{ flex-direction:column; align-items:stretch; }
+    .toolbar-row > *{ width:100% !important; max-width:none !important; }
+    .toolbar-row > .v-spacer{ display:none; }
+  }
+
+  /* Request dialog: full-width sheet on narrow screens */
+  @media (max-width:959px){
+    .request-dialog{ width:92vw !important; max-width:none !important; max-height:90vh !important; }
+    .request-dialog > .v-card{ max-height:90vh; overflow-y:auto; }
+  }
+  @media (max-width:559px){
+    .request-dialog{ width:95vw !important; }
+  }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <v-app>
+    <!-- HEADER -->
+    <v-app-bar theme="brandDark" height="64" flat elevation="0" style="border-bottom:1px solid var(--border-dark);">
+      <v-app-bar-nav-icon v-if="mobile" style="color:#fff;" class="ml-1" @click="drawer = !drawer"></v-app-bar-nav-icon>
+
+      <div class="d-flex align-center header-logo-col" style="padding-left:16px; width:250px; flex-shrink:0;">
+        <div class="brand-logo-wrap">
+          <svg class="brand-logo-icon" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <circle cx="50" cy="50" r="42" fill="none" stroke="currentColor" stroke-width="7" stroke-dasharray="240 24" stroke-linecap="round"/>
+            <circle cx="50" cy="50" r="27" fill="none" stroke="currentColor" stroke-width="7" stroke-dasharray="148 22" stroke-linecap="round" transform="rotate(35 50 50)"/>
+          </svg>
+          <div class="brand-wordmark"><span>Энерго</span><span class="sub">СетьСтрой</span></div>
+        </div>
+      </div>
+
+      <v-text-field
+        v-model="search"
+        density="compact"
+        variant="solo"
+        flat
+        hide-details
+        prepend-inner-icon="mdi-magnify"
+        placeholder="Поиск по номеру, теме, объекту…"
+        style="max-width:360px; border-radius:8px;"
+        bg-color="#1A1A1A"
+        class="mx-4 header-search-field"
+      ></v-text-field>
+
+      <v-spacer></v-spacer>
+
+      <v-btn icon variant="text" class="mr-2">
+        <v-badge color="#E4483D" content="3" offset-x="2" offset-y="2">
+          <v-icon>mdi-bell-outline</v-icon>
+        </v-badge>
+      </v-btn>
+
+      <v-btn color="primary" prepend-icon="mdi-plus" class="mr-4 header-new-btn" @click="dialog=true">
+        <span class="btn-text">Новая заявка</span>
+      </v-btn>
+
+      <div class="d-flex align-center mr-6 header-user-block" style="gap:10px;">
+        <v-avatar color="#2A2A2A" size="36"><span class="avatar-initials" style="color:#fff;">ИП</span></v-avatar>
+        <div class="user-text" style="line-height:1.2;">
+          <div style="font-size:13px; font-weight:600; color:#fff;">Ионов П. С.</div>
+          <div style="font-size:11px; color:var(--text-onDark-muted);">Диспетчер заявок</div>
+        </div>
+      </div>
+    </v-app-bar>
+
+    <!-- SIDEBAR -->
+    <v-navigation-drawer v-model="drawer" theme="brandDark" :permanent="!mobile" width="250" style="border-right:1px solid var(--border-dark);">
+      <v-list nav density="comfortable" style="padding-top:14px;">
+        <v-list-item
+          v-for="item in navItems"
+          :key="item.title"
+          :prepend-icon="item.icon"
+          :title="item.title"
+          class="side-nav-item"
+          :class="{ 'active-item': item.active }"
+          @click="onNavClick"
+        ></v-list-item>
+      </v-list>
+    </v-navigation-drawer>
+
+    <!-- CONTENT -->
+    <v-main style="background:var(--bg-app); min-height:100vh;">
+      <v-container fluid style="padding:28px 32px;">
+
+        <div class="mb-1" style="font-size:12px; color:var(--text-secondary);">Главная / Заявки</div>
+        <h1 class="page-title mb-6">Заявки</h1>
+
+        <!-- KPI cards -->
+        <v-row class="mb-4 kpi-row">
+          <v-col cols="3" v-for="kpi in kpis" :key="kpi.label">
+            <v-card class="kpi-card pa-4" flat>
+              <div class="d-flex align-center justify-space-between">
+                <div>
+                  <div class="kpi-number" :style="{color: kpi.color}">{{ kpi.value }}</div>
+                  <div class="kpi-label">{{ kpi.label }}</div>
+                </div>
+                <div class="kpi-icon-box" :style="{background: kpi.tint}">
+                  <v-icon :icon="kpi.icon" :color="kpi.color"></v-icon>
+                </div>
+              </div>
+            </v-card>
+          </v-col>
+        </v-row>
+
+        <!-- Toolbar + Table -->
+        <v-card class="surface-card" flat>
+          <div class="d-flex align-center pa-4 toolbar-row" style="gap:12px; flex-wrap:wrap; border-bottom:1px solid var(--border);">
+            <v-text-field v-model="search" density="compact" variant="outlined" hide-details prepend-inner-icon="mdi-magnify" placeholder="Поиск по номеру, теме, объекту…" style="max-width:300px;"></v-text-field>
+            <v-select v-model="filterStatus" :items="statusOptions" density="compact" variant="outlined" hide-details label="Статус" style="max-width:170px;"></v-select>
+            <v-select v-model="filterPriority" :items="priorityOptions" density="compact" variant="outlined" hide-details label="Приоритет" style="max-width:170px;"></v-select>
+            <v-select v-model="filterObject" :items="objectOptions" density="compact" variant="outlined" hide-details label="Объект" style="max-width:170px;"></v-select>
+            <v-spacer></v-spacer>
+            <v-btn color="primary" prepend-icon="mdi-plus" @click="dialog=true">Новая заявка</v-btn>
+          </div>
+
+          <v-data-table
+            :headers="headers"
+            :items="filteredRequests"
+            :search="search"
+            item-value="id"
+            items-per-page="8"
+          >
+            <template #item.priority="{ item }">
+              <v-chip :color="priorityColor(item.priority)" size="small" variant="flat" style="color:#fff; font-weight:600;" rounded="pill">{{ item.priority }}</v-chip>
+            </template>
+            <template #item.status="{ item }">
+              <v-chip :color="statusColor(item.status)" size="small" variant="tonal" style="font-weight:600;">{{ item.status }}</v-chip>
+            </template>
+            <template #item.executor="{ item }">
+              <div class="d-flex align-center" style="gap:8px;">
+                <v-avatar size="26" :color="avatarColor(item.executor)">
+                  <span class="avatar-initials" style="color:#fff;">{{ initials(item.executor) }}</span>
+                </v-avatar>
+                <span style="font-size:13px;">{{ item.executor }}</span>
+              </div>
+            </template>
+            <template #item.actions="{ item }">
+              <v-btn icon variant="text" size="small"><v-icon size="18">mdi-eye-outline</v-icon></v-btn>
+              <v-btn icon variant="text" size="small"><v-icon size="18">mdi-pencil-outline</v-icon></v-btn>
+            </template>
+          </v-data-table>
+        </v-card>
+
+      </v-container>
+
+      <div class="footer-note">
+        Kit: Vuetify 3 · CDN: cdn.jsdelivr.net/npm/vuetify@3, cdn.jsdelivr.net/npm/vue@3, cdn.jsdelivr.net/npm/@mdi/font · Icons: Material Design Icons (@mdi/font)
+      </div>
+    </v-main>
+
+    <!-- NEW REQUEST DIALOG -->
+    <v-dialog v-model="dialog" max-width="640" content-class="request-dialog">
+      <v-card class="pa-2" style="border-radius:12px;">
+        <v-card-title class="page-title" style="font-size:20px; padding:16px 20px 0;">Новая заявка</v-card-title>
+        <v-card-text style="padding:12px 20px;">
+          <v-text-field v-model="form.topic" label="Тема заявки" variant="outlined" density="comfortable" class="mb-2" required></v-text-field>
+
+          <v-select v-model="form.category" :items="categoryOptions" label="Категория" variant="outlined" density="comfortable" class="mb-2"></v-select>
+
+          <div class="mb-3">
+            <div style="font-size:12px; color:var(--text-secondary); margin-bottom:6px;">Приоритет</div>
+            <v-btn-toggle v-model="form.priority" color="primary" mandatory density="comfortable" divided>
+              <v-btn v-for="p in priorityOptions" :key="p" :value="p" size="small">{{ p }}</v-btn>
+            </v-btn-toggle>
+          </div>
+
+          <v-select v-model="form.object" :items="objectOptions" label="Объект" variant="outlined" density="comfortable" class="mb-2"></v-select>
+
+          <v-select v-model="form.executor" :items="executorOptions" label="Ответственный исполнитель" variant="outlined" density="comfortable" class="mb-2">
+            <template #item="{ props, item }">
+              <v-list-item v-bind="props">
+                <template #prepend>
+                  <v-avatar size="24" :color="avatarColor(item.raw)" class="mr-2"><span class="avatar-initials" style="color:#fff; font-size:10px;">{{ initials(item.raw) }}</span></v-avatar>
+                </template>
+              </v-list-item>
+            </template>
+          </v-select>
+
+          <v-menu v-model="dateMenu" :close-on-content-click="false">
+            <template #activator="{ props }">
+              <v-text-field v-bind="props" v-model="form.due" label="Срок выполнения" variant="outlined" density="comfortable" prepend-inner-icon="mdi-calendar" readonly class="mb-2"></v-text-field>
+            </template>
+            <v-date-picker v-model="dateVal" @update:model-value="onDatePicked" color="primary"></v-date-picker>
+          </v-menu>
+
+          <v-textarea v-model="form.description" label="Описание заявки" placeholder="Опишите характер работ, адрес, особые условия…" variant="outlined" density="comfortable" rows="3" class="mb-2"></v-textarea>
+
+          <v-file-input v-model="form.attachment" label="Прикрепить фото/схему" variant="outlined" density="comfortable" prepend-icon="" prepend-inner-icon="mdi-paperclip"></v-file-input>
+        </v-card-text>
+        <v-card-actions style="padding:8px 20px 20px; justify-content:flex-end; gap:8px;">
+          <v-btn variant="outlined" @click="dialog=false">Отмена</v-btn>
+          <v-btn color="primary" @click="createRequest">Создать заявку</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
+  </v-app>
+</div>
+
+<script>
+const { createApp, ref, reactive, computed, watch } = Vue;
+const { createVuetify, useDisplay } = Vuetify;
+
+const vuetify = createVuetify({
+  display: {
+    // mobile === true when viewport width < 960px, matching the shared
+    // responsive spec's tablet/mobile breakpoint.
+    mobileBreakpoint: 960,
+  },
+  theme: {
+    defaultTheme: 'brandLight',
+    themes: {
+      brandLight: {
+        dark: false,
+        colors: {
+          primary: '#E07B3E',
+          secondary: '#3B82C4',
+          success: '#2FA968',
+          info: '#3B82C4',
+          warning: '#F2B33D',
+          error: '#E4483D',
+          background: '#F4F5F7',
+          surface: '#FFFFFF',
+        }
+      },
+      brandDark: {
+        dark: true,
+        colors: {
+          primary: '#E07B3E',
+          background: '#101010',
+          surface: '#101010',
+          'on-surface': '#FFFFFF',
+        }
+      }
+    }
+  },
+  icons: { defaultSet: 'mdi' },
+});
+
+const REQUESTS = [
+  { id:'ЗЯ-2481', topic:'Замена автоматического выключателя на ТП-14', category:'Электромонтажные работы', object:'Братск', priority:'Высокий', status:'В работе', executor:'Соколов А.П.', due:'12.08.2026' },
+  { id:'ЗЯ-2480', topic:'Плановое ТО ВЛ-10кВ, участок Братск—Усть-Илимск', category:'Обслуживание сетей', object:'Усть-Илимск', priority:'Средний', status:'Новая', executor:'Гришин Д.О.', due:'18.08.2026' },
+  { id:'ЗЯ-2479', topic:'Аварийное отключение на подстанции №3', category:'Аварийная заявка', object:'Иркутск', priority:'Критический', status:'В работе', executor:'Марков С.И.', due:'07.08.2026' },
+  { id:'ЗЯ-2478', topic:'Монтаж кабельной линии 0.4кВ', category:'Электромонтажные работы', object:'Ангарск', priority:'Средний', status:'На проверке', executor:'Титова Е.В.', due:'15.08.2026' },
+  { id:'ЗЯ-2477', topic:'Проверка изоляции трансформатора Т-2', category:'Диагностика оборудования', object:'Тимлюй', priority:'Низкий', status:'Выполнена', executor:'Соколов А.П.', due:'02.08.2026' },
+  { id:'ЗЯ-2476', topic:'Ремонт опоры ЛЭП после грозового повреждения', category:'Аварийная заявка', object:'Усть-Кут', priority:'Критический', status:'Просрочена', executor:'Гришин Д.О.', due:'04.08.2026' },
+  { id:'ЗЯ-2475', topic:'Технологическое присоединение нового объекта', category:'Технологическое присоединение', object:'Яракта', priority:'Высокий', status:'Новая', executor:'Кузнецова О.Р.', due:'22.08.2026' },
+  { id:'ЗЯ-2474', topic:'Замена счётчика электроэнергии', category:'Обслуживание сетей', object:'Бохан', priority:'Низкий', status:'Выполнена', executor:'Марков С.И.', due:'30.07.2026' },
+  { id:'ЗЯ-2473', topic:'Диагностика РЗА на подстанции', category:'Диагностика оборудования', object:'Краснокаменск', priority:'Средний', status:'В работе', executor:'Титова Е.В.', due:'19.08.2026' },
+  { id:'ЗЯ-2472', topic:'Плановый осмотр опор ВЛ-35кВ', category:'Обслуживание сетей', object:'Торей', priority:'Низкий', status:'Выполнена', executor:'Кузнецова О.Р.', due:'28.07.2026' },
+];
+
+const PRIORITY_COLORS = { 'Низкий':'#8A8D96', 'Средний':'#F2B33D', 'Высокий':'#E07B3E', 'Критический':'#E4483D' };
+const STATUS_COLORS = { 'Новая':'#3B82C4', 'В работе':'#E07B3E', 'На проверке':'#8B6CC1', 'Выполнена':'#2FA968', 'Просрочена':'#E4483D' };
+const AVATAR_PALETTE = ['#E07B3E','#3B82C4','#8B6CC1','#2FA968','#C2632D'];
+
+createApp({
+  setup() {
+    const search = ref('');
+    const filterStatus = ref('Все');
+    const filterPriority = ref('Все');
+    const filterObject = ref('Все');
+    const dialog = ref(false);
+    const dateMenu = ref(false);
+    const dateVal = ref(null);
+
+    // ---- Responsive sidebar (native Vuetify navigation-drawer behavior) ----
+    const { mobile } = useDisplay();
+    const drawer = ref(!mobile.value); // permanent+visible on desktop, closed by default on mobile
+    watch(mobile, (isMobile) => { drawer.value = !isMobile; });
+    function onNavClick(){ if (mobile.value) drawer.value = false; }
+
+    const navItems = [
+      { title:'Дашборд', icon:'mdi-view-dashboard-outline', active:false },
+      { title:'Заявки', icon:'mdi-clipboard-text-outline', active:true },
+      { title:'Объекты', icon:'mdi-office-building-outline', active:false },
+      { title:'Исполнители', icon:'mdi-account-hard-hat-outline', active:false },
+      { title:'Отчёты', icon:'mdi-chart-bar', active:false },
+      { title:'Настройки', icon:'mdi-cog-outline', active:false },
+    ];
+
+    const kpis = [
+      { label:'Всего заявок', value:128, icon:'mdi-clipboard-list-outline', color:'#101010', tint:'#EEEEEF' },
+      { label:'В работе', value:34, icon:'mdi-progress-wrench', color:'#E07B3E', tint:'#FDEEE3' },
+      { label:'Выполнено', value:81, icon:'mdi-check-circle-outline', color:'#2FA968', tint:'#E6F5ED' },
+      { label:'Просрочено', value:7, icon:'mdi-alert-circle-outline', color:'#E4483D', tint:'#FBE7E5' },
+    ];
+
+    const headers = [
+      { title:'№', key:'id', width:'100' },
+      { title:'Тема заявки', key:'topic', minWidth:'260' },
+      { title:'Категория', key:'category' },
+      { title:'Объект', key:'object' },
+      { title:'Приоритет', key:'priority' },
+      { title:'Статус', key:'status' },
+      { title:'Исполнитель', key:'executor' },
+      { title:'Срок', key:'due' },
+      { title:'Действия', key:'actions', sortable:false, align:'end' },
+    ];
+
+    const statusOptions = ['Все','Новая','В работе','На проверке','Выполнена','Просрочена'];
+    const priorityOptions = ['Низкий','Средний','Высокий','Критический'];
+    const objectOptions = ['Братск','Усть-Илимск','Иркутск','Ангарск','Усть-Кут','Яракта','Бохан','Тимлюй','Краснокаменск','Торей'];
+    const categoryOptions = ['Электромонтажные работы','Обслуживание сетей','Аварийная заявка','Технологическое присоединение','Диагностика оборудования'];
+    const executorOptions = ['Соколов А.П.','Гришин Д.О.','Марков С.И.','Титова Е.В.','Кузнецова О.Р.'];
+
+    const form = reactive({ topic:'', category:null, priority:'Средний', object:null, executor:null, due:'', description:'', attachment:null });
+
+    const filteredRequests = computed(() => REQUESTS.filter(r => {
+      const okStatus = filterStatus.value==='Все' || filterStatus.value===r.status;
+      const okPriority = filterPriority.value==='Все' || filterPriority.value===r.priority;
+      const okObject = filterObject.value==='Все' || filterObject.value===r.object;
+      return okStatus && okPriority && okObject;
+    }));
+
+    function priorityColor(p){ return PRIORITY_COLORS[p] || '#8A8D96'; }
+    function statusColor(s){ return STATUS_COLORS[s] || '#3B82C4'; }
+    function initials(name){ const parts = name.split(' '); return (parts[0][0]+(parts[1]?parts[1][0]:'')).toUpperCase(); }
+    function avatarColor(name){ let h=0; for(let i=0;i<name.length;i++) h+=name.charCodeAt(i); return AVATAR_PALETTE[h % AVATAR_PALETTE.length]; }
+    function onDatePicked(v){
+      if(v){ const d = new Date(v); form.due = d.toLocaleDateString('ru-RU'); }
+      dateMenu.value = false;
+    }
+    function createRequest(){ dialog.value = false; }
+
+    return {
+      search, filterStatus, filterPriority, filterObject, dialog, dateMenu, dateVal,
+      mobile, drawer, onNavClick,
+      navItems, kpis, headers, statusOptions, priorityOptions, objectOptions, categoryOptions, executorOptions,
+      form, filteredRequests, priorityColor, statusColor, initials, avatarColor, onDatePicked, createRequest,
+    };
+  }
+}).use(vuetify).mount('#app');
+</script>
+</body>
+</html>

@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Заявки — ЭнергоСетьСтрой (Element Plus)</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="https://unpkg.com/element-plus/dist/index.css" />
+
+<script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+<script src="https://unpkg.com/element-plus"></script>
+<script src="https://unpkg.com/@element-plus/icons-vue"></script>
+
+<style>
+  :root{
+    --bg-app:#F4F5F7; --bg-surface:#FFFFFF; --bg-dark:#101010; --bg-dark-2:#1A1A1A;
+    --border:#E4E5E9; --border-dark:rgba(255,255,255,.09);
+    --accent:#E07B3E; --accent-hover:#C2632D; --accent-tint:#FDEEE3;
+    --text-primary:#15161A; --text-secondary:#6B6E76; --text-onDark:#FFFFFF; --text-onDark-muted:#9A9CA5;
+    --success:#2FA968; --info:#3B82C4; --purple:#8B6CC1; --danger:#E4483D; --warning:#F2B33D;
+
+    /* Element Plus primary color override (official CSS-variable customization path) */
+    --el-color-primary: #E07B3E;
+    --el-color-primary-dark-2: #C2632D;
+    --el-color-primary-light-3: #E9A378;
+    --el-color-primary-light-5: #F0BD9F;
+    --el-color-primary-light-7: #F6D7C5;
+    --el-color-primary-light-8: #F9E5D8;
+    --el-color-primary-light-9: #FDEEE3;
+
+    --el-color-success: #2FA968;
+    --el-color-info: #3B82C4;
+    --el-color-warning: #F2B33D;
+    --el-color-danger: #E4483D;
+  }
+  *{ box-sizing:border-box; }
+  html, body{ margin:0; padding:0; background:var(--bg-app); font-family:'Inter',sans-serif; color:var(--text-primary); }
+  #app{ height:100vh; }
+  .display-font{ font-family:'Rajdhani',sans-serif; font-weight:700; text-transform:uppercase; letter-spacing:.02em; }
+
+  /* ---- Shell ---- */
+  .app-header{ height:64px; background:var(--bg-dark); display:flex; align-items:center; padding:0 20px; border-bottom:1px solid var(--border-dark); }
+  .app-aside{ background:var(--bg-dark); border-right:1px solid var(--border-dark); }
+  .app-main{ background:var(--bg-app); padding:28px 32px; }
+
+  .brand-logo-wrap{ display:flex; align-items:center; gap:12px; width:230px; flex-shrink:0; }
+  .brand-logo-icon{ width:34px; height:34px; color:var(--accent); flex-shrink:0; }
+  .brand-wordmark{ font-family:'Rajdhani',sans-serif; font-weight:700; color:#fff; line-height:.95; letter-spacing:.03em; font-size:15px; text-transform:uppercase; }
+  .brand-wordmark span{ display:block; }
+  .brand-wordmark .sub{ color:var(--text-onDark-muted); font-size:13px; }
+
+  .side-menu{ border-right:none !important; }
+  .side-menu .el-menu-item.is-active{ background:rgba(224,123,62,.14) !important; }
+
+  h1.page-title{ font-family:'Rajdhani',sans-serif; font-weight:700; text-transform:uppercase; letter-spacing:.02em; font-size:26px; margin:0 0 20px; }
+  .breadcrumb-note{ font-size:12px; color:var(--text-secondary); margin-bottom:4px; }
+
+  .kpi-card :deep(.el-card__body){ padding:18px; }
+  .kpi-number{ font-family:'Rajdhani',sans-serif; font-weight:700; font-size:34px; line-height:1; }
+  .kpi-label{ font-family:'Inter',sans-serif; color:var(--text-secondary); font-size:13px; font-weight:500; margin-top:2px; }
+  .kpi-icon-box{ width:44px; height:44px; border-radius:10px; display:flex; align-items:center; justify-content:center; }
+
+  .el-card{ border-radius:12px !important; border:1px solid var(--border) !important; box-shadow:0 1px 2px rgba(16,16,16,.06), 0 8px 24px rgba(16,16,16,.06) !important; }
+  .el-dialog{ border-radius:12px !important; }
+  .toolbar-row{ display:flex; align-items:center; gap:12px; flex-wrap:wrap; padding:16px; border-bottom:1px solid var(--border); }
+
+  .avatar-initials{ font-size:11px; font-weight:600; }
+  .executor-cell{ display:flex; align-items:center; gap:8px; }
+
+  .footer-note{ font-size:11px; color:#9a9ca5; padding:12px 24px; text-align:center; border-top:1px solid var(--border); background:var(--bg-surface); margin-top:16px; border-radius:0 0 12px 12px; }
+
+  .priority-tag, .status-tag{ font-weight:600; border:none; }
+  .field-label{ font-size:12px; color:var(--text-secondary); margin-bottom:6px; font-weight:500; }
+  .el-form-item{ margin-bottom:16px; }
+
+  /* ==================== Responsive (mobile/tablet) ==================== */
+  /* No native responsive drawer ships with el-menu/el-aside, so the mobile
+     sidebar is an el-drawer (native Element Plus component) hosting the same
+     nav menu, toggled by a hamburger button. */
+  .hamburger-btn{ display:none; color:#fff; font-size:20px; margin-right:6px; }
+  .mobile-drawer-menu{ border-right:none !important; }
+  .mobile-drawer-menu .el-menu-item.is-active{ background:rgba(224,123,62,.14) !important; }
+  .mobile-drawer .el-drawer__body{ padding:0; background:#101010; }
+  .mobile-drawer .el-drawer__header{ display:none; }
+
+  @media (max-width:959px){
+    .hamburger-btn{ display:inline-flex; }
+    .app-aside{ display:none; }
+    .header-search-input{ display:none; }
+    .brand-logo-wrap{ width:auto !important; }
+  }
+
+  @media (max-width:559px){
+    .app-header{ padding:0 12px; gap:8px; }
+    .header-user-text{ display:none; }
+    .header-new-btn .btn-text{ display:none; }
+    .header-new-btn{ margin-right:10px !important; padding:8px 10px !important; }
+  }
+
+  /* KPI cards: 4 -> 2 -> 1 columns */
+  @media (max-width:959px){
+    .kpi-row .el-col{ width:50% !important; flex:0 0 50% !important; max-width:50% !important; }
+  }
+  @media (max-width:559px){
+    .kpi-row .el-col{ width:100% !important; flex:0 0 100% !important; max-width:100% !important; }
+  }
+
+  /* Toolbar: wraps by default (flex-wrap already set); stack full-width on small screens */
+  @media (max-width:559px){
+    .toolbar-row{ flex-direction:column; align-items:stretch; }
+    .toolbar-row > *{ width:100% !important; max-width:none !important; }
+  }
+
+  /* Table: horizontal scroll container, columns keep their width */
+  .table-scroll{ overflow-x:auto; }
+  .table-scroll .el-table{ min-width:760px; }
+
+  /* Request dialog: full-width sheet on narrow screens */
+  @media (max-width:959px){
+    .request-dialog.el-dialog{ width:92vw !important; max-width:none !important; }
+    .request-dialog .el-dialog__body{ max-height:calc(90vh - 120px); overflow-y:auto; }
+  }
+  @media (max-width:559px){
+    .request-dialog.el-dialog{ width:95vw !important; }
+  }
+</style>
+</head>
+<body>
+<div id="app">
+  <el-container style="height:100vh;">
+    <el-header class="app-header">
+      <el-button class="hamburger-btn" circle text @click="mobileDrawerVisible=true" aria-label="Открыть меню">
+        <el-icon :size="20"><Menu /></el-icon>
+      </el-button>
+
+      <div class="brand-logo-wrap">
+        <svg class="brand-logo-icon" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <circle cx="50" cy="50" r="42" fill="none" stroke="currentColor" stroke-width="7" stroke-dasharray="240 24" stroke-linecap="round"/>
+          <circle cx="50" cy="50" r="27" fill="none" stroke="currentColor" stroke-width="7" stroke-dasharray="148 22" stroke-linecap="round" transform="rotate(35 50 50)"/>
+        </svg>
+        <div class="brand-wordmark"><span>Энерго</span><span class="sub">СетьСтрой</span></div>
+      </div>
+
+      <el-input v-model="search" placeholder="Поиск по номеру, теме, объекту…" style="max-width:360px; margin-left:24px;" :prefix-icon="Search" class="header-search-input"></el-input>
+
+      <div style="flex:1;"></div>
+
+      <el-badge :value="3" style="margin-right:18px;">
+        <el-button circle text style="color:#fff;"><el-icon :size="18"><Bell /></el-icon></el-button>
+      </el-badge>
+
+      <el-button type="primary" :icon="Plus" class="header-new-btn" style="margin-right:20px;" @click="dialogVisible=true"><span class="btn-text">Новая заявка</span></el-button>
+
+      <div style="display:flex; align-items:center; gap:10px; margin-right:8px;">
+        <el-avatar :size="36" style="background:#2A2A2A; font-size:12px; font-weight:600;">ИП</el-avatar>
+        <div class="header-user-text" style="line-height:1.2;">
+          <div style="font-size:13px; font-weight:600; color:#fff;">Ионов П. С.</div>
+          <div style="font-size:11px; color:var(--text-onDark-muted);">Диспетчер заявок</div>
+        </div>
+      </div>
+    </el-header>
+
+    <el-container>
+      <el-aside width="250px" class="app-aside">
+        <el-menu :default-active="'requests'" background-color="#101010" text-color="#9A9CA5" active-text-color="#E07B3E" class="side-menu" style="padding-top:14px;">
+          <el-menu-item v-for="item in navItems" :key="item.index" :index="item.index">
+            <el-icon><component :is="item.icon" /></el-icon><span>{{ item.title }}</span>
+          </el-menu-item>
+        </el-menu>
+      </el-aside>
+
+      <!-- Mobile off-canvas nav: same menu, inside a native el-drawer -->
+      <el-drawer v-model="mobileDrawerVisible" direction="ltr" size="250px" :with-header="false" class="mobile-drawer">
+        <el-menu :default-active="'requests'" background-color="#101010" text-color="#9A9CA5" active-text-color="#E07B3E" class="side-menu mobile-drawer-menu" style="height:100%; padding-top:14px;" @select="mobileDrawerVisible=false">
+          <el-menu-item v-for="item in navItems" :key="item.index" :index="item.index">
+            <el-icon><component :is="item.icon" /></el-icon><span>{{ item.title }}</span>
+          </el-menu-item>
+        </el-menu>
+      </el-drawer>
+
+      <el-main class="app-main">
+        <div class="breadcrumb-note">Главная / Заявки</div>
+        <h1 class="page-title">Заявки</h1>
+
+        <el-row :gutter="16" style="margin-bottom:16px;" class="kpi-row">
+          <el-col :span="6" v-for="kpi in kpis" :key="kpi.label">
+            <el-card class="kpi-card" shadow="never">
+              <div style="display:flex; align-items:center; justify-content:space-between;">
+                <div>
+                  <div class="kpi-number" :style="{color: kpi.color}">{{ kpi.value }}</div>
+                  <div class="kpi-label">{{ kpi.label }}</div>
+                </div>
+                <div class="kpi-icon-box" :style="{background: kpi.tint}">
+                  <el-icon :size="22" :color="kpi.color"><component :is="kpi.icon" /></el-icon>
+                </div>
+              </div>
+            </el-card>
+          </el-col>
+        </el-row>
+
+        <el-card shadow="never" style="padding:0;">
+          <div class="toolbar-row">
+            <el-input v-model="search" placeholder="Поиск по номеру, теме, объекту…" style="max-width:280px;" :prefix-icon="Search" clearable></el-input>
+            <el-select v-model="filterStatus" placeholder="Статус" style="width:160px;">
+              <el-option v-for="s in statusOptions" :key="s" :label="s" :value="s"></el-option>
+            </el-select>
+            <el-select v-model="filterPriority" placeholder="Приоритет" style="width:160px;">
+              <el-option v-for="p in priorityFilterOptions" :key="p" :label="p" :value="p"></el-option>
+            </el-select>
+            <el-select v-model="filterObject" placeholder="Объект" style="width:160px;">
+              <el-option v-for="o in objectFilterOptions" :key="o" :label="o" :value="o"></el-option>
+            </el-select>
+            <div style="flex:1;"></div>
+            <el-button type="primary" :icon="Plus" @click="dialogVisible=true">Новая заявка</el-button>
+          </div>
+
+          <div class="table-scroll">
+          <el-table :data="pagedRequests" style="width:100%;" :header-cell-style="{background:'#FAFAFB', color:'var(--text-secondary)', fontWeight:600, fontSize:'12px', textTransform:'uppercase'}">
+            <el-table-column prop="id" label="№" width="100" />
+            <el-table-column prop="topic" label="Тема заявки" min-width="260" />
+            <el-table-column prop="category" label="Категория" min-width="180" />
+            <el-table-column prop="object" label="Объект" width="110" />
+            <el-table-column label="Приоритет" width="130">
+              <template #default="{ row }">
+                <el-tag class="priority-tag" round size="small" :style="{background: priorityColor(row.priority), color:'#fff'}">{{ row.priority }}</el-tag>
+              </template>
+            </el-table-column>
+            <el-table-column label="Статус" width="140">
+              <template #default="{ row }">
+                <el-tag class="status-tag" :style="statusTagStyle(row.status)" size="small">{{ row.status }}</el-tag>
+              </template>
+            </el-table-column>
+            <el-table-column label="Исполнитель" width="180">
+              <template #default="{ row }">
+                <div class="executor-cell">
+                  <el-avatar :size="26" :style="{background: avatarColor(row.executor)}" class="avatar-initials">{{ initials(row.executor) }}</el-avatar>
+                  <span style="font-size:13px;">{{ row.executor }}</span>
+                </div>
+              </template>
+            </el-table-column>
+            <el-table-column prop="due" label="Срок" width="110" />
+            <el-table-column label="Действия" width="100" align="right">
+              <template #default>
+                <el-button link :icon="View" size="small"></el-button>
+                <el-button link :icon="Edit" size="small"></el-button>
+              </template>
+            </el-table-column>
+          </el-table>
+          </div>
+
+          <div style="display:flex; justify-content:flex-end; padding:16px;">
+            <el-pagination background layout="prev, pager, next" :total="filteredRequests.length" :page-size="pageSize" v-model:current-page="currentPage" />
+          </div>
+        </el-card>
+
+        <div class="footer-note">
+          Kit: Element Plus · CDN: unpkg.com/element-plus, unpkg.com/vue@3, unpkg.com/@element-plus/icons-vue · Icons: Element Plus Icons (@element-plus/icons-vue)
+        </div>
+      </el-main>
+    </el-container>
+  </el-container>
+
+  <el-dialog v-model="dialogVisible" title="Новая заявка" width="600px" custom-class="request-dialog" class="request-dialog">
+    <el-form label-position="top" :model="form">
+      <el-form-item label="Тема заявки" required>
+        <el-input v-model="form.topic" placeholder="Кратко опишите суть заявки"></el-input>
+      </el-form-item>
+
+      <el-form-item label="Категория">
+        <el-select v-model="form.category" placeholder="Выберите категорию" style="width:100%;">
+          <el-option v-for="c in categoryOptions" :key="c" :label="c" :value="c"></el-option>
+        </el-select>
+      </el-form-item>
+
+      <el-form-item label="Приоритет">
+        <el-radio-group v-model="form.priority">
+          <el-radio-button v-for="p in priorityFilterOptions" :key="p" :value="p">{{ p }}</el-radio-button>
+        </el-radio-group>
+      </el-form-item>
+
+      <el-form-item label="Объект">
+        <el-select v-model="form.object" placeholder="Выберите объект" style="width:100%;">
+          <el-option v-for="o in objectFilterOptions" :key="o" :label="o" :value="o"></el-option>
+        </el-select>
+      </el-form-item>
+
+      <el-form-item label="Ответственный исполнитель">
+        <el-select v-model="form.executor" placeholder="Выберите исполнителя" style="width:100%;">
+          <el-option v-for="e in executorOptions" :key="e" :label="e" :value="e">
+            <div style="display:flex; align-items:center; gap:8px;">
+              <el-avatar :size="20" :style="{background: avatarColor(e)}" class="avatar-initials" style="font-size:9px;">{{ initials(e) }}</el-avatar>
+              <span>{{ e }}</span>
+            </div>
+          </el-option>
+        </el-select>
+      </el-form-item>
+
+      <el-form-item label="Срок выполнения">
+        <el-date-picker v-model="form.due" type="date" placeholder="Выберите дату" style="width:100%;" format="DD.MM.YYYY"></el-date-picker>
+      </el-form-item>
+
+      <el-form-item label="Описание заявки">
+        <el-input v-model="form.description" type="textarea" :rows="3" placeholder="Опишите характер работ, адрес, особые условия…"></el-input>
+      </el-form-item>
+
+      <el-form-item label="Вложение">
+        <el-upload action="#" :auto-upload="false" :limit="1">
+          <el-button :icon="Paperclip">Прикрепить фото/схему</el-button>
+        </el-upload>
+      </el-form-item>
+    </el-form>
+
+    <template #footer>
+      <el-button @click="dialogVisible=false">Отмена</el-button>
+      <el-button type="primary" @click="dialogVisible=false">Создать заявку</el-button>
+    </template>
+  </el-dialog>
+</div>
+
+<script>
+const { createApp, ref, reactive, computed } = Vue;
+
+const REQUESTS = [
+  { id:'ЗЯ-2481', topic:'Замена автоматического выключателя на ТП-14', category:'Электромонтажные работы', object:'Братск', priority:'Высокий', status:'В работе', executor:'Соколов А.П.', due:'12.08.2026' },
+  { id:'ЗЯ-2480', topic:'Плановое ТО ВЛ-10кВ, участок Братск—Усть-Илимск', category:'Обслуживание сетей', object:'Усть-Илимск', priority:'Средний', status:'Новая', executor:'Гришин Д.О.', due:'18.08.2026' },
+  { id:'ЗЯ-2479', topic:'Аварийное отключение на подстанции №3', category:'Аварийная заявка', object:'Иркутск', priority:'Критический', status:'В работе', executor:'Марков С.И.', due:'07.08.2026' },
+  { id:'ЗЯ-2478', topic:'Монтаж кабельной линии 0.4кВ', category:'Электромонтажные работы', object:'Ангарск', priority:'Средний', status:'На проверке', executor:'Титова Е.В.', due:'15.08.2026' },
+  { id:'ЗЯ-2477', topic:'Проверка изоляции трансформатора Т-2', category:'Диагностика оборудования', object:'Тимлюй', priority:'Низкий', status:'Выполнена', executor:'Соколов А.П.', due:'02.08.2026' },
+  { id:'ЗЯ-2476', topic:'Ремонт опоры ЛЭП после грозового повреждения', category:'Аварийная заявка', object:'Усть-Кут', priority:'Критический', status:'Просрочена', executor:'Гришин Д.О.', due:'04.08.2026' },
+  { id:'ЗЯ-2475', topic:'Технологическое присоединение нового объекта', category:'Технологическое присоединение', object:'Яракта', priority:'Высокий', status:'Новая', executor:'Кузнецова О.Р.', due:'22.08.2026' },
+  { id:'ЗЯ-2474', topic:'Замена счётчика электроэнергии', category:'Обслуживание сетей', object:'Бохан', priority:'Низкий', status:'Выполнена', executor:'Марков С.И.', due:'30.07.2026' },
+  { id:'ЗЯ-2473', topic:'Диагностика РЗА на подстанции', category:'Диагностика оборудования', object:'Краснокаменск', priority:'Средний', status:'В работе', executor:'Титова Е.В.', due:'19.08.2026' },
+  { id:'ЗЯ-2472', topic:'Плановый осмотр опор ВЛ-35кВ', category:'Обслуживание сетей', object:'Торей', priority:'Низкий', status:'Выполнена', executor:'Кузнецова О.Р.', due:'28.07.2026' },
+];
+
+const PRIORITY_COLORS = { 'Низкий':'#8A8D96', 'Средний':'#F2B33D', 'Высокий':'#E07B3E', 'Критический':'#E4483D' };
+const STATUS_COLORS = { 'Новая':'#3B82C4', 'В работе':'#E07B3E', 'На проверке':'#8B6CC1', 'Выполнена':'#2FA968', 'Просрочена':'#E4483D' };
+const AVATAR_PALETTE = ['#E07B3E','#3B82C4','#8B6CC1','#2FA968','#C2632D'];
+
+function hexToRgba(hex, alpha){
+  const r = parseInt(hex.slice(1,3),16), g = parseInt(hex.slice(3,5),16), b = parseInt(hex.slice(5,7),16);
+  return `rgba(${r},${g},${b},${alpha})`;
+}
+
+const app = createApp({
+  setup(){
+    const search = ref('');
+    const filterStatus = ref('Все');
+    const filterPriority = ref('Все');
+    const filterObject = ref('Все');
+    const dialogVisible = ref(false);
+    const currentPage = ref(1);
+    const pageSize = 8;
+    const mobileDrawerVisible = ref(false); // off-canvas nav drawer state (<960px)
+
+    const navItems = [
+      { index:'dashboard', icon:'Odometer', title:'Дашборд' },
+      { index:'requests', icon:'Document', title:'Заявки' },
+      { index:'objects', icon:'OfficeBuilding', title:'Объекты' },
+      { index:'executors', icon:'UserFilled', title:'Исполнители' },
+      { index:'reports', icon:'TrendCharts', title:'Отчёты' },
+      { index:'settings', icon:'Setting', title:'Настройки' },
+    ];
+
+    const kpis = [
+      { label:'Всего заявок', value:128, icon:'Files', color:'#101010', tint:'#EEEEEF' },
+      { label:'В работе', value:34, icon:'Loading', color:'#E07B3E', tint:'#FDEEE3' },
+      { label:'Выполнено', value:81, icon:'CircleCheck', color:'#2FA968', tint:'#E6F5ED' },
+      { label:'Просрочено', value:7, icon:'WarningFilled', color:'#E4483D', tint:'#FBE7E5' },
+    ];
+
+    const statusOptions = ['Все','Новая','В работе','На проверке','Выполнена','Просрочена'];
+    const priorityFilterOptions = ['Низкий','Средний','Высокий','Критический'];
+    const objectFilterOptions = ['Братск','Усть-Илимск','Иркутск','Ангарск','Усть-Кут','Яракта','Бохан','Тимлюй','Краснокаменск','Торей'];
+    const categoryOptions = ['Электромонтажные работы','Обслуживание сетей','Аварийная заявка','Технологическое присоединение','Диагностика оборудования'];
+    const executorOptions = ['Соколов А.П.','Гришин Д.О.','Марков С.И.','Титова Е.В.','Кузнецова О.Р.'];
+
+    const form = reactive({ topic:'', category:null, priority:'Средний', object:null, executor:null, due:'', description:'', attachment:null });
+
+    const filteredRequests = computed(() => REQUESTS.filter(r => {
+      const okStatus = filterStatus.value==='Все' || filterStatus.value===r.status;
+      const okPriority = filterPriority.value==='Все' || filterPriority.value===r.priority;
+      const okObject = filterObject.value==='Все' || filterObject.value===r.object;
+      const okSearch = !search.value || (r.topic+r.id+r.object).toLowerCase().includes(search.value.toLowerCase());
+      return okStatus && okPriority && okObject && okSearch;
+    }));
+
+    const pagedRequests = computed(() => {
+      const start = (currentPage.value-1)*pageSize;
+      return filteredRequests.value.slice(start, start+pageSize);
+    });
+
+    function priorityColor(p){ return PRIORITY_COLORS[p] || '#8A8D96'; }
+    function statusTagStyle(s){
+      const c = STATUS_COLORS[s] || '#3B82C4';
+      return { color:c, background:hexToRgba(c,.12), border:'none' };
+    }
+    function initials(name){ const parts = name.split(' '); return (parts[0][0]+(parts[1]?parts[1][0]:'')).toUpperCase(); }
+    function avatarColor(name){ let h=0; for(let i=0;i<name.length;i++) h+=name.charCodeAt(i); return AVATAR_PALETTE[h % AVATAR_PALETTE.length]; }
+
+    return {
+      search, filterStatus, filterPriority, filterObject, dialogVisible, currentPage, pageSize,
+      mobileDrawerVisible, navItems,
+      kpis, statusOptions, priorityFilterOptions, objectFilterOptions, categoryOptions, executorOptions,
+      form, filteredRequests, pagedRequests, priorityColor, statusTagStyle, initials, avatarColor,
+      Search: ElementPlusIconsVue.Search,
+      Plus: ElementPlusIconsVue.Plus,
+      View: ElementPlusIconsVue.View,
+      Edit: ElementPlusIconsVue.Edit,
+      Paperclip: ElementPlusIconsVue.Paperclip,
+      Menu: ElementPlusIconsVue.Menu,
+    };
+  }
+});
+
+app.use(ElementPlus);
+for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
+  app.component(key, component);
+}
+app.mount('#app');
+</script>
+</body>
+</html>

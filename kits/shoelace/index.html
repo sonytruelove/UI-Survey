@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Заявки — ЭнергоСетьСтрой (Shoelace)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.15.1/cdn/themes/light.css">
+<script type="module" src="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.15.1/cdn/shoelace-autoloader.js"></script>
+
+<!-- Icon library: point sl-icon's "default" library at the Bootstrap Icons CDN (as documented on the Shoelace "Icons" page) -->
+<script type="module">
+  import { registerIconLibrary } from 'https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.15.1/cdn/utilities/icon-library.js';
+  registerIconLibrary('default', {
+    resolver: name => `https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/icons/${name}.svg`,
+    mutator: svg => svg.setAttribute('fill', 'currentColor'),
+  });
+</script>
+
+<style>
+  :root{
+    --bg-app:#F4F5F7;
+    --bg-surface:#FFFFFF;
+    --bg-dark:#101010;
+    --bg-dark-2:#1A1A1A;
+    --border:#E4E5E9;
+    --border-dark:rgba(255,255,255,.09);
+    --accent:#E07B3E;
+    --accent-hover:#C2632D;
+    --accent-tint:#FDEEE3;
+    --text-primary:#15161A;
+    --text-secondary:#6B6E76;
+    --text-onDark:#FFFFFF;
+    --text-onDark-muted:#9A9CA5;
+    --success:#2FA968;
+    --info:#3B82C4;
+    --purple:#8B6CC1;
+    --danger:#E4483D;
+    --warning:#F2B33D;
+    --low:#8A8D96;
+
+    /* ============ Shoelace primary ramp -> brand accent ============ */
+    --sl-color-primary-50: #FDEEE3;
+    --sl-color-primary-100: #FBE0CB;
+    --sl-color-primary-200: #F6C6A0;
+    --sl-color-primary-300: #F0AC74;
+    --sl-color-primary-400: #E89357;
+    --sl-color-primary-500: #E07B3E;  /* accent */
+    --sl-color-primary-600: #C2632D;  /* accent-hover */
+    --sl-color-primary-700: #A14F24;
+    --sl-color-primary-800: #7E3E1D;
+    --sl-color-primary-900: #5C2E16;
+    --sl-color-primary-950: #3D1E0E;
+
+    --sl-font-sans: 'Inter', sans-serif;
+  }
+
+  *{box-sizing:border-box;}
+  html,body{
+    margin:0;
+    background:var(--bg-app);
+    font-family:'Inter',sans-serif;
+    color:var(--text-primary);
+  }
+  /* Desktop (>=960px) keeps the original fixed-width canvas untouched */
+  @media (min-width:960px){
+    html,body{min-width:1280px;}
+  }
+  h1,h2,h3,.kpi-value,.logo-word,.font-display{font-family:'Rajdhani',sans-serif;}
+
+  /* ============ radius overrides via Shoelace CSS shadow parts ============ */
+  sl-card::part(base){border-radius:12px;border-color:var(--border);}
+  sl-dialog::part(panel){border-radius:12px;}
+  sl-dialog::part(title){font-family:'Rajdhani',sans-serif;text-transform:uppercase;letter-spacing:.02em;font-weight:700;}
+  #dialog-new-request{--width:640px;}
+  @media (max-width:959px){ #dialog-new-request{--width:92vw;} }
+  @media (max-width:559px){ #dialog-new-request{--width:95vw;} }
+  sl-button::part(base){border-radius:8px;font-weight:600;}
+  sl-input::part(base){border-radius:8px;}
+  sl-select::part(combobox){border-radius:8px;}
+  sl-textarea::part(base){border-radius:8px;}
+  /* status badges get the brand's 8px radius; priority badges keep Shoelace's native `pill` attribute radius untouched */
+  sl-badge.status-badge::part(base){border-radius:8px;font-weight:600;}
+  sl-badge:not(.status-badge)::part(base){font-weight:600;}
+  sl-avatar::part(base){border-radius:50%;}
+
+  /* Shoelace ships sl-badge as a solid filled chip (variant-600 bg + white text); the brand wants soft
+     tinted pills, so background/text are set explicitly per state through the exposed `base` shadow part
+     rather than relying on the `variant` prop. */
+  sl-badge.pr-low::part(base){background:#EEEEF0;color:var(--low);border:none;}
+  sl-badge.pr-medium::part(base){background:#FDF3E0;color:#B8801F;border:none;}
+  sl-badge.pr-high::part(base){background:var(--accent-tint);color:var(--accent-hover);border:none;}
+  sl-badge.pr-critical::part(base){background:#FCE7E5;color:var(--danger);border:none;}
+  sl-badge.st-new::part(base){background:#E7F1FA;color:var(--info);border:none;}
+  sl-badge.st-progress::part(base){background:var(--accent-tint);color:var(--accent-hover);border:none;}
+  sl-badge.st-review::part(base){background:#F1ECFA;color:var(--purple);border:none;}
+  sl-badge.st-done::part(base){background:#E6F6ED;color:var(--success);border:none;}
+  sl-badge.st-overdue::part(base){background:#FCE7E5;color:var(--danger);border:none;}
+  sl-badge.status-badge::part(base){display:inline-flex;align-items:center;gap:6px;}
+  sl-badge.status-badge::part(base)::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor;}
+
+  /* ============ LAYOUT ============ */
+  .app-shell{display:flex;flex-direction:column;min-height:100vh;}
+
+  .app-header{
+    height:64px;
+    background:var(--bg-dark);
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:0 24px;
+    position:sticky;top:0;z-index:200;
+    border-bottom:1px solid var(--border-dark);
+  }
+  .header-left{display:flex;align-items:center;gap:12px;}
+  .logo-mark{width:34px;height:34px;color:var(--accent);flex:none;}
+  .logo-word{color:#fff;font-weight:700;font-size:15px;line-height:.95;text-transform:uppercase;letter-spacing:.03em;}
+  .header-center{flex:1;max-width:420px;margin:0 32px;}
+  .header-right{display:flex;align-items:center;gap:16px;}
+
+  .header-search::part(base){background:var(--bg-dark-2);border-color:var(--border-dark);}
+  .header-search::part(input){color:#fff;}
+  .header-search::part(input)::placeholder{color:var(--text-onDark-muted);}
+  .header-search::part(prefix){color:var(--text-onDark-muted);}
+
+  .hamburger-btn{display:none;}
+  .hamburger-btn::part(base){color:var(--text-onDark-muted);font-size:20px;}
+  .hamburger-btn::part(base):hover{color:#fff;}
+
+  .bell-wrap{position:relative;}
+  .bell-wrap sl-icon-button::part(base){color:var(--text-onDark-muted);font-size:19px;}
+  .bell-wrap sl-icon-button::part(base):hover{color:#fff;}
+  .bell-dot{position:absolute;top:2px;right:2px;width:8px;height:8px;border-radius:50%;background:var(--danger);border:1.5px solid var(--bg-dark);pointer-events:none;}
+
+  .user-chip{display:flex;align-items:center;gap:10px;}
+  .user-chip sl-avatar::part(base){background:var(--accent-tint);color:var(--accent-hover);width:34px;height:34px;font-family:'Rajdhani',sans-serif;font-weight:700;}
+  .user-meta{line-height:1.2;}
+  .user-name{color:#fff;font-size:13px;font-weight:600;}
+  .user-role{color:var(--text-onDark-muted);font-size:11.5px;}
+
+  .body-row{display:flex;flex:1;}
+
+  .app-sidebar{width:250px;flex:none;background:var(--bg-dark);padding:14px 12px;border-right:1px solid var(--border-dark);}
+  sl-menu.sidebar-menu{background:transparent;border:none;padding:0;}
+  sl-menu.sidebar-menu sl-menu-item{--sl-color-neutral-700:var(--text-onDark-muted);margin-bottom:2px;}
+  sl-menu.sidebar-menu sl-menu-item::part(base){
+    color:var(--text-onDark-muted);
+    border-radius:8px;
+    font-size:14px;
+    font-weight:500;
+    padding:2px 4px;
+  }
+  sl-menu.sidebar-menu sl-menu-item::part(base):hover{background:var(--bg-dark-2);color:#fff;}
+  sl-menu.sidebar-menu sl-menu-item[disabled]::part(base){opacity:1;}
+  sl-menu.sidebar-menu sl-menu-item.active::part(base){
+    background:var(--accent-tint);
+    color:var(--accent);
+    font-weight:600;
+    border-right:3px solid var(--accent);
+  }
+  sl-menu.sidebar-menu sl-menu-item sl-icon{font-size:16px;margin-right:2px;}
+
+  .sidebar-backdrop{display:none;}
+
+  .app-content{flex:1;padding:28px 32px 60px;background:var(--bg-app);min-width:0;}
+
+  .page-head{margin-bottom:22px;}
+  .page-head .crumb{color:var(--text-secondary);font-size:13px;margin-bottom:6px;}
+  .page-head .crumb .divider{margin:0 6px;}
+  .page-title{font-size:26px;font-weight:700;text-transform:uppercase;letter-spacing:.02em;color:var(--text-primary);}
+
+  /* ============ KPI CARDS ============ */
+  .kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px;}
+  .kpi-row sl-card::part(base){box-shadow:0 1px 2px rgba(16,16,16,.06),0 8px 24px rgba(16,16,16,.06);padding:2px 4px;}
+  .kpi-label{font-size:12.5px;color:var(--text-secondary);font-weight:600;text-transform:uppercase;letter-spacing:.03em;margin-bottom:8px;}
+  .kpi-value{font-size:34px;font-weight:700;line-height:1;}
+  .kpi-value.c-total{color:var(--text-primary);}
+  .kpi-value.c-progress{color:var(--accent);}
+  .kpi-value.c-done{color:var(--success);}
+  .kpi-value.c-overdue{color:var(--danger);}
+
+  /* ============ TOOLBAR ============ */
+  .toolbar{display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap;}
+  .toolbar sl-input{width:280px;}
+  .toolbar sl-select{width:160px;}
+  .toolbar-spacer{flex:1;}
+
+  /* ============ TABLE CARD (Shoelace has no table component — styled with sl tokens) ============ */
+  .table-card{
+    background:var(--bg-surface);
+    border:1px solid var(--border);
+    border-radius:12px;
+    box-shadow:0 1px 2px rgba(16,16,16,.06),0 8px 24px rgba(16,16,16,.06);
+    overflow:hidden;
+  }
+  .table-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+  table.requests-table{width:100%;border-collapse:collapse;font-family:var(--sl-font-sans);min-width:760px;}
+  table.requests-table thead th{
+    text-align:left;
+    background:var(--bg-surface);
+    color:var(--text-secondary);
+    font-size:11.5px;
+    text-transform:uppercase;
+    letter-spacing:.03em;
+    font-weight:700;
+    padding:12px 16px;
+    border-bottom:1px solid var(--border);
+  }
+  table.requests-table tbody td{
+    font-size:13.5px;
+    color:var(--text-primary);
+    padding:11px 16px;
+    border-top:1px solid var(--border);
+    vertical-align:middle;
+  }
+  table.requests-table tbody tr:hover{background:var(--accent-tint);}
+  .req-id{font-family:'Rajdhani',sans-serif;font-weight:700;color:var(--text-secondary);}
+  .req-topic{font-weight:600;}
+
+  .avatar-cell{display:flex;align-items:center;gap:8px;}
+  .avatar-cell sl-avatar::part(base){width:26px;height:26px;background:var(--accent-tint);color:var(--accent-hover);font-family:'Rajdhani',sans-serif;font-weight:700;font-size:11px;}
+
+  .action-icons{display:flex;gap:10px;}
+  .action-icons sl-icon-button::part(base){color:var(--text-secondary);font-size:16px;padding:2px;}
+  .action-icons sl-icon-button::part(base):hover{color:var(--accent);}
+
+  .table-footer{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-top:1px solid var(--border);}
+  .table-footer .result-count{color:var(--text-secondary);font-size:12.5px;}
+  .pager sl-button::part(base){min-width:34px;}
+  .pager sl-button.active::part(base){background:var(--accent);color:#fff;border-color:var(--accent);}
+
+  /* ============ FORM ============ */
+  .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+  .form-field{margin-bottom:16px;}
+  .form-field label{display:block;font-size:13px;font-weight:600;margin-bottom:6px;color:var(--text-primary);}
+  .required-star{color:var(--danger);margin-left:2px;}
+
+  sl-radio-button::part(button--checked){background:var(--accent);border-color:var(--accent);color:#fff;}
+
+  .attachment-row{display:flex;align-items:center;gap:10px;}
+  .attachment-row input[type="file"]{
+    font-size:13px;
+    font-family:'Inter',sans-serif;
+    border:1px solid var(--border);
+    border-radius:8px;
+    padding:7px 10px;
+    flex:1;
+    background:#fff;
+    color:var(--text-secondary);
+  }
+
+  .footer-bar{padding:14px 32px 20px;color:#9A9CA5;font-size:11.5px;background:var(--bg-app);}
+
+  /* ============ RESPONSIVE (<960px / <560px) — see shared/responsive.md ============ */
+  @media (max-width:959px){
+    .header-center{display:none;}
+    .hamburger-btn{display:inline-flex !important;}
+
+    .app-sidebar{
+      position:fixed;
+      top:64px;left:0;bottom:0;
+      width:250px;
+      transform:translateX(-100%);
+      transition:transform .25s ease;
+      z-index:260;
+      overflow-y:auto;
+      box-shadow:4px 0 24px rgba(0,0,0,.25);
+    }
+    .app-sidebar.open{transform:translateX(0);}
+
+    .sidebar-backdrop.show{
+      display:block;
+      position:fixed;
+      top:64px;left:0;right:0;bottom:0;
+      background:rgba(16,16,16,.45);
+      z-index:250;
+    }
+
+    .kpi-row{grid-template-columns:repeat(2,1fr);}
+
+    .toolbar sl-input,.toolbar sl-select{width:auto;flex:1 1 200px;min-width:0;}
+
+    .app-content{padding:24px 20px 48px;}
+  }
+
+  @media (max-width:559px){
+    .kpi-row{grid-template-columns:1fr;}
+
+    .toolbar{flex-direction:column;align-items:stretch;}
+    .toolbar sl-input,.toolbar sl-select,.toolbar sl-button{width:100%;}
+    .toolbar-spacer{display:none;}
+
+    .user-meta{display:none;}
+    #btn-new-request-header .btn-label{display:none;}
+
+    .form-grid{grid-template-columns:1fr;}
+  }
+</style>
+</head>
+<body>
+
+<div class="app-shell">
+  <!-- ===================== HEADER ===================== -->
+  <header class="app-header">
+    <div class="header-left">
+      <sl-icon-button class="hamburger-btn" id="btn-sidebar-toggle" name="list" label="Открыть меню" aria-expanded="false" aria-controls="app-sidebar"></sl-icon-button>
+      <svg class="logo-mark" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <circle cx="50" cy="50" r="42" fill="none" stroke="currentColor" stroke-width="7" stroke-dasharray="240 24" stroke-linecap="round"/>
+        <circle cx="50" cy="50" r="27" fill="none" stroke="currentColor" stroke-width="7" stroke-dasharray="148 22" stroke-linecap="round" transform="rotate(35 50 50)"/>
+      </svg>
+      <div class="logo-word">ЭНЕРГО<br>СЕТЬСТРОЙ</div>
+    </div>
+
+    <div class="header-center">
+      <sl-input class="header-search" placeholder="Поиск по номеру, теме, объекту…" clearable>
+        <sl-icon name="search" slot="prefix"></sl-icon>
+      </sl-input>
+    </div>
+
+    <div class="header-right">
+      <div class="bell-wrap">
+        <sl-icon-button name="bell" label="Уведомления"></sl-icon-button>
+        <span class="bell-dot"></span>
+      </div>
+
+      <sl-button variant="primary" id="btn-new-request-header">
+        <sl-icon slot="prefix" name="plus-lg"></sl-icon>
+        <span class="btn-label">Новая заявка</span>
+      </sl-button>
+
+      <div class="user-chip">
+        <sl-avatar initials="СА" label="Соколов А.П."></sl-avatar>
+        <div class="user-meta">
+          <div class="user-name">Соколов А.П.</div>
+          <div class="user-role">Диспетчер участка</div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="body-row">
+    <!-- ===================== SIDEBAR ===================== -->
+    <aside class="app-sidebar" id="app-sidebar">
+      <sl-menu class="sidebar-menu">
+        <sl-menu-item><sl-icon slot="prefix" name="speedometer2"></sl-icon>Дашборд</sl-menu-item>
+        <sl-menu-item class="active"><sl-icon slot="prefix" name="clipboard-check"></sl-icon>Заявки</sl-menu-item>
+        <sl-menu-item><sl-icon slot="prefix" name="building"></sl-icon>Объекты</sl-menu-item>
+        <sl-menu-item><sl-icon slot="prefix" name="people"></sl-icon>Исполнители</sl-menu-item>
+        <sl-menu-item><sl-icon slot="prefix" name="bar-chart"></sl-icon>Отчёты</sl-menu-item>
+        <sl-menu-item><sl-icon slot="prefix" name="gear"></sl-icon>Настройки</sl-menu-item>
+      </sl-menu>
+    </aside>
+    <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
+
+    <!-- ===================== CONTENT ===================== -->
+    <main class="app-content">
+      <div class="page-head">
+        <div class="crumb">Главная <span class="divider">/</span> <span style="color:var(--text-primary);font-weight:600;">Заявки</span></div>
+        <h1 class="page-title">Заявки</h1>
+      </div>
+
+      <!-- KPI cards -->
+      <div class="kpi-row">
+        <sl-card>
+          <div class="kpi-label">Всего заявок</div>
+          <div class="kpi-value c-total">128</div>
+        </sl-card>
+        <sl-card>
+          <div class="kpi-label">В работе</div>
+          <div class="kpi-value c-progress">34</div>
+        </sl-card>
+        <sl-card>
+          <div class="kpi-label">Выполнено</div>
+          <div class="kpi-value c-done">81</div>
+        </sl-card>
+        <sl-card>
+          <div class="kpi-label">Просрочено</div>
+          <div class="kpi-value c-overdue">7</div>
+        </sl-card>
+      </div>
+
+      <!-- Toolbar -->
+      <div class="toolbar">
+        <sl-input placeholder="Поиск по номеру, теме, объекту…" clearable>
+          <sl-icon name="search" slot="prefix"></sl-icon>
+        </sl-input>
+
+        <sl-select value="all">
+          <sl-option value="all">Статус: Все</sl-option>
+          <sl-option value="new">Новая</sl-option>
+          <sl-option value="progress">В работе</sl-option>
+          <sl-option value="review">На проверке</sl-option>
+          <sl-option value="done">Выполнена</sl-option>
+          <sl-option value="overdue">Просрочена</sl-option>
+        </sl-select>
+
+        <sl-select value="all">
+          <sl-option value="all">Приоритет: Все</sl-option>
+          <sl-option value="low">Низкий</sl-option>
+          <sl-option value="medium">Средний</sl-option>
+          <sl-option value="high">Высокий</sl-option>
+          <sl-option value="critical">Критический</sl-option>
+        </sl-select>
+
+        <sl-select value="all">
+          <sl-option value="all">Объект: Все</sl-option>
+          <sl-option>Братск</sl-option>
+          <sl-option>Усть-Илимск</sl-option>
+          <sl-option>Иркутск</sl-option>
+          <sl-option>Ангарск</sl-option>
+          <sl-option>Усть-Кут</sl-option>
+          <sl-option>Яракта</sl-option>
+          <sl-option>Бохан</sl-option>
+          <sl-option>Тимлюй</sl-option>
+          <sl-option>Краснокаменск</sl-option>
+          <sl-option>Торей</sl-option>
+        </sl-select>
+
+        <div class="toolbar-spacer"></div>
+
+        <sl-button variant="primary" id="btn-new-request-toolbar">
+          <sl-icon slot="prefix" name="plus-lg"></sl-icon>
+          Новая заявка
+        </sl-button>
+      </div>
+
+      <!-- Table -->
+      <div class="table-card">
+        <div class="table-scroll">
+        <table class="requests-table">
+          <thead>
+            <tr>
+              <th>№</th>
+              <th>Тема заявки</th>
+              <th>Категория</th>
+              <th>Объект</th>
+              <th>Приоритет</th>
+              <th>Статус</th>
+              <th>Исполнитель</th>
+              <th>Срок</th>
+              <th>Действия</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="req-id">ЗЯ-2481</td>
+              <td class="req-topic">Замена автоматического выключателя на ТП-14</td>
+              <td>Электромонтажные работы</td>
+              <td>Братск</td>
+              <td><sl-badge class="pill pr-high" pill>Высокий</sl-badge></td>
+              <td><sl-badge class="status-badge st-progress">В работе</sl-badge></td>
+              <td><div class="avatar-cell"><sl-avatar initials="СА"></sl-avatar>Соколов А.П.</div></td>
+              <td>12.08.2026</td>
+              <td><div class="action-icons"><sl-icon-button name="eye" label="Просмотреть"></sl-icon-button><sl-icon-button name="pencil-square" label="Редактировать"></sl-icon-button></div></td>
+            </tr>
+            <tr>
+              <td class="req-id">ЗЯ-2480</td>
+              <td class="req-topic">Плановое ТО ВЛ-10кВ, участок Братск—Усть-Илимск</td>
+              <td>Обслуживание сетей</td>
+              <td>Усть-Илимск</td>
+              <td><sl-badge class="pill pr-medium" pill>Средний</sl-badge></td>
+              <td><sl-badge class="status-badge st-new">Новая</sl-badge></td>
+              <td><div class="avatar-cell"><sl-avatar initials="ГД"></sl-avatar>Гришин Д.О.</div></td>
+              <td>18.08.2026</td>
+              <td><div class="action-icons"><sl-icon-button name="eye" label="Просмотреть"></sl-icon-button><sl-icon-button name="pencil-square" label="Редактировать"></sl-icon-button></div></td>
+            </tr>
+            <tr>
+              <td class="req-id">ЗЯ-2479</td>
+              <td class="req-topic">Аварийное отключение на подстанции №3</td>
+              <td>Аварийная заявка</td>
+              <td>Иркутск</td>
+              <td><sl-badge class="pill pr-critical" pill>Критический</sl-badge></td>
+              <td><sl-badge class="status-badge st-progress">В работе</sl-badge></td>
+              <td><div class="avatar-cell"><sl-avatar initials="МС"></sl-avatar>Марков С.И.</div></td>
+              <td>07.08.2026</td>
+              <td><div class="action-icons"><sl-icon-button name="eye" label="Просмотреть"></sl-icon-button><sl-icon-button name="pencil-square" label="Редактировать"></sl-icon-button></div></td>
+            </tr>
+            <tr>
+              <td class="req-id">ЗЯ-2478</td>
+              <td class="req-topic">Монтаж кабельной линии 0.4кВ</td>
+              <td>Электромонтажные работы</td>
+              <td>Ангарск</td>
+              <td><sl-badge class="pill pr-medium" pill>Средний</sl-badge></td>
+              <td><sl-badge class="status-badge st-review">На проверке</sl-badge></td>
+              <td><div class="avatar-cell"><sl-avatar initials="ТЕ"></sl-avatar>Титова Е.В.</div></td>
+              <td>15.08.2026</td>
+              <td><div class="action-icons"><sl-icon-button name="eye" label="Просмотреть"></sl-icon-button><sl-icon-button name="pencil-square" label="Редактировать"></sl-icon-button></div></td>
+            </tr>
+            <tr>
+              <td class="req-id">ЗЯ-2477</td>
+              <td class="req-topic">Проверка изоляции трансформатора Т-2</td>
+              <td>Диагностика оборудования</td>
+              <td>Тимлюй</td>
+              <td><sl-badge class="pill pr-low" pill>Низкий</sl-badge></td>
+              <td><sl-badge class="status-badge st-done">Выполнена</sl-badge></td>
+              <td><div class="avatar-cell"><sl-avatar initials="СА"></sl-avatar>Соколов А.П.</div></td>
+              <td>02.08.2026</td>
+              <td><div class="action-icons"><sl-icon-button name="eye" label="Просмотреть"></sl-icon-button><sl-icon-button name="pencil-square" label="Редактировать"></sl-icon-button></div></td>
+            </tr>
+            <tr>
+              <td class="req-id">ЗЯ-2476</td>
+              <td class="req-topic">Ремонт опоры ЛЭП после грозового повреждения</td>
+              <td>Аварийная заявка</td>
+              <td>Усть-Кут</td>
+              <td><sl-badge class="pill pr-critical" pill>Критический</sl-badge></td>
+              <td><sl-badge class="status-badge st-overdue">Просрочена</sl-badge></td>
+              <td><div class="avatar-cell"><sl-avatar initials="ГД"></sl-avatar>Гришин Д.О.</div></td>
+              <td>04.08.2026</td>
+              <td><div class="action-icons"><sl-icon-button name="eye" label="Просмотреть"></sl-icon-button><sl-icon-button name="pencil-square" label="Редактировать"></sl-icon-button></div></td>
+            </tr>
+            <tr>
+              <td class="req-id">ЗЯ-2475</td>
+              <td class="req-topic">Технологическое присоединение нового объекта</td>
+              <td>Технологическое присоединение</td>
+              <td>Яракта</td>
+              <td><sl-badge class="pill pr-high" pill>Высокий</sl-badge></td>
+              <td><sl-badge class="status-badge st-new">Новая</sl-badge></td>
+              <td><div class="avatar-cell"><sl-avatar initials="КО"></sl-avatar>Кузнецова О.Р.</div></td>
+              <td>22.08.2026</td>
+              <td><div class="action-icons"><sl-icon-button name="eye" label="Просмотреть"></sl-icon-button><sl-icon-button name="pencil-square" label="Редактировать"></sl-icon-button></div></td>
+            </tr>
+            <tr>
+              <td class="req-id">ЗЯ-2474</td>
+              <td class="req-topic">Замена счётчика электроэнергии</td>
+              <td>Обслуживание сетей</td>
+              <td>Бохан</td>
+              <td><sl-badge class="pill pr-low" pill>Низкий</sl-badge></td>
+              <td><sl-badge class="status-badge st-done">Выполнена</sl-badge></td>
+              <td><div class="avatar-cell"><sl-avatar initials="МС"></sl-avatar>Марков С.И.</div></td>
+              <td>30.07.2026</td>
+              <td><div class="action-icons"><sl-icon-button name="eye" label="Просмотреть"></sl-icon-button><sl-icon-button name="pencil-square" label="Редактировать"></sl-icon-button></div></td>
+            </tr>
+            <tr>
+              <td class="req-id">ЗЯ-2473</td>
+              <td class="req-topic">Диагностика РЗА на подстанции</td>
+              <td>Диагностика оборудования</td>
+              <td>Краснокаменск</td>
+              <td><sl-badge class="pill pr-medium" pill>Средний</sl-badge></td>
+              <td><sl-badge class="status-badge st-progress">В работе</sl-badge></td>
+              <td><div class="avatar-cell"><sl-avatar initials="ТЕ"></sl-avatar>Титова Е.В.</div></td>
+              <td>19.08.2026</td>
+              <td><div class="action-icons"><sl-icon-button name="eye" label="Просмотреть"></sl-icon-button><sl-icon-button name="pencil-square" label="Редактировать"></sl-icon-button></div></td>
+            </tr>
+            <tr>
+              <td class="req-id">ЗЯ-2472</td>
+              <td class="req-topic">Плановый осмотр опор ВЛ-35кВ</td>
+              <td>Обслуживание сетей</td>
+              <td>Торей</td>
+              <td><sl-badge class="pill pr-low" pill>Низкий</sl-badge></td>
+              <td><sl-badge class="status-badge st-done">Выполнена</sl-badge></td>
+              <td><div class="avatar-cell"><sl-avatar initials="КО"></sl-avatar>Кузнецова О.Р.</div></td>
+              <td>28.07.2026</td>
+              <td><div class="action-icons"><sl-icon-button name="eye" label="Просмотреть"></sl-icon-button><sl-icon-button name="pencil-square" label="Редактировать"></sl-icon-button></div></td>
+            </tr>
+          </tbody>
+        </table>
+        </div>
+        <div class="table-footer">
+          <div class="result-count">Показано 10 из 128 заявок</div>
+          <div class="pager" style="display:flex;gap:4px;">
+            <sl-button size="small"><sl-icon name="chevron-left"></sl-icon></sl-button>
+            <sl-button size="small" class="active">1</sl-button>
+            <sl-button size="small">2</sl-button>
+            <sl-button size="small">3</sl-button>
+            <sl-button size="small" disabled>…</sl-button>
+            <sl-button size="small">13</sl-button>
+            <sl-button size="small"><sl-icon name="chevron-right"></sl-icon></sl-button>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <div class="footer-bar">
+    Kit: Shoelace v2.15.1 (Web Components) · CDN: cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.15.1 (autoloader) · Icons: Bootstrap Icons 1.11.3 через registerIconLibrary('default', …) на cdn.jsdelivr.net/npm/bootstrap-icons
+  </div>
+</div>
+
+<!-- ===================== DIALOG: NEW REQUEST ===================== -->
+<sl-dialog label="Новая заявка" id="dialog-new-request">
+  <div class="form-field">
+    <label>Тема заявки<span class="required-star">*</span></label>
+    <sl-input placeholder="Например: Замена автоматического выключателя на ТП-14"></sl-input>
+  </div>
+
+  <div class="form-grid">
+    <div class="form-field">
+      <label>Категория</label>
+      <sl-select placeholder="Выберите категорию">
+        <sl-option value="electro">Электромонтажные работы</sl-option>
+        <sl-option value="maint">Обслуживание сетей</sl-option>
+        <sl-option value="emergency">Аварийная заявка</sl-option>
+        <sl-option value="connect">Технологическое присоединение</sl-option>
+        <sl-option value="diag">Диагностика оборудования</sl-option>
+      </sl-select>
+    </div>
+    <div class="form-field">
+      <label>Объект</label>
+      <sl-select placeholder="Выберите объект">
+        <sl-option>Братск</sl-option>
+        <sl-option>Усть-Илимск</sl-option>
+        <sl-option>Иркутск</sl-option>
+        <sl-option>Ангарск</sl-option>
+        <sl-option>Усть-Кут</sl-option>
+        <sl-option>Яракта</sl-option>
+        <sl-option>Бохан</sl-option>
+        <sl-option>Тимлюй</sl-option>
+        <sl-option>Краснокаменск</sl-option>
+        <sl-option>Торей</sl-option>
+      </sl-select>
+    </div>
+  </div>
+
+  <div class="form-field">
+    <label>Приоритет</label>
+    <sl-radio-group value="high">
+      <sl-radio-button value="low">Низкий</sl-radio-button>
+      <sl-radio-button value="medium">Средний</sl-radio-button>
+      <sl-radio-button value="high">Высокий</sl-radio-button>
+      <sl-radio-button value="critical">Критический</sl-radio-button>
+    </sl-radio-group>
+  </div>
+
+  <div class="form-grid">
+    <div class="form-field">
+      <label>Ответственный исполнитель</label>
+      <sl-select placeholder="Выберите исполнителя">
+        <sl-option value="sokolov"><sl-avatar slot="prefix" initials="СА" style="--size:22px;"></sl-avatar>Соколов А.П.</sl-option>
+        <sl-option value="grishin"><sl-avatar slot="prefix" initials="ГД" style="--size:22px;"></sl-avatar>Гришин Д.О.</sl-option>
+        <sl-option value="markov"><sl-avatar slot="prefix" initials="МС" style="--size:22px;"></sl-avatar>Марков С.И.</sl-option>
+        <sl-option value="titova"><sl-avatar slot="prefix" initials="ТЕ" style="--size:22px;"></sl-avatar>Титова Е.В.</sl-option>
+        <sl-option value="kuznetsova"><sl-avatar slot="prefix" initials="КО" style="--size:22px;"></sl-avatar>Кузнецова О.Р.</sl-option>
+      </sl-select>
+    </div>
+    <div class="form-field">
+      <label>Срок выполнения</label>
+      <sl-input type="date" value="2026-08-20">
+        <sl-icon slot="suffix" name="calendar3"></sl-icon>
+      </sl-input>
+    </div>
+  </div>
+
+  <div class="form-field">
+    <label>Описание заявки</label>
+    <sl-textarea rows="4" placeholder="Опишите характер работ, адрес, особые условия…"></sl-textarea>
+  </div>
+
+  <div class="form-field">
+    <label>Вложение</label>
+    <div class="attachment-row">
+      <sl-icon name="paperclip" style="color:var(--text-secondary);font-size:18px;"></sl-icon>
+      <input type="file" accept="image/*,.pdf" title="Прикрепить фото/схему">
+    </div>
+  </div>
+
+  <div slot="footer">
+    <sl-button variant="default" id="btn-cancel-request">Отмена</sl-button>
+    <sl-button variant="primary" id="btn-create-request">Создать заявку</sl-button>
+  </div>
+</sl-dialog>
+
+<script>
+  function bindWhenReady() {
+    var dialog = document.getElementById('dialog-new-request');
+    if (!dialog) return;
+    document.getElementById('btn-new-request-header').addEventListener('click', function () { dialog.show(); });
+    document.getElementById('btn-new-request-toolbar').addEventListener('click', function () { dialog.show(); });
+    document.getElementById('btn-cancel-request').addEventListener('click', function () { dialog.hide(); });
+    document.getElementById('btn-create-request').addEventListener('click', function () { dialog.hide(); });
+
+    document.querySelectorAll('.pager sl-button').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        if (btn.disabled) return;
+        document.querySelectorAll('.pager sl-button').forEach(function (b) { b.classList.remove('active'); b.variant = 'default'; });
+        btn.classList.add('active');
+      });
+    });
+
+    // ---- off-canvas sidebar (mobile/tablet <960px) ----
+    var sidebar = document.getElementById('app-sidebar');
+    var backdrop = document.getElementById('sidebar-backdrop');
+    var hamburger = document.getElementById('btn-sidebar-toggle');
+
+    function openSidebar() {
+      sidebar.classList.add('open');
+      backdrop.classList.add('show');
+      hamburger.setAttribute('aria-expanded', 'true');
+    }
+    function closeSidebar() {
+      sidebar.classList.remove('open');
+      backdrop.classList.remove('show');
+      hamburger.setAttribute('aria-expanded', 'false');
+    }
+    hamburger.addEventListener('click', function () {
+      sidebar.classList.contains('open') ? closeSidebar() : openSidebar();
+    });
+    backdrop.addEventListener('click', closeSidebar);
+    sidebar.querySelectorAll('sl-menu-item').forEach(function (item) {
+      item.addEventListener('click', closeSidebar);
+    });
+  }
+  window.addEventListener('DOMContentLoaded', bindWhenReady);
+</script>
+
+</body>
+</html>

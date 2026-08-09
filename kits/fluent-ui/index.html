@@ -1,0 +1,606 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Заявки — ЭнергоСетьСтрой (Fluent UI Web Components)</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+  :root{
+    --bg-app:#F4F5F7;
+    --bg-surface:#FFFFFF;
+    --bg-dark:#101010;
+    --bg-dark-2:#1A1A1A;
+    --border:#E4E5E9;
+    --border-dark:rgba(255,255,255,.09);
+    --accent:#E07B3E;
+    --accent-hover:#C2632D;
+    --accent-tint:#FDEEE3;
+    --text-primary:#15161A;
+    --text-secondary:#6B6E76;
+    --text-onDark:#FFFFFF;
+    --text-onDark-muted:#9A9CA5;
+    --success:#2FA968;
+    --info:#3B82C4;
+    --purple:#8B6CC1;
+    --danger:#E4483D;
+    --warning:#F2B33D;
+    --low:#8A8D96;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    font-family:'Inter',sans-serif;
+    background:var(--bg-app);
+    color:var(--text-primary);
+    min-width:1280px;
+  }
+  h1,h2,h3,.display{
+    font-family:'Rajdhani',sans-serif;
+    text-transform:uppercase;
+    letter-spacing:.02em;
+    margin:0;
+  }
+
+  /* ============ shell ============ */
+  .app-header{
+    height:64px;
+    background:var(--bg-dark);
+    border-bottom:1px solid var(--border-dark);
+    display:flex; align-items:center; justify-content:space-between;
+    padding:0 20px 0 16px; gap:20px;
+    position:sticky; top:0; z-index:100;
+  }
+  .brand{display:flex; align-items:center; gap:10px; color:#fff;}
+  .brand svg{width:30px; height:30px; color:var(--accent);}
+  .brand .wordmark{font-family:'Rajdhani',sans-serif; font-weight:700; font-size:15px; line-height:.95; letter-spacing:.03em;}
+  .brand .wordmark div:last-child{color:var(--text-onDark-muted); font-weight:600;}
+  .header-search{flex:1 1 auto; max-width:420px;}
+  .header-search fluent-search{width:100%;}
+  .header-actions{display:flex; align-items:center; gap:14px;}
+  .icon-btn::part(control){color:#fff;}
+  .user-box{display:flex; align-items:center; gap:10px; color:#fff;}
+  .user-box .u-name{font-size:13px; font-weight:600; line-height:1.2;}
+  .user-box .u-role{font-size:11.5px; color:var(--text-onDark-muted); line-height:1.2;}
+  .avatar-chip{
+    width:32px; height:32px; border-radius:999px; background:var(--accent);
+    color:#fff; display:flex; align-items:center; justify-content:center;
+    font-weight:700; font-size:13px; flex:none;
+  }
+
+  .app-body{display:flex; align-items:stretch; min-height:calc(100vh - 64px);}
+  .app-sider{
+    width:250px; flex:none; background:var(--bg-dark);
+    padding:16px 10px; display:flex; flex-direction:column; gap:2px;
+  }
+  .nav-item{width:100%; justify-content:flex-start !important;}
+  .nav-item::part(control){
+    justify-content:flex-start; gap:10px; color:var(--text-onDark-muted);
+    font-weight:500; font-size:14px; border-radius:8px; padding-inline:12px;
+  }
+  .nav-item:hover::part(control){background:var(--bg-dark-2); color:#fff;}
+  .nav-item.active::part(control){background:var(--accent); color:#fff; font-weight:600;}
+  .nav-item .ic{width:18px; height:18px; flex:none;}
+
+  .content-wrap{flex:1 1 auto; padding:24px 28px 40px;}
+  .breadcrumbs{color:var(--text-secondary); font-size:13px; margin-bottom:6px;}
+  .page-title{font-size:26px; margin-bottom:20px;}
+
+  .kpi-row{display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:20px;}
+  fluent-card{
+    --card-height:auto; border-radius:12px !important;
+    box-shadow:0 1px 2px rgba(16,16,16,.06), 0 8px 24px rgba(16,16,16,.06) !important;
+  }
+  fluent-card::part(control){padding:18px 20px; border-radius:12px;}
+  .kpi-label{font-size:12.5px; color:var(--text-secondary); font-weight:600; text-transform:uppercase; letter-spacing:.03em;}
+  .kpi-value{font-family:'Rajdhani',sans-serif; font-weight:700; font-size:34px; line-height:1.15; margin-top:6px;}
+
+  .toolbar-card::part(control){padding:14px 16px;}
+  .toolbar{display:flex; flex-wrap:wrap; gap:10px; align-items:center;}
+  .toolbar fluent-search{flex:1 1 260px; min-width:220px;}
+  .toolbar fluent-select{width:170px;}
+
+  .table-card{margin-top:16px;}
+  .table-card::part(control){padding:0;}
+  table.data-table{width:100%; border-collapse:collapse; font-size:13.5px;}
+  table.data-table thead th{
+    text-align:left; font-size:12px; text-transform:uppercase; letter-spacing:.03em;
+    color:var(--text-secondary); font-weight:600; padding:12px 16px;
+    border-bottom:1px solid var(--border); background:#FAFAFB;
+  }
+  table.data-table tbody td{padding:12px 16px; border-bottom:1px solid var(--border); vertical-align:middle;}
+  table.data-table tbody tr:hover{background:var(--accent-tint);}
+  table.data-table tbody tr:last-child td{border-bottom:none;}
+  .executor-cell{display:flex; align-items:center; gap:8px;}
+  .exec-avatar{
+    width:26px; height:26px; border-radius:999px; background:var(--accent-tint);
+    color:var(--accent-hover); display:flex; align-items:center; justify-content:center;
+    font-weight:700; font-size:11px; flex:none;
+  }
+  .actions-cell{display:flex; gap:4px;}
+  .actions-cell fluent-button::part(control){min-width:30px; padding-inline:6px;}
+
+  fluent-badge{border-radius:999px !important; font-weight:600 !important;}
+  fluent-badge::part(control){border-radius:999px; padding:2px 12px; font-size:12px; border:none;}
+
+  .pagination-bar{display:flex; justify-content:space-between; align-items:center; padding:12px 16px; font-size:13px; color:var(--text-secondary);}
+
+  .foot-note{padding:14px 28px 26px; color:#9A9CA5; font-size:11.5px;}
+
+  /* dialog / form */
+  fluent-dialog{--dialog-width:660px; --dialog-height:auto;}
+  /* keep the modal above the mobile off-canvas sidebar (z-index 210) and its backdrop */
+  fluent-dialog::part(overlay){z-index:999;}
+  fluent-dialog::part(positioning-region){align-items:flex-start; padding-top:5vh; z-index:1000;}
+  fluent-dialog::part(control){border-radius:12px; padding:0; max-height:90vh; overflow:auto;}
+  .dialog-inner{padding:24px 28px 28px; width:660px; max-width:90vw;}
+  .dialog-inner h2{font-size:20px; margin-bottom:20px;}
+  .form-row{display:grid; grid-template-columns:1fr 1fr; gap:14px;}
+  .field{margin-bottom:16px;}
+  .field label{display:block; font-size:12.5px; font-weight:600; color:var(--text-secondary); margin-bottom:6px; text-transform:uppercase; letter-spacing:.02em;}
+  .field fluent-text-field, .field fluent-select, .field fluent-text-area{width:100%;}
+  .priority-chips{display:flex; gap:8px; flex-wrap:wrap;}
+  .priority-chips fluent-radio{--chip-color:var(--low);}
+  .priority-chips label{
+    display:flex; align-items:center; gap:0; border:1px solid var(--border);
+    border-radius:999px; padding:6px 4px 6px 4px; font-size:13px; cursor:pointer;
+  }
+  .file-row{display:flex; align-items:center; gap:10px;}
+  .file-row input[type=file]{display:none;}
+  .dialog-actions{display:flex; justify-content:flex-end; gap:10px; margin-top:8px;}
+
+  fluent-button[appearance="accent"]::part(control){font-weight:600;}
+  fluent-select::part(control), fluent-text-field::part(root), fluent-text-area::part(control){border-radius:8px !important;}
+
+  /* ==================== Responsive (mobile/tablet) ==================== */
+  /* Fluent UI Web Components ship no grid/layout system and no mobile-nav
+     pattern (see RESEARCH.md) -- the off-canvas sidebar below is hand-rolled
+     with CSS transform + a small JS toggle, as expected for this kit. */
+
+  .hamburger-btn{ display:none; color:#fff; }
+  .hamburger-btn .ic{ width:20px; height:20px; display:inline-flex; }
+
+  @media (max-width:959px){
+    /* the fixed 1280px floor only made sense pre-responsive; let the shell
+       actually shrink below 960px so nothing forces horizontal scrolling */
+    body{ min-width:0; }
+
+    .hamburger-btn{ display:inline-flex; }
+    .header-search{ display:none; }
+
+    .app-sider{
+      position:fixed; top:64px; left:0; bottom:0; z-index:210;
+      transform:translateX(-100%);
+      transition:transform .22s ease;
+      box-shadow:0 8px 28px rgba(0,0,0,.30);
+      overflow-y:auto;
+    }
+    .app-sider.open{ transform:translateX(0); }
+
+    .sider-backdrop{
+      display:block; position:fixed; top:64px; left:0; right:0; bottom:0;
+      background:rgba(0,0,0,.4); z-index:205;
+      opacity:0; pointer-events:none; transition:opacity .18s ease;
+    }
+    .sider-backdrop.show{ opacity:1; pointer-events:auto; }
+
+    .content-wrap{ padding:20px 16px 32px; }
+  }
+  @media (min-width:960px){
+    .sider-backdrop{ display:none; }
+  }
+
+  @media (max-width:559px){
+    .app-header{ padding:0 12px 0 10px; gap:10px; }
+    .brand .wordmark{ font-size:13px; }
+    .user-box .user-text{ display:none; }
+    #openDialogBtnHeader .btn-text{ display:none; }
+  }
+
+  /* KPI cards: 4 -> 2 -> 1 columns */
+  @media (max-width:959px){
+    .kpi-row{ grid-template-columns:repeat(2,1fr); }
+  }
+  @media (max-width:559px){
+    .kpi-row{ grid-template-columns:repeat(1,1fr); }
+  }
+
+  /* Toolbar: already wraps; stack full-width on small screens */
+  @media (max-width:559px){
+    .toolbar{ flex-direction:column; align-items:stretch; }
+    .toolbar > *{ width:100% !important; }
+  }
+
+  /* Table: horizontal scroll container, columns keep their width */
+  .table-scroll{ overflow-x:auto; }
+  table.data-table{ min-width:760px; }
+
+  /* Request dialog: full-width sheet on narrow screens */
+  @media (max-width:959px){
+    fluent-dialog{ --dialog-width:92vw; }
+    .dialog-inner{ width:92vw; max-width:92vw; }
+  }
+  @media (max-width:559px){
+    fluent-dialog{ --dialog-width:95vw; }
+    .dialog-inner{ width:95vw; max-width:95vw; }
+    .form-row{ grid-template-columns:1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div id="app-root" style="display:none;">
+  <div class="app-header" id="headerRegion">
+    <fluent-button class="hamburger-btn" appearance="stealth" id="hamburgerBtn" aria-label="Открыть меню">
+      <span class="ic" data-icon="line_horizontal_3_20_regular"></span>
+    </fluent-button>
+
+    <div class="brand">
+      <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <circle cx="50" cy="50" r="42" fill="none" stroke="currentColor" stroke-width="7" stroke-dasharray="240 24" stroke-linecap="round"/>
+        <circle cx="50" cy="50" r="27" fill="none" stroke="currentColor" stroke-width="7" stroke-dasharray="148 22" stroke-linecap="round" transform="rotate(35 50 50)"/>
+      </svg>
+      <div class="wordmark"><div>ЭНЕРГО</div><div>СЕТЬСТРОЙ</div></div>
+    </div>
+
+    <div class="header-search">
+      <fluent-search placeholder="Поиск по номеру, теме, объекту…" appearance="filled"></fluent-search>
+    </div>
+
+    <div class="header-actions">
+      <fluent-button class="icon-btn" appearance="stealth" id="bellBtn" aria-label="Уведомления">
+        <span class="ic" data-icon="alert_20_regular" style="width:18px;height:18px;display:inline-flex;"></span>
+      </fluent-button>
+      <fluent-button appearance="accent" id="openDialogBtnHeader">
+        <span slot="start" class="ic" data-icon="add_20_regular" style="width:16px;height:16px;display:inline-flex;"></span>
+        <span class="btn-text">Новая заявка</span>
+      </fluent-button>
+      <div class="user-box">
+        <div class="avatar-chip">ИК</div>
+        <div class="user-text">
+          <div class="u-name">Иванова К.С.</div>
+          <div class="u-role">Диспетчер</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sider-backdrop" id="siderBackdrop"></div>
+
+  <div class="app-body">
+    <div class="app-sider" id="siderRegion">
+      <fluent-button class="nav-item" appearance="stealth"><span class="ic" data-icon="home_20_regular"></span>Дашборд</fluent-button>
+      <fluent-button class="nav-item active" appearance="accent"><span class="ic" data-icon="clipboard_task_list_ltr_20_regular"></span>Заявки</fluent-button>
+      <fluent-button class="nav-item" appearance="stealth"><span class="ic" data-icon="building_20_regular"></span>Объекты</fluent-button>
+      <fluent-button class="nav-item" appearance="stealth"><span class="ic" data-icon="people_team_20_regular"></span>Исполнители</fluent-button>
+      <fluent-button class="nav-item" appearance="stealth"><span class="ic" data-icon="data_trending_20_regular"></span>Отчёты</fluent-button>
+      <fluent-button class="nav-item" appearance="stealth"><span class="ic" data-icon="settings_20_regular"></span>Настройки</fluent-button>
+    </div>
+
+    <div class="content-wrap">
+      <div class="breadcrumbs">Главная / Заявки</div>
+      <h1 class="page-title">Заявки</h1>
+
+      <div class="kpi-row">
+        <fluent-card>
+          <div class="kpi-label">Всего заявок</div>
+          <div class="kpi-value" style="color:var(--text-primary);">128</div>
+        </fluent-card>
+        <fluent-card>
+          <div class="kpi-label">В работе</div>
+          <div class="kpi-value" style="color:var(--accent);">34</div>
+        </fluent-card>
+        <fluent-card>
+          <div class="kpi-label">Выполнено</div>
+          <div class="kpi-value" style="color:var(--success);">81</div>
+        </fluent-card>
+        <fluent-card>
+          <div class="kpi-label">Просрочено</div>
+          <div class="kpi-value" style="color:var(--danger);">7</div>
+        </fluent-card>
+      </div>
+
+      <fluent-card class="toolbar-card">
+        <div class="toolbar">
+          <fluent-search placeholder="Поиск по номеру, теме, объекту…"></fluent-search>
+          <fluent-select id="filterStatus">
+            <fluent-option value="all" selected>Статус: Все</fluent-option>
+            <fluent-option value="Новая">Новая</fluent-option>
+            <fluent-option value="В работе">В работе</fluent-option>
+            <fluent-option value="На проверке">На проверке</fluent-option>
+            <fluent-option value="Выполнена">Выполнена</fluent-option>
+            <fluent-option value="Просрочена">Просрочена</fluent-option>
+          </fluent-select>
+          <fluent-select id="filterPriority">
+            <fluent-option value="all" selected>Приоритет: Все</fluent-option>
+            <fluent-option value="Низкий">Низкий</fluent-option>
+            <fluent-option value="Средний">Средний</fluent-option>
+            <fluent-option value="Высокий">Высокий</fluent-option>
+            <fluent-option value="Критический">Критический</fluent-option>
+          </fluent-select>
+          <fluent-select id="filterObject">
+            <fluent-option value="all" selected>Объект: Все</fluent-option>
+          </fluent-select>
+          <fluent-button appearance="accent" id="openDialogBtnToolbar">
+            <span slot="start" class="ic" data-icon="add_20_regular" style="width:16px;height:16px;display:inline-flex;"></span>
+            Новая заявка
+          </fluent-button>
+        </div>
+      </fluent-card>
+
+      <fluent-card class="table-card">
+        <div class="table-scroll">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>№</th><th>Тема заявки</th><th>Категория</th><th>Объект</th>
+              <th>Приоритет</th><th>Статус</th><th>Исполнитель</th><th>Срок</th><th>Действия</th>
+            </tr>
+          </thead>
+          <tbody id="tableBody"></tbody>
+        </table>
+        </div>
+        <div class="pagination-bar">
+          <span>Всего: 10</span>
+          <fluent-select style="width:90px;">
+            <fluent-option selected>10 / стр.</fluent-option>
+            <fluent-option>25 / стр.</fluent-option>
+          </fluent-select>
+        </div>
+      </fluent-card>
+
+      <div class="foot-note">
+        Kit: Fluent UI Web Components v2 (@fluentui/web-components) · CDN: cdn.jsdelivr.net/npm/@fluentui/web-components (ESM), unpkg.com/@fluentui/svg-icons · Icons: Fluent UI System Icons (@fluentui/svg-icons)
+      </div>
+    </div>
+  </div>
+
+  <fluent-dialog id="requestDialog" modal hidden>
+    <div class="dialog-inner">
+      <h2>Новая заявка</h2>
+
+      <div class="field">
+        <label>Тема заявки</label>
+        <fluent-text-field placeholder="Например: Замена автоматического выключателя"></fluent-text-field>
+      </div>
+
+      <div class="form-row">
+        <div class="field">
+          <label>Категория</label>
+          <fluent-select>
+            <fluent-option value="">Выберите категорию</fluent-option>
+            <fluent-option>Электромонтажные работы</fluent-option>
+            <fluent-option>Обслуживание сетей</fluent-option>
+            <fluent-option>Аварийная заявка</fluent-option>
+            <fluent-option>Технологическое присоединение</fluent-option>
+            <fluent-option>Диагностика оборудования</fluent-option>
+          </fluent-select>
+        </div>
+        <div class="field">
+          <label>Объект</label>
+          <fluent-select id="objectSelectForm">
+            <fluent-option value="">Выберите объект</fluent-option>
+          </fluent-select>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Приоритет</label>
+        <fluent-radio-group orientation="horizontal" id="priorityGroup">
+          <fluent-radio value="Низкий">Низкий</fluent-radio>
+          <fluent-radio value="Средний" checked>Средний</fluent-radio>
+          <fluent-radio value="Высокий">Высокий</fluent-radio>
+          <fluent-radio value="Критический">Критический</fluent-radio>
+        </fluent-radio-group>
+      </div>
+
+      <div class="form-row">
+        <div class="field">
+          <label>Ответственный исполнитель</label>
+          <fluent-select id="executorSelectForm">
+            <fluent-option value="">Выберите исполнителя</fluent-option>
+          </fluent-select>
+        </div>
+        <div class="field">
+          <label>Срок выполнения</label>
+          <fluent-text-field type="date"></fluent-text-field>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Описание заявки</label>
+        <fluent-text-area rows="4" placeholder="Опишите характер работ, адрес, особые условия…" resize="vertical"></fluent-text-area>
+      </div>
+
+      <div class="field">
+        <label>Вложение</label>
+        <div class="file-row">
+          <fluent-button appearance="outline" id="attachBtn">
+            <span slot="start" class="ic" data-icon="attach_20_regular" style="width:16px;height:16px;display:inline-flex;"></span>
+            Прикрепить фото/схему
+          </fluent-button>
+          <input type="file" id="fileInput" />
+          <span id="fileName" style="font-size:12.5px; color:var(--text-secondary);"></span>
+        </div>
+      </div>
+
+      <div class="dialog-actions">
+        <fluent-button appearance="stealth" id="cancelBtn">Отмена</fluent-button>
+        <fluent-button appearance="accent" id="submitBtn">Создать заявку</fluent-button>
+      </div>
+    </div>
+  </fluent-dialog>
+</div>
+
+<script type="module">
+  import {
+    provideFluentDesignSystem, allComponents,
+    baseLayerLuminance, StandardLuminance
+  } from "https://cdn.jsdelivr.net/npm/@fluentui/web-components@2/+esm";
+
+  provideFluentDesignSystem().register(allComponents);
+
+  // Force the accent design tokens (CSS custom properties) to the brand color.
+  // We set them on document.body, the same node the default design-system
+  // provider targets, so our values win over the library defaults.
+  const ACCENT = "#E07B3E", ACCENT_HOVER = "#C2632D", ACCENT_ACTIVE = "#A6532A", ACCENT_TINT = "#FDEEE3";
+  const accentVars = {
+    "--accent-fill-rest": ACCENT,
+    "--accent-fill-hover": ACCENT_HOVER,
+    "--accent-fill-active": ACCENT_ACTIVE,
+    "--accent-fill-focus": ACCENT,
+    "--accent-foreground-rest": ACCENT,
+    "--accent-foreground-hover": ACCENT_HOVER,
+    "--accent-foreground-active": ACCENT_ACTIVE,
+    "--accent-foreground-focus": ACCENT,
+    "--accent-stroke-control-rest": ACCENT,
+    "--accent-stroke-control-hover": ACCENT_HOVER,
+    "--accent-stroke-control-active": ACCENT_ACTIVE,
+    "--accent-stroke-control-focus": ACCENT,
+    "--focus-stroke-outer": ACCENT,
+  };
+  function applyAccentVars(el){
+    Object.entries(accentVars).forEach(([k,v]) => el.style.setProperty(k, v));
+  }
+  applyAccentVars(document.body);
+
+  // Local dark-mode regions for header + sidebar (native Fluent per-subtree theming).
+  const headerRegion = document.getElementById("headerRegion");
+  const siderRegion = document.getElementById("siderRegion");
+  baseLayerLuminance.setValueFor(headerRegion, StandardLuminance.DarkMode);
+  baseLayerLuminance.setValueFor(siderRegion, StandardLuminance.DarkMode);
+
+  document.getElementById("app-root").style.display = "";
+
+  // ---------- Icon loader (Fluent UI System Icons, @fluentui/svg-icons) ----------
+  const ICON_BASE = "https://unpkg.com/@fluentui/svg-icons/icons/";
+  const iconCache = {};
+  const FALLBACK_SVG = '<svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="10" cy="10" r="7" stroke="currentColor" stroke-width="1.6"/></svg>';
+
+  async function fetchIcon(name){
+    if (iconCache[name]) return iconCache[name];
+    try {
+      const res = await fetch(ICON_BASE + name + ".svg");
+      if (!res.ok) throw new Error("404");
+      let svg = await res.text();
+      svg = svg.replace(/fill="(?!none)[^"]*"/g, 'fill="currentColor"');
+      iconCache[name] = svg;
+      return svg;
+    } catch (e) {
+      iconCache[name] = FALLBACK_SVG;
+      return FALLBACK_SVG;
+    }
+  }
+  async function mountIcons(){
+    const nodes = document.querySelectorAll("[data-icon]");
+    for (const node of nodes){
+      const name = node.getAttribute("data-icon");
+      node.innerHTML = await fetchIcon(name);
+      node.style.color = "currentColor";
+    }
+  }
+  mountIcons();
+
+  // ---------- Data ----------
+  const REQUESTS = [
+    { id:'ЗЯ-2481', topic:'Замена автоматического выключателя на ТП-14', category:'Электромонтажные работы', object:'Братск', priority:'Высокий', status:'В работе', executor:'Соколов А.П.', due:'12.08.2026' },
+    { id:'ЗЯ-2480', topic:'Плановое ТО ВЛ-10кВ, участок Братск—Усть-Илимск', category:'Обслуживание сетей', object:'Усть-Илимск', priority:'Средний', status:'Новая', executor:'Гришин Д.О.', due:'18.08.2026' },
+    { id:'ЗЯ-2479', topic:'Аварийное отключение на подстанции №3', category:'Аварийная заявка', object:'Иркутск', priority:'Критический', status:'В работе', executor:'Марков С.И.', due:'07.08.2026' },
+    { id:'ЗЯ-2478', topic:'Монтаж кабельной линии 0.4кВ', category:'Электромонтажные работы', object:'Ангарск', priority:'Средний', status:'На проверке', executor:'Титова Е.В.', due:'15.08.2026' },
+    { id:'ЗЯ-2477', topic:'Проверка изоляции трансформатора Т-2', category:'Диагностика оборудования', object:'Тимлюй', priority:'Низкий', status:'Выполнена', executor:'Соколов А.П.', due:'02.08.2026' },
+    { id:'ЗЯ-2476', topic:'Ремонт опоры ЛЭП после грозового повреждения', category:'Аварийная заявка', object:'Усть-Кут', priority:'Критический', status:'Просрочена', executor:'Гришин Д.О.', due:'04.08.2026' },
+    { id:'ЗЯ-2475', topic:'Технологическое присоединение нового объекта', category:'Технологическое присоединение', object:'Яракта', priority:'Высокий', status:'Новая', executor:'Кузнецова О.Р.', due:'22.08.2026' },
+    { id:'ЗЯ-2474', topic:'Замена счётчика электроэнергии', category:'Обслуживание сетей', object:'Бохан', priority:'Низкий', status:'Выполнена', executor:'Марков С.И.', due:'30.07.2026' },
+    { id:'ЗЯ-2473', topic:'Диагностика РЗА на подстанции', category:'Диагностика оборудования', object:'Краснокаменск', priority:'Средний', status:'В работе', executor:'Титова Е.В.', due:'19.08.2026' },
+    { id:'ЗЯ-2472', topic:'Плановый осмотр опор ВЛ-35кВ', category:'Обслуживание сетей', object:'Торей', priority:'Низкий', status:'Выполнена', executor:'Кузнецова О.Р.', due:'28.07.2026' },
+  ];
+  const OBJECTS = ['Братск','Усть-Илимск','Иркутск','Ангарск','Усть-Кут','Яракта','Бохан','Тимлюй','Краснокаменск','Торей'];
+  const EXECUTORS = ['Соколов А.П.','Гришин Д.О.','Марков С.И.','Титова Е.В.','Кузнецова О.Р.'];
+
+  const STATUS_COLOR = { 'Новая':'#3B82C4','В работе':'#E07B3E','На проверке':'#8B6CC1','Выполнена':'#2FA968','Просрочена':'#E4483D' };
+  const PRIORITY_COLOR = { 'Низкий':'#8A8D96','Средний':'#F2B33D','Высокий':'#E07B3E','Критический':'#E4483D' };
+
+  function initials(full){
+    const parts = full.split(' ');
+    return (parts[0]?.[0]||'') + (parts[1]?.[0]||'');
+  }
+
+  const tbody = document.getElementById("tableBody");
+  REQUESTS.forEach(r => {
+    const sc = STATUS_COLOR[r.status], pc = PRIORITY_COLOR[r.priority];
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td style="font-weight:600;">${r.id}</td>
+      <td>${r.topic}</td>
+      <td>${r.category}</td>
+      <td>${r.object}</td>
+      <td><fluent-badge style="--badge-fill:${pc}22; --badge-color:${pc};">${r.priority}</fluent-badge></td>
+      <td><fluent-badge style="--badge-fill:${sc}22; --badge-color:${sc};">${r.status}</fluent-badge></td>
+      <td><div class="executor-cell"><div class="exec-avatar">${initials(r.executor)}</div><span>${r.executor}</span></div></td>
+      <td>${r.due}</td>
+      <td>
+        <div class="actions-cell">
+          <fluent-button appearance="stealth" aria-label="Просмотр"><span class="ic" data-icon="eye_20_regular" style="width:16px;height:16px;display:inline-flex;"></span></fluent-button>
+          <fluent-button appearance="stealth" aria-label="Редактировать"><span class="ic" data-icon="edit_20_regular" style="width:16px;height:16px;display:inline-flex;"></span></fluent-button>
+        </div>
+      </td>`;
+    tbody.appendChild(tr);
+  });
+  mountIcons();
+
+  // badge color via ::part isn't reachable per-instance from plain CSS vars unless
+  // the component's internal stylesheet reads them — add a small stylesheet rule once.
+  const badgeStyle = document.createElement("style");
+  badgeStyle.textContent = `
+    fluent-badge::part(control){ background: var(--badge-fill, var(--accent-tint)); color: var(--badge-color, var(--accent)); }
+  `;
+  document.head.appendChild(badgeStyle);
+
+  // populate object / executor selects
+  const objFilter = document.getElementById("filterObject");
+  const objForm = document.getElementById("objectSelectForm");
+  const execForm = document.getElementById("executorSelectForm");
+  OBJECTS.forEach(o => {
+    const o1 = document.createElement("fluent-option"); o1.textContent = o; o1.value = o; objFilter.appendChild(o1);
+    const o2 = document.createElement("fluent-option"); o2.textContent = o; o2.value = o; objForm.appendChild(o2);
+  });
+  EXECUTORS.forEach(e => {
+    const opt = document.createElement("fluent-option"); opt.textContent = e; opt.value = e; execForm.appendChild(opt);
+  });
+
+  // ---------- Mobile off-canvas sidebar (hand-rolled: no native Fluent drawer) ----------
+  const siderEl = document.getElementById("siderRegion");
+  const backdropEl = document.getElementById("siderBackdrop");
+  const hamburgerBtn = document.getElementById("hamburgerBtn");
+
+  function openSider(){ siderEl.classList.add("open"); backdropEl.classList.add("show"); }
+  function closeSider(){ siderEl.classList.remove("open"); backdropEl.classList.remove("show"); }
+
+  hamburgerBtn.addEventListener("click", () => {
+    siderEl.classList.contains("open") ? closeSider() : openSider();
+  });
+  backdropEl.addEventListener("click", closeSider);
+  siderEl.querySelectorAll(".nav-item").forEach(btn => btn.addEventListener("click", closeSider));
+  window.addEventListener("resize", () => { if (window.innerWidth >= 960) closeSider(); });
+
+  // dialog wiring
+  const dialog = document.getElementById("requestDialog");
+  const openDialog = () => { dialog.hidden = false; };
+  const closeDialog = () => { dialog.hidden = true; };
+  document.getElementById("openDialogBtnHeader").addEventListener("click", openDialog);
+  document.getElementById("openDialogBtnToolbar").addEventListener("click", openDialog);
+  document.getElementById("cancelBtn").addEventListener("click", closeDialog);
+  document.getElementById("submitBtn").addEventListener("click", closeDialog);
+
+  const attachBtn = document.getElementById("attachBtn");
+  const fileInput = document.getElementById("fileInput");
+  attachBtn.addEventListener("click", () => fileInput.click());
+  fileInput.addEventListener("change", () => {
+    document.getElementById("fileName").textContent = fileInput.files[0]?.name || "";
+  });
+</script>
+</body>
+</html>
