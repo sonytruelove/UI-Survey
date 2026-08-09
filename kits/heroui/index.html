@@ -77,6 +77,110 @@
   .boot-error .t{ color:var(--danger); font-weight:700; font-family:'Rajdhani',sans-serif; text-transform:uppercase; letter-spacing:.02em; font-size:16px; margin-bottom:8px; }
   .boot-error .d{ color:var(--text-secondary); font-size:13px; line-height:1.5; }
 
+  /* ==================== HeroUI semantic-token shim ====================
+     Verified live in a real browser: window.__HEROUI_KIT_STATUS__.theme
+     reports the real @heroui/theme Tailwind plugin loaded and registered
+     without throwing, yet the Tailwind Play CDN engine served in testing
+     never actually emitted CSS for HeroUI's semantic utility classes —
+     literal classes like `bg-primary`, `rounded-medium`, `text-tiny` sit
+     on the rendered DOM (confirmed by inspecting element.className) with
+     zero matching CSS rule anywhere in the generated stylesheet. Rather
+     than keep chasing an exact CDN/plugin version incompatibility that
+     can't be reproduced/debugged further without a live browser session,
+     these are hand-authored 1:1 equivalents (using the same values as
+     the JS theme.extend fallback below) for the base tokens HeroUI's
+     components on this page actually reference, so the page renders
+     correctly regardless of what the CDN does. Plain class selectors —
+     not touched by Tailwind, always win regardless of load order. */
+  :root{
+    --hero-default:#E4E4E7; --hero-default-100:#F4F4F5; --hero-default-200:#E4E4E7;
+    --hero-default-foreground:#15161A; --hero-default-400:#A1A1AA; --hero-default-500:#71717A; --hero-default-600:#52525B;
+    --hero-content1:#FFFFFF; --hero-content2:#F4F5F7;
+    --hero-foreground:#15161A; --hero-background:#F4F5F7; --hero-divider:#E4E5E9; --hero-focus:#E07B3E;
+    --hero-primary:#E07B3E; --hero-primary-foreground:#FFFFFF;
+    --hero-secondary:#8B6CC1; --hero-secondary-foreground:#FFFFFF;
+    --hero-success:#2FA968; --hero-success-foreground:#FFFFFF;
+    --hero-warning:#F2B33D; --hero-warning-foreground:#101010;
+    --hero-danger:#E4483D; --hero-danger-foreground:#FFFFFF;
+  }
+  .bg-default{ background-color:var(--hero-default) !important; }
+  .bg-default-100{ background-color:var(--hero-default-100) !important; }
+  .bg-default-200{ background-color:var(--hero-default-200) !important; }
+  .border-default{ border-color:var(--hero-default) !important; }
+  .border-medium{ border-width:2px !important; }
+  .border-primary{ border-color:var(--hero-primary) !important; }
+  .border-small{ border-width:1px !important; }
+  .border-large{ border-width:3px !important; }
+  .text-default-foreground{ color:var(--hero-default-foreground) !important; }
+  .text-default-400{ color:var(--hero-default-400) !important; }
+  .text-default-500{ color:var(--hero-default-500) !important; }
+  .text-default-600{ color:var(--hero-default-600) !important; }
+  .bg-content1{ background-color:var(--hero-content1) !important; }
+  .bg-content2{ background-color:var(--hero-content2) !important; }
+  .text-foreground{ color:var(--hero-foreground) !important; }
+  .bg-background{ background-color:var(--hero-background) !important; }
+  .bg-background\/70{ background-color:rgba(244,245,247,.7) !important; }
+  .bg-overlay\/50{ background-color:rgba(0,0,0,.5) !important; }
+  .border-divider{ border-color:var(--hero-divider) !important; }
+
+  /* Same story as the Select floating-label fix above, but for Input/
+     Select/Textarea's "outside" label spacing: the wrapper's top margin
+     is an arbitrary calc() referencing --heroui-font-size-small, which
+     was never generated either, so label and field sat flush against
+     each other. Caught with an attribute-substring match on the literal
+     class text (real class strings observed in-browser both use this
+     "mt-[calc(var(--heroui-font-size-small)_+_Npx)]" shape) instead of
+     needing exact per-field selectors. */
+  [class*="mt-[calc(var(--heroui-font-size-small)"]{
+    margin-top:24px !important;
+  }
+  /* Input/Select/Textarea "outside" labels: HeroUI shows them centered
+     *inside* the field until a value/focus flips on a `filled-within`
+     class that flies the label out above the box — but that fly-out is
+     itself an arbitrary-value transform that never generated (same root
+     cause as the Select fix above), so label and placeholder sat on top
+     of each other at rest. Simplest reliable fix: make the "risen" state
+     permanent instead of trying to reproduce three animated states by
+     hand — a label that's always above the field is a perfectly normal
+     pattern and needs no JS state at all. */
+  .modal-form label[class*="origin-top-left"]{
+    position:absolute !important;
+    top:-20px !important;
+    transform:none !important;
+    font-size:12px !important;
+    color:var(--text-secondary) !important;
+    font-weight:500;
+  }
+  .outline-focus{ outline-color:var(--hero-focus) !important; }
+  .bg-primary{ background-color:var(--hero-primary) !important; }
+  .text-primary{ color:var(--hero-primary) !important; }
+  .text-primary-foreground{ color:var(--hero-primary-foreground) !important; }
+  .bg-secondary{ background-color:var(--hero-secondary) !important; }
+  .text-secondary-foreground{ color:var(--hero-secondary-foreground) !important; }
+  .bg-success{ background-color:var(--hero-success) !important; }
+  .text-success{ color:var(--hero-success) !important; }
+  .bg-warning{ background-color:var(--hero-warning) !important; }
+  .text-warning{ color:var(--hero-warning) !important; }
+  .bg-danger{ background-color:var(--hero-danger) !important; }
+  .text-danger{ color:var(--hero-danger) !important; }
+
+  .rounded-small{ border-radius:6px !important; }
+  .rounded-medium{ border-radius:8px !important; }
+  .rounded-large{ border-radius:12px !important; }
+  .shadow-small{ box-shadow:0 1px 2px rgba(16,16,16,.06) !important; }
+  .shadow-medium{ box-shadow:0 1px 2px rgba(16,16,16,.06), 0 8px 24px rgba(16,16,16,.06) !important; }
+  .shadow-large{ box-shadow:0 1px 2px rgba(16,16,16,.08), 0 12px 32px rgba(16,16,16,.08) !important; }
+  .text-tiny{ font-size:.75rem !important; line-height:1rem !important; }
+  .text-small{ font-size:.8125rem !important; line-height:1.2rem !important; }
+  .text-medium{ font-size:.9375rem !important; line-height:1.4rem !important; }
+  .text-large{ font-size:1.125rem !important; line-height:1.6rem !important; }
+
+  /* A handful of the most visually obvious interactive states — not an
+     exhaustive replication of every data-[...]: variant HeroUI ships. */
+  [data-hover="true"].bg-default-100{ background-color:var(--hero-default-200) !important; }
+  [data-hover="true"].bg-default{ background-color:var(--hero-default-200) !important; }
+  [data-pressed="true"]{ transform:scale(.97); }
+
   /* ==================== App shell (plain CSS — independent of Tailwind/HeroUI theme) ==================== */
   .app-shell{ min-height:100vh; display:flex; flex-direction:column; }
 
@@ -131,6 +235,21 @@
   .toolbar-search{ width:260px; max-width:100%; }
   .toolbar-select{ width:170px; }
   .toolbar-spacer{ flex:1; }
+
+  /* HeroUI Select's "inside" floating label shrinks/rises on a value via
+     an arbitrary-value class (translate-y-[calc(...var(--heroui-font-size-tiny)...)]
+     + a non-standard scale-85 utility) that — like the rest of this shim —
+     the Tailwind Play CDN build never generated (confirmed live: the real
+     label element keeps `transform: none` even though its `data-filled`
+     ancestor state is set correctly), so label and value text sat on top
+     of each other. Real fix, not a guess: reproduce that same rise/shrink
+     by hand, scoped to the real label via its own `pointer-events-none`
+     class (the only other <label> here — the hidden native a11y one —
+     carries no classes at all, so this selector can't hit it by mistake). */
+  .toolbar-select label.pointer-events-none{ transition:transform .15s ease; }
+  .toolbar-select[data-filled="true"] label.pointer-events-none{
+    transform:translateY(-9px) scale(.85); transform-origin:top left;
+  }
 
   .table-scroll{ overflow-x:auto; }
   .requests-table{ min-width:760px; width:100%; border-collapse:collapse; font-size:13.5px; }

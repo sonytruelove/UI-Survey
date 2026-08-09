@@ -117,7 +117,8 @@
   .header-user .u-role{ font-size:11px; color:var(--text-onDark-muted); }
 
   .app-body{ flex:1; display:flex; align-items:stretch; min-height:0; position:relative; }
-  .split-layout{ flex:1; min-height:0; }
+  .split-layout{ flex:1; min-height:0; display:flex; align-items:stretch; }
+  .split-col-main{ flex:1; min-width:0; }
 
   .app-sider{ width:250px; flex-shrink:0; background:var(--bg-dark) !important; padding:14px 10px 20px; }
   .side-group{ background:transparent !important; }
@@ -151,6 +152,10 @@
   .requests-table tbody tr:last-child td{ border-bottom:none; }
   .requests-table tbody tr:hover{ background:var(--accent-tint); }
   .topic-cell{ display:block; max-width:300px; }
+  /* VKUI's own Badge is a notification-dot component (its label text is
+     visually hidden, screen-reader only by design) — not a fit for a
+     visible status/priority pill, so those are a plain styled span. */
+  .status-pill{ display:inline-block; padding:3px 10px; border-radius:999px; font-size:12px; font-weight:600; white-space:nowrap; }
   .executor-cell{ display:flex; align-items:center; gap:8px; }
   .row-actions{ display:flex; align-items:center; gap:2px; justify-content:flex-end; }
   .avatar-initials{ font-size:11px; font-weight:600; color:#fff; }
@@ -174,16 +179,29 @@
   .file-input-fallback .fname{ color:var(--text-primary); font-weight:500; }
   .modal-form > * + *{ margin-top:14px; }
 
+  /* ModalPage defaults to VK UI's compact "S" desktop width (430px, tuned
+     for VK Mini Apps) and its overlay ships fully transparent by default —
+     both real, stable (non-hashed) VK UI class names, confirmed live in a
+     real browser, widened/dimmed here to match this repo's modal sizing
+     and the backdrop dimming every other kit page uses. */
+  .vkuiModalPage__hostDesktopMaxWidthS{ max-width:640px !important; }
+  .vkuiModalOverlay__host{ background:rgba(0,0,0,.4) !important; }
+
   /* ==================== Responsive (mobile/tablet) ====================
      VK UI's own layout primitive for this exact problem is
      SplitLayout/SplitCol (columns collapse based on real viewport width via
-     AdaptivityProvider), which the app below genuinely uses for the
-     sidebar/content split. Its collapsing behaviour is tuned for VK's own
-     breakpoint set, not this repo's shared 960px/560px brief — so, same as
-     Element Plus/Fluent UI/Shoelace/HeroUI elsewhere in this repo, the
-     actual hamburger + off-canvas drawer + backdrop interaction on top of
-     it is hand-rolled with plain CSS transform + React state, to keep the
-     mobile UX identical across all 11 kit pages for a fair comparison. */
+     AdaptivityProvider) — a real, valuable capability of the kit. This demo
+     does NOT use it for the sidebar/content split, though: verified live in
+     a real browser, SplitCol under AdaptivityProvider's default (no
+     explicit viewWidth/media-query wiring) collapsed to a near-zero-height
+     box and pushed its first child up behind the header, rather than the
+     expected fixed 250px column — properly driving it needs the adaptivity
+     hooks wired to real breakpoints, more machinery than a CDN one-off
+     warrants. The shell below is plain flex `<div>`s instead (same as every
+     other kit here), same as Element Plus/Fluent UI/Shoelace/HeroUI use for
+     their off-canvas drawer + backdrop, hand-rolled with plain CSS
+     transform + React state, to keep the mobile UX identical across all 11
+     kit pages for a fair comparison. */
   @media (max-width:959px){
     .hamburger-btn{ display:inline-flex !important; }
     .header-search{ display:none; }
@@ -253,10 +271,9 @@
   }
 
   var ConfigProvider = VKUI.ConfigProvider, AdaptivityProvider = VKUI.AdaptivityProvider, AppRoot = VKUI.AppRoot;
-  var SplitLayout = VKUI.SplitLayout, SplitCol = VKUI.SplitCol;
   var Group = VKUI.Group, SimpleCell = VKUI.SimpleCell, Card = VKUI.Card;
   var Search = VKUI.Search, Select = VKUI.Select, Button = VKUI.Button, IconButton = VKUI.IconButton;
-  var Avatar = VKUI.Avatar, Badge = VKUI.Badge, Pagination = VKUI.Pagination;
+  var Avatar = VKUI.Avatar, Pagination = VKUI.Pagination;
   var ModalRoot = VKUI.ModalRoot, ModalPage = VKUI.ModalPage, ModalPageHeader = VKUI.ModalPageHeader;
   var FormItem = VKUI.FormItem, Input = VKUI.Input, Textarea = VKUI.Textarea;
   var RadioGroup = VKUI.RadioGroup, Radio = VKUI.Radio;
@@ -313,11 +330,11 @@
   var AVATAR_PALETTE = ['#E07B3E','#3B82C4','#8B6CC1','#2FA968','#C2632D'];
 
   var NAV_ITEMS = [
-    { key:'dashboard', icon:'Icon24Graph', label:'Дашборд', active:false },
+    { key:'dashboard', icon:'Icon24GraphOutline', label:'Дашборд', active:false },
     { key:'requests', icon:'Icon24Document', label:'Заявки', active:true },
-    { key:'objects', icon:'Icon24Buildings', label:'Объекты', active:false },
+    { key:'objects', icon:'Icon24Home', label:'Объекты', active:false },
     { key:'executors', icon:'Icon24Users', label:'Исполнители', active:false },
-    { key:'reports', icon:'Icon24Statistics', label:'Отчёты', active:false },
+    { key:'reports', icon:'Icon24PollOutline', label:'Отчёты', active:false },
     { key:'settings', icon:'Icon24Settings', label:'Настройки', active:false }
   ];
 
@@ -325,7 +342,7 @@
     { key:'total', label:'Всего заявок', value:128, icon:'Icon24Document', color:'#101010', tint:'#EEEEEF' },
     { key:'active', label:'В работе', value:34, icon:'Icon24Recent', color:'#E07B3E', tint:'#FDEEE3' },
     { key:'done', label:'Выполнено', value:81, icon:'Icon24CheckCircleOn', color:'#2FA968', tint:'#E6F5ED' },
-    { key:'overdue', label:'Просрочено', value:7, icon:'Icon24ErrorTriangleOutline', color:'#E4483D', tint:'#FBE7E5' }
+    { key:'overdue', label:'Просрочено', value:7, icon:'Icon24ErrorCircle', color:'#E4483D', tint:'#FBE7E5' }
   ];
 
   var STATUS_FILTER_OPTIONS = ['Все','Новая','В работе','На проверке','Выполнена','Просрочена'];
@@ -340,6 +357,10 @@
   function initials(name){ var p = name.split(' '); return (p[0][0] + (p[1] ? p[1][0] : '')).toUpperCase(); }
   function avatarColor(name){ var h = 0; for (var i=0;i<name.length;i++) h += name.charCodeAt(i); return AVATAR_PALETTE[h % AVATAR_PALETTE.length]; }
   function toOptions(list){ return list.map(function(v){ return { label: v, value: v }; }); }
+  function hexToRgba(hex, alpha){
+    var r = parseInt(hex.slice(1,3),16), g = parseInt(hex.slice(3,5),16), b = parseInt(hex.slice(5,7),16);
+    return 'rgba(' + r + ',' + g + ',' + b + ',' + alpha + ')';
+  }
 
   function App(){
     var _s = React.useState(''); var search = _s[0], setSearch = _s[1];
@@ -460,7 +481,7 @@
             React.createElement(IconButton, {
               className: 'hamburger-btn', label: 'Открыть меню',
               onClick: function(){ setSidebarOpen(function(v){ return !v; }); }
-            }, React.createElement(Icon, { name: 'Icon24Menu', size: 22 })),
+            }, React.createElement(Icon, { name: 'Icon24MenuOutline', size: 22 })),
             React.createElement('div', { className: 'brand-wrap' },
               React.createElement('svg', { className: 'brand-icon', viewBox: '0 0 100 100', 'aria-hidden': true },
                 React.createElement('circle', { cx: 50, cy: 50, r: 42, fill: 'none', stroke: 'currentColor', strokeWidth: 7, strokeDasharray: '240 24', strokeLinecap: 'round' }),
@@ -479,7 +500,7 @@
           ),
           React.createElement('div', { className: 'header-end' },
             React.createElement(IconButton, { className: 'header-icon-btn', label: 'Уведомления' },
-              React.createElement(Icon, { name: 'Icon24NotificationsOutline', size: 20 }),
+              React.createElement(Icon, { name: 'Icon24Notification', size: 20 }),
               React.createElement('span', { className: 'header-badge' })
             ),
             React.createElement(Button, {
@@ -497,12 +518,14 @@
           )
         ),
 
-        // ---------- Body: SplitLayout (sidebar column + content column) ----------
+        // ---------- Body: sidebar + content ----------
+        // (a plain flex shell, not SplitLayout/SplitCol — see the
+        // "Responsive" comment in <style> above for why)
         React.createElement('div', { className: 'app-body' },
           React.createElement('div', { className: 'sider-backdrop' + (sidebarOpen ? ' show' : ''), onClick: closeSidebar }),
 
-          React.createElement(SplitLayout, { className: 'split-layout', modal: modal },
-            React.createElement(SplitCol, { className: 'app-sider' + (sidebarOpen ? ' open' : ''), fixed: true, width: 250 },
+          React.createElement('div', { className: 'split-layout' },
+            React.createElement('aside', { className: 'app-sider' + (sidebarOpen ? ' open' : '') },
               React.createElement(Group, { className: 'side-group' },
                 NAV_ITEMS.map(function(item){
                   return React.createElement(SimpleCell, {
@@ -515,7 +538,7 @@
               )
             ),
 
-            React.createElement(SplitCol, { className: 'split-col-main', spaced: true, width: '100%' },
+            React.createElement('div', { className: 'split-col-main' },
               React.createElement('main', { className: 'app-main' },
                 React.createElement('div', { className: 'breadcrumb' }, 'Главная / Заявки'),
                 React.createElement('h1', { className: 'page-title' }, 'Заявки'),
@@ -590,8 +613,8 @@
                               React.createElement('td', null, React.createElement('span', { className: 'topic-cell' }, row.topic)),
                               React.createElement('td', null, row.category),
                               React.createElement('td', null, row.object),
-                              React.createElement('td', null, React.createElement(Badge, { style: { background: PRIORITY_COLORS[row.priority], color:'#fff' } }, row.priority)),
-                              React.createElement('td', null, React.createElement(Badge, { style: { background: 'rgba(0,0,0,.04)', color: STATUS_COLORS[row.status] } }, row.status)),
+                              React.createElement('td', null, React.createElement('span', { className: 'status-pill', style: { background: PRIORITY_COLORS[row.priority], color:'#fff' } }, row.priority)),
+                              React.createElement('td', null, React.createElement('span', { className: 'status-pill', style: { background: hexToRgba(STATUS_COLORS[row.status], .14), color: STATUS_COLORS[row.status] } }, row.status)),
                               React.createElement('td', null,
                                 React.createElement('div', { className: 'executor-cell' },
                                   React.createElement(Avatar, { size: 26, className: 'avatar-initials', style: { background: avatarColor(row.executor) } }, initials(row.executor)),
@@ -601,8 +624,8 @@
                               React.createElement('td', null, row.due),
                               React.createElement('td', null,
                                 React.createElement('div', { className: 'row-actions' },
-                                  React.createElement(IconButton, { label: 'Просмотреть' }, React.createElement(Icon, { name: 'Icon24Eye', size: 18 })),
-                                  React.createElement(IconButton, { label: 'Редактировать' }, React.createElement(Icon, { name: 'Icon24Edit', size: 18 }))
+                                  React.createElement(IconButton, { label: 'Просмотреть' }, React.createElement(Icon, { name: 'Icon24ViewOutline', size: 18 })),
+                                  React.createElement(IconButton, { label: 'Редактировать' }, React.createElement(Icon, { name: 'Icon24WriteOutline', size: 18 }))
                                 )
                               )
                             );
@@ -625,7 +648,11 @@
                 React.createElement('div', { className: 'footer-note' },
                   'Kit: VK UI v8 (@vkontakte/vkui) · CDN: react@18 + react-dom@18 (unpkg, UMD dev build) · @babel/standalone (unpkg, in‑browser JSX) · ',
                   '@vkontakte/vkui@8.3.1 + @vkontakte/icons@3 via esm.sh ESM (React UMD ↔ ESM bridged through a data: URI import map, no duplicate React instance) · dist/vkui.css loaded as a plain stylesheet (no build plugin needed, unlike Tailwind-based kits) · ',
-                  'Icons: @vkontakte/icons (генерический глиф‑fallback для нерезолвящихся иконок — точные имена части иконок в CDN‑сборке не проверялись вживую) · Компромиссы: собственной desktop‑таблицы у VK UI нет (это мобайл‑ориентированный кит — списки строятся из ',
+                  'Icons: @vkontakte/icons (иконки проверены вживую в браузере, генерический глиф‑fallback остаётся на случай нерезолвящихся имён) · Компромиссы: SplitLayout/SplitCol без явной настройки AdaptivityProvider под реальные брейкпоинты схлопнулись некорректно при живой проверке — сайдбар/контент собраны обычными flex‑',
+                  React.createElement('code', null, '<div>'),
+                  ', как и у остальных китов; ', React.createElement('code', null, 'Badge'),
+                  ' у VK UI — это индикатор‑точка (его текст визуально скрыт, только для скринридера), а не цветной пилл, поэтому бейджи приоритета/статуса — обычный ', React.createElement('code', null, '<span>'),
+                  '; своей desktop‑таблицы у VK UI нет (это мобайл‑ориентированный кит — списки строятся из ',
                   React.createElement('code', null, 'SimpleCell'),
                   '/', React.createElement('code', null, 'RichCell'),
                   '), поэтому таблица заявок собрана обычным ', React.createElement('code', null, '<table>'),
@@ -635,7 +662,8 @@
                 )
               )
             )
-          )
+          ),
+          modal
         )
       )
     );
