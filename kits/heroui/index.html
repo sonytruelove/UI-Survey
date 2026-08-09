@@ -382,7 +382,10 @@
     var totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
     var pageItems = React.useMemo(function(){
       var start = (page - 1) * PAGE_SIZE;
-      return filtered.slice(start, start + PAGE_SIZE);
+      // HeroUI's dynamic Table (react-stately Collection) reads the row
+      // identity from an explicit `key` field on each item object — not
+      // just the React `key` prop on <TableRow> — so every row needs one.
+      return filtered.slice(start, start + PAGE_SIZE).map(function(r){ return Object.assign({ key: r.id }, r); });
     }, [filtered, page]);
 
     React.useEffect(function(){ if (page > totalPages) setPage(1); }, [totalPages]);
@@ -545,7 +548,7 @@
                 ),
                 React.createElement(TableBody, { items: pageItems, emptyContent: 'Ничего не найдено' },
                   function(row){
-                    return React.createElement(TableRow, { key: row.id },
+                    return React.createElement(TableRow, { key: row.key },
                       function(columnKey){ return React.createElement(TableCell, null, renderCell(row, columnKey)); }
                     );
                   }
